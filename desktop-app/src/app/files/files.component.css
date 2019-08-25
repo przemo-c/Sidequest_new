@@ -8,3 +8,8 @@
   line-height: 3rem;
   vertical-align: middle;
 }
+
+.selected{
+  background: #e93c96;
+  border-radius: 10px;
+}

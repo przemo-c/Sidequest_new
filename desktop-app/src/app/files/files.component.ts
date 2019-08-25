@@ -22,7 +22,9 @@ declare let M;
 export class FilesComponent implements OnInit {
     @ViewChild('filesModal', { static: false }) filesModal;
     @ViewChild('fixedAction', { static: false }) fixedAction;
+    @ViewChild('downloadMediaModal', { static: false }) downloadMediaModal;
     files: FileFolderListing[] = [];
+    selectedFiles: FileFolderListing[] = [];
     currentFileDelete: FileFolderListing;
     breadcrumbs: BreadcrumbListing[] = [];
     isOpen: boolean = false;
@@ -49,7 +51,7 @@ export class FilesComponent implements OnInit {
     }
     makeFolder() {
         if (
-            ~this.files
+            this.files
                 .filter(f => f.icon === 'folder')
                 .map(f => f.name)
                 .indexOf(this.folderName)
@@ -60,6 +62,26 @@ export class FilesComponent implements OnInit {
                 this.folderName = '';
                 this.open(this.currentPath);
             });
+        }
+    }
+    selectFile(event: Event, file: FileFolderListing) {
+        let fileElement = event.target as Element;
+
+        if (file.icon === 'folder') {
+            this.selectedFiles.length = 0;
+            this.open(this.appService.path.posix.join(this.currentPath, file.name));
+        } else if (!fileElement.classList.contains('delete')) {
+            while (!fileElement.classList.contains('file')) {
+                fileElement = fileElement.parentElement;
+            }
+
+            if (this.selectedFiles.includes(file)) {
+                this.selectedFiles.splice(this.selectedFiles.indexOf(file));
+                fileElement.classList.remove('selected');
+            } else {
+                this.selectedFiles.push(file);
+                fileElement.classList.add('selected');
+            }
         }
     }
     uploadFile(files): Promise<any> {
@@ -102,6 +124,57 @@ export class FilesComponent implements OnInit {
             files => this.uploadFilesFromList(files)
         );
     }
+    // downloadMedia() {
+    //     const paths = ['/sdcard/Oculus/Screenshots', '/sdcard/Oculus/VideoShots'];
+
+    //     this.downloadMediaModal.closeModal();
+    //     this.spinnerService.showLoader();
+    //     this.spinnerService.setMessage('Downloading media...');
+
+    //     if (!this.isConnected()) {
+    //         return Promise.resolve();
+    //     }
+
+    //     paths.forEach(path => {
+    //         this.adbService
+    //             .adbCommand('readdir', { serial: this.adbService.deviceSerial, path: path })
+    //             .then(files => {
+    //                 let media = files.map(file => {
+    //                     const name = file.name;
+    //                     const size = Math.round((file.size / 1024 / 1024) * 100) / 100;
+    //                     const filePath = this.appService.path.posix.join(path, name);
+    //                     const fileSavePath = this.appService.path.posix.join(this.adbService.savePath, name);
+
+    //                     return { name, size, filePath, fileSavePath };
+    //                 });
+
+    //                 media.forEach(file => {
+    //                     this.adbService
+    //                         .adbCommand(
+    //                             'pull',
+    //                             { serial: this.adbService.deviceSerial, path: file.filePath, savePath: file.fileSavePath },
+    //                             stats => {
+    //                                 this.spinnerService.setMessage(
+    //                                     'File downloading: ' +
+    //                                         file.filePath +
+    //                                         '<br>' +
+    //                                         Math.round(stats.bytesTransferred / 1024 / 1024) +
+    //                                         'MB'
+    //                                 );
+    //                             }
+    //                         )
+    //                         .catch(e => {
+    //                             console.log(e);
+    //                             this.statusService.showStatus(e, true);
+    //                         });
+    //                 });
+    //             })
+    //             .then(() => {
+    //                 this.spinnerService.hideLoader();
+    //                 this.statusService.showStatus('Files Saved to ' + this.adbService.savePath + '!!');
+    //             });
+    //     });
+    // }
     confirmDeleteFile(file: FileFolderListing) {
         let path = this.appService.path.posix.join(this.currentPath, file.name);
         this.confirmMessage = 'Are you sure you want to delete this item? - ' + path;
