@@ -5,18 +5,31 @@
 
   </div>
   <div *ngIf="isConnected()">
-    <div class="right-align show-all">
-      <div class="switch">
-        <label>
-          <input type="checkbox" [(ngModel)]="show_all" (change)="setShowAll()"/>
-          <span class="lever"></span>
-          Show All
-        </label>
+    <div class="row">
+      <div class="input-field col s9">
+        <input id="SearchPackage" [ngClass]="{'input-dark-theme':appService.currentTheme === 'dark','input-light-theme':appService.currentTheme === 'light'}" [(ngModel)]="search" type="text"/>
+        <label for="SearchPackage" [ngClass]="{'label-dark-theme':appService.currentTheme === 'dark','label-light-theme':appService.currentTheme === 'light'}">Search package</label>
+      </div>
+      <div class="col s3 right-align show-all">
+        <div class="switch">
+          <label>
+            <input type="checkbox" [(ngModel)]="show_all" (change)="setShowAll()"/>
+            <span class="lever"></span>
+            Show All
+          </label>
+        </div>
       </div>
     </div>
     <div class="row">
-      <app-package-item *ngFor="let package of myApps;" [package]="package"
-                        (settings)="currentPackage = $event;appSettingsModal.openModal();getCurrentInstalledInfo()"></app-package-item>
+      <ng-container *ngFor="let package of myApps;">
+        <app-package-item
+          *ngIf="!search
+          || (package.name && package.name.indexOf(search)) > -1
+          || package.packageName.indexOf(search) > -1"
+          [package]="package"
+          (settings)="currentPackage = $event;appSettingsModal.openModal();getCurrentInstalledInfo()">
+        </app-package-item>
+      </ng-container>
     </div>
   </div>
 </div>
@@ -27,7 +40,7 @@
     <h4>App Settings</h4>
   </mz-modal-header>
   <mz-modal-content>
-    <div class="right right-aligned">
+    <div class="right right-align">
       <div class="waves-effect waves-light btn orange" (click)="forceClose()">Force Close App</div><br><br>
       <div class="waves-effect waves-light btn orange " (click)="clearData()">Clear App Data</div><br><br>
       <div class="waves-effect waves-light btn red" (click)="uninstallApk()">Uninstall App</div><br><br>

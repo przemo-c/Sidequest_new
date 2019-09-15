@@ -182,3 +182,8 @@ body {
   line-height: 32px;
   border-radius: 50%;
 }
+.logo-img{
+  width: 200px;
+  margin-top: 20px;
+  margin-left: -10px;
+}

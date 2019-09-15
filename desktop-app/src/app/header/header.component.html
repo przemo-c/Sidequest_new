@@ -7,8 +7,7 @@
       <span class="spinner-loading-message" [innerHTML]="dragAndDropService.message"></span>
     </div>
     <div class="logo no-outline" (click)="webService.webView.loadURL('https://sidequestvr.com');" routerLink="webview"></div>
-    <div class="header-title" #header>SideQuest</div>
-    <div class="apk-install" *ngIf="webService.isWebviewOpen">by <app-link url="https://theexpanse.app" text="@TheExpanseVR"></app-link></div>
+    <div class="header-title" #header><img src="assets/images/logo-textual.png" class="responsive-img"/></div>
     <div class="apk-install" *ngIf="!appService.showBrowserBar&&!appService.showCustomActions&&!appService.isFilesOpen">Drag and drop your APK/OBB files <br>over this message to install!</div>
     <div class="apk-install" *ngIf="appService.isFilesOpen">Drag and drop your files over this message to upload them to the current folder.<br>Special thanks to <app-link url="https://twitter.com/Mitch_s3" text="@Mitch"></app-link></div>
     <div class="apk-install" *ngIf="appService.showCustomActions">Special thanks to
@@ -29,6 +28,9 @@
          src="{{beatonService.beatOnEnabled?'assets/images/beaton.png':'assets/images/beatoff.png'}}"
          position="bottom" tooltip="BeatOn mods & custom songs on Beat Saber"/>
 
+    <i mz-tooltip (click)="adbModal.openModal()" class="material-icons white-text no-outline" position="bottom" tooltip="Run ADB commands">
+      input
+    </i>
     <i mz-tooltip *ngIf="false" (click)="wifiModal.openModal()" class="material-icons no-outline" [ngClass]="{'green-text':adbService.wifiEnabled,'white-text':!adbService.wifiEnabled}" position="bottom" tooltip="Enable Wireless mode. ( Experimental ) ">
       wifi
     </i>
@@ -70,7 +72,7 @@
     mz-tooltip
     position="bottom"
     tooltip="{{ isConnected() ? 'Battery: ' + adbService.batteryLevel + '%' : 'No device is currently connected'}}">
-    <div id="connection-status-message">{{adbService.deviceStatusMessage}}</div>
+    <div id="connection-status-message">v{{appService.versionName}}&nbsp;&nbsp;{{adbService.deviceStatusMessage}}</div>
   </div>
   <div *ngIf="appService.showRepo" (click)="addRepoModal.openModal()" class="waves-effect waves-light btn-flat add-repo small-button white-text">
     Add Repo
@@ -251,6 +253,51 @@
   </mz-modal-footer>
 </mz-modal>
 
+<mz-modal #adbModal [fixedFooter]="true">
+  <mz-modal-header>
+    <h4>Run ADB Command</h4>
+  </mz-modal-header>
+  <mz-modal-content>
+    Run an ADB command from here to be able to see the output. Use this to troubleshoot issues or perform advanced operations. Please note wireless ADB is not supported but we provide the following example commands for you to experiment with.
+    <br><br>
+    To enable wifi click "Enable Wifi ADB" then "Connect to Wifi ADB" and finally disconnect your usb cable.
+    <br><br>
+    <div class="chip pointer purple white-text"
+         mzTooltip tooltip="adb tcpip 5555" position="bottom"
+         (click)="adbCommandToRun = 'adb tcpip 5555';runAdbCommand()">Enable Wifi ADB</div>
+    <div *ngIf="adbService.deviceIp"
+         mzTooltip tooltip="adb connect {{adbService.deviceIp}}:5555" position="bottom"
+         class="chip pointer purple white-text"
+         (click)="adbCommandToRun = 'adb connect '+adbService.deviceIp+':5555';runAdbCommand()">Connect to Wifi ADB</div><br><br>
+    <div class="chip pointer green white-text"
+         mzTooltip tooltip="adb devices" position="bottom"
+         (click)="adbCommandToRun = 'adb devices';runAdbCommand()">List Devices</div>
+    <div class="chip pointer blue white-text"
+         mzTooltip tooltip="adb usb" position="bottom"
+         (click)="adbCommandToRun = 'adb usb';runAdbCommand()">Enable USB ADB</div>
+    <div class="chip pointer orange white-text"
+         mzTooltip tooltip="adb disconnect" position="bottom"
+         (click)="adbCommandToRun = 'adb disconnect';runAdbCommand()">Disconnect Everything</div>
+    <div class="chip pointer orange white-text"
+         mzTooltip tooltip="adb kill-server" position="bottom"
+         (click)="adbCommandToRun = 'adb kill-server';runAdbCommand()">Reset ADB</div>
+    <div class="button-section">
+      <div class="input-field">
+        <input id="adbCommand"  type="text" [(ngModel)]="adbCommandToRun" placeholder="Command To Run..."/>
+      </div>
+      <code>
+        <pre *ngIf="adbResponse">
+          {{adbResponse}}
+        </pre>
+      </code>
+    </div>
+    <br><br>
+  </mz-modal-content>
+  <mz-modal-footer>
+    <button mz-button [flat]="true" mz-modal-close>Close</button>
+    <button mz-button class="pink-button" (click)="runAdbCommand()">Run Command</button>
+  </mz-modal-footer>
+</mz-modal>
 
 
 <mz-modal #syncSongsModal [fixedFooter]="true">

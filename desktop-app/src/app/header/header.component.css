@@ -26,6 +26,9 @@
   margin-right: 13px;
   margin-left: 13px
 }
+.pointer{
+  cursor: pointer;
+}
 .process-badge{
   border-radius: 4px;
   padding: 0 3px;
@@ -192,7 +195,7 @@
   left: 15px;
 }
 .logo {
-  background: transparent url('../../assets/images/logo-large icony.png') center center no-repeat;
+  background: transparent url('../../assets/images/score-logo.png') center center no-repeat;
   background-size: 100px 100px;
   width: 135px;
   height: 130px;

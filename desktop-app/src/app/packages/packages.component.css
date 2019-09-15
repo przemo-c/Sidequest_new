@@ -1,10 +1,11 @@
-
 .restore-backup {
   padding-top: 4px;
 }
-.right-aligned{
-  text-align: right;
+.restore-backup i{
+  font-size: 2em;
+  margin-left: 6px;
+  margin-top: -3px;
 }
-.show-all{
-  margin-bottom: 20px;
+.show-all {
+  margin-top: 25px;
 }

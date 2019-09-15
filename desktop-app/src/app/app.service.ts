@@ -51,7 +51,7 @@ export class AppService {
     titleEle: HTMLElement;
     webService: WebviewService;
     currentTheme: string = 'dark';
-    versionName: string = '0.6.6';
+    versionName: string = '0.7.1';
     showBack: boolean = false;
     constructor(private spinnerService: LoadingSpinnerService) {
         this.path = (<any>window).require('path');
@@ -113,7 +113,7 @@ export class AppService {
     }
     setTitle(title: string) {
         if (this.titleEle) {
-            this.titleEle.innerText = title;
+            this.titleEle.innerHTML = title;
         }
     }
     isTheme(theme: string) {

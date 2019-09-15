@@ -26,6 +26,7 @@ export class PackagesComponent implements OnInit {
     isOpen: boolean;
     sub: Subscription;
     show_all: boolean;
+    search: string;
     constructor(
         public adbService: AdbClientService,
         public appService: AppService,

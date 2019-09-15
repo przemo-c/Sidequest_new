@@ -38,6 +38,8 @@ export class HeaderComponent implements OnInit {
     addkey: string;
     addvalue: string;
     qspResponse: QuestSaberPatchResponseJson;
+    adbCommandToRun: string;
+    adbResponse: string;
     constructor(
         public adbService: AdbClientService,
         public appService: AppService,
@@ -52,6 +54,32 @@ export class HeaderComponent implements OnInit {
         public processService: ProcessBucketService
     ) {}
     ngOnInit() {}
+
+    runAdbCommand() {
+        this.adbResponse = 'Loading...';
+        let command = this.adbCommandToRun.trim();
+        if (command.substr(0, 3).toLowerCase() === 'adb') {
+            command = command.substr(3);
+        }
+        new Promise((resolve, reject) => {
+            this.appService.exec(
+                '"' + this.appService.path.join(this.adbService.adbPath, this.adbService.getAdbBinary()) + '" ' + command,
+                function(err, stdout, stderr) {
+                    if (err) {
+                        return reject(err);
+                    }
+                    if (stderr) return reject(stderr);
+                    return resolve(stdout);
+                }
+            );
+        })
+            .then((resp: string) => {
+                this.adbResponse = resp.trim();
+            })
+            .catch(e => {
+                this.statusService.showStatus(e, true);
+            });
+    }
     isConnected() {
         return this.adbService.deviceStatus === ConnectionStatus.CONNECTED;
     }

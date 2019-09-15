@@ -50,6 +50,8 @@ export class AdbClientService {
         this.savePath = localStorage.getItem('save-path') || this.appService.path.join(this.appService.appData, 'tmp');
         this.setSavePath();
         this.webService.isLoaded = this.sendPackages.bind(this);
+
+        this.deviceIp = localStorage.getItem('deviceIp');
     }
 
     installMultiFile(filepath) {
@@ -103,6 +105,7 @@ export class AdbClientService {
             .then(res => {
                 let output_parts = res.trim().split(' ');
                 this.deviceIp = output_parts[output_parts.length - 1];
+                localStorage.setItem('deviceIp', this.deviceIp);
             })
             .catch(e => {});
     }
@@ -170,10 +173,14 @@ export class AdbClientService {
                 this.beatonService.checkIsBeatOnRunning(this);
                 break;
             case ConnectionStatus.DISCONNECTED:
-                this.deviceStatusMessage = 'Disconnected: Connect/Reconnect your headset via USB';
+                this.deviceStatusMessage =
+                    'Disconnected: Connect/Reconnect your headset via USB. ' +
+                    (this.deviceIp ? 'Last Wifi IP: ' + this.deviceIp : '');
                 break;
             case ConnectionStatus.UNAUTHORIZED:
-                this.deviceStatusMessage = 'Unauthorized: Put your headset on and click always allow and then OK';
+                this.deviceStatusMessage =
+                    'Unauthorized: Put your headset on and click always allow and then OK. ' +
+                    (this.deviceIp ? 'Last Wifi IP: ' + this.deviceIp : '');
                 break;
         }
     }
@@ -695,8 +702,7 @@ export class AdbClientService {
         let filename = this.appService.path.basename(filepath);
         let packageId = filename.match(/main.[0-9]{1,}.([a-z]{1,}.[A-z]{1,}.[A-z]{1,}).obb/)[1];
         const showTotal = number && total ? '(' + number + '/' + total + ') ' : '';
-
-        this.spinnerService.showLoader();
+        if (!task) this.spinnerService.showLoader();
         let p = this.adbCommand(
             'push',
             {

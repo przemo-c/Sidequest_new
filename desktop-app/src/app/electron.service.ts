@@ -60,7 +60,10 @@ export class ElectronService {
         this.appService.electron.ipcRenderer.on('pre-open-url', (event, data) => {
             this.spinnerService.showLoader();
             this.spinnerService.setMessage('Do you want to install this file?<br><br>' + data);
-            this.spinnerService.setupConfirm().then(() => this.adbService.installAPK(data));
+            this.spinnerService.setupConfirm().then(() => {
+                this.spinnerService.hideLoader();
+                this.adbService.installAPK(data);
+            });
         });
         this.appService.electron.ipcRenderer.on('update-status', (event, data) => {
             if (data.status === 'checking-for-update') {
