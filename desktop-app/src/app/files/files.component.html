@@ -50,8 +50,13 @@
         class="btn-floating purple"><i class="material-icons">insert_drive_file</i></a></li>
     <li mz-tooltip position="left" tooltip="Make folder in this folder" (click)="mkDirModal.openModal()"><a
         class="btn-floating blue"><i class="material-icons">folder</i></a></li>
-    <li mz-tooltip position="left" tooltip="Quick copy screenshots and recordings"
+    <li mz-tooltip position="left" tooltip="Open current save location" (click)="openSaveLocation()"><a
+        class="btn-floating yellow darken-2"><i class="material-icons">folder</i></a></li>
+    <li mz-tooltip position="left" tooltip="Quick save screenshots and recordings"
       (click)="downloadMediaModal.openModal()"><a class="btn-floating green"><i class="material-icons">get_app</i></a>
+    </li>
+    <li mz-tooltip position="left" tooltip="Save selected file(s) to computer" (click)="filesModal.openModal()">
+      <a class="btn-floating orange"><i class="material-icons">get_app</i></a>
     </li>
   </ul>
 </div>
@@ -74,10 +79,10 @@
 </mz-modal>
 <mz-modal #filesModal [fixedFooter]="true">
   <mz-modal-header>
-    <h4>Save this file to your PC</h4>
+    <h4>Save selected file(s) to your PC</h4>
   </mz-modal-header>
   <mz-modal-content>
-    Pick a location on your PC to save this file:<br><br>
+    Pick a location on your PC to save selected file(s):<br><br>
     <button mz-button class="pink-button" (click)="pickLocation()">Select Location</button><br><br>
     Current Location: {{adbService.savePath}}
 
@@ -85,7 +90,7 @@
   </mz-modal-content>
   <mz-modal-footer>
     <button mz-button [flat]="true" mz-modal-close>Close</button>
-    <button mz-button class="pink-button" mz-modal-close (click)="saveFile()">Save To PC</button>
+    <button mz-button class="pink-button" mz-modal-close (click)="saveFiles()">Save To PC</button>
   </mz-modal-footer>
 </mz-modal>
 

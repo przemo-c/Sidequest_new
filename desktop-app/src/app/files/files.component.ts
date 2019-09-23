@@ -8,6 +8,7 @@ interface FileFolderListing {
     icon: string;
     size: number;
     time: Date;
+    filePath: String;
 }
 interface BreadcrumbListing {
     name: string;
@@ -124,57 +125,18 @@ export class FilesComponent implements OnInit {
             files => this.uploadFilesFromList(files)
         );
     }
-    // downloadMedia() {
-    //     const paths = ['/sdcard/Oculus/Screenshots', '/sdcard/Oculus/VideoShots'];
+    async downloadMedia() {
+        const paths = ['/sdcard/Oculus/Screenshots', '/sdcard/Oculus/VideoShots'];
+        let media: FileFolderListing[] = [];
 
-    //     this.downloadMediaModal.closeModal();
-    //     this.spinnerService.showLoader();
-    //     this.spinnerService.setMessage('Downloading media...');
+        for (const path of paths) {
+            await this.readdir(path).then(dirContents => {
+                media = media.concat(dirContents.filter(file => file.icon !== 'folder'));
+            });
+        }
 
-    //     if (!this.isConnected()) {
-    //         return Promise.resolve();
-    //     }
-
-    //     paths.forEach(path => {
-    //         this.adbService
-    //             .adbCommand('readdir', { serial: this.adbService.deviceSerial, path: path })
-    //             .then(files => {
-    //                 let media = files.map(file => {
-    //                     const name = file.name;
-    //                     const size = Math.round((file.size / 1024 / 1024) * 100) / 100;
-    //                     const filePath = this.appService.path.posix.join(path, name);
-    //                     const fileSavePath = this.appService.path.posix.join(this.adbService.savePath, name);
-
-    //                     return { name, size, filePath, fileSavePath };
-    //                 });
-
-    //                 media.forEach(file => {
-    //                     this.adbService
-    //                         .adbCommand(
-    //                             'pull',
-    //                             { serial: this.adbService.deviceSerial, path: file.filePath, savePath: file.fileSavePath },
-    //                             stats => {
-    //                                 this.spinnerService.setMessage(
-    //                                     'File downloading: ' +
-    //                                         file.filePath +
-    //                                         '<br>' +
-    //                                         Math.round(stats.bytesTransferred / 1024 / 1024) +
-    //                                         'MB'
-    //                                 );
-    //                             }
-    //                         )
-    //                         .catch(e => {
-    //                             console.log(e);
-    //                             this.statusService.showStatus(e, true);
-    //                         });
-    //                 });
-    //             })
-    //             .then(() => {
-    //                 this.spinnerService.hideLoader();
-    //                 this.statusService.showStatus('Files Saved to ' + this.adbService.savePath + '!!');
-    //             });
-    //     });
-    // }
+        this.saveFiles(media);
+    }
     confirmDeleteFile(file: FileFolderListing) {
         let path = this.appService.path.posix.join(this.currentPath, file.name);
         this.confirmMessage = 'Are you sure you want to delete this item? - ' + path;
@@ -182,15 +144,31 @@ export class FilesComponent implements OnInit {
     deleteFile(file: FileFolderListing) {
         let path = this.appService.path.posix.join(this.currentPath, file.name);
         this.adbService.adbCommand('shell', { serial: this.adbService.deviceSerial, command: 'rm "' + path + '" -r' }).then(r => {
-            console.log(r);
             this.open(this.currentPath);
             this.statusService.showStatus('Item Deleted!! ' + path);
         });
     }
-    saveFile() {
+    async saveFiles(files?: FileFolderListing[]) {
         this.filesModal.closeModal();
-        let savePath = this.appService.path.join(this.adbService.savePath, this.currentFile.name);
-        let path = this.appService.path.posix.join(this.currentPath, this.currentFile.name);
+        this.spinnerService.showLoader();
+
+        for (const file of !files ? this.selectedFiles : files) {
+            await this.saveFile(file);
+        }
+
+        this.spinnerService.hideLoader();
+        this.statusService.showStatus(
+            (!files ? this.selectedFiles.length : files.length) + ' files saved to ' + this.adbService.savePath + '!!'
+        );
+
+        if (!files) {
+            Array.from(document.getElementsByClassName('selected')).forEach(element => element.classList.remove('selected'));
+            this.selectedFiles.length = 0;
+        }
+    }
+    saveFile(file: FileFolderListing) {
+        let savePath = this.appService.path.join(this.adbService.savePath, file.name);
+        let path = file.filePath;
         this.spinnerService.showLoader();
         return this.adbService
             .adbCommand('pull', { serial: this.adbService.deviceSerial, path, savePath }, stats => {
@@ -201,10 +179,6 @@ export class FilesComponent implements OnInit {
                         Math.round(stats.bytesTransferred / 1024 / 1024) +
                         'MB'
                 );
-            })
-            .then(() => {
-                this.spinnerService.hideLoader();
-                this.statusService.showStatus('Files Saved to ' + savePath + '!!');
             })
             .catch(e => this.statusService.showStatus(e.toString(), true));
     }
@@ -239,14 +213,6 @@ export class FilesComponent implements OnInit {
         }
         this.breadcrumbs.push({ path, name });
     }
-    openFile(file: FileFolderListing) {
-        if (file.icon === 'folder') {
-            this.open(this.appService.path.posix.join(this.currentPath, file.name));
-        } else {
-            this.currentFile = file;
-            this.filesModal.openModal();
-        }
-    }
     open(path: string) {
         this.spinnerService.showLoader();
         this.spinnerService.setMessage('Loading files...');
@@ -261,64 +227,69 @@ export class FilesComponent implements OnInit {
         if (!this.isConnected()) {
             return Promise.resolve();
         }
-        return (
-            this.adbService
-                .adbCommand('readdir', { serial: this.adbService.deviceSerial, path })
-                //this.adbService.client.readdir(this.adbService.deviceSerial, path)
-                .then(files => {
-                    this.files = files.map(file => {
-                        let name = file.name;
-                        let size = Math.round((file.size / 1024 / 1024) * 100) / 100;
-                        let time = file.mtime;
-                        let icon = 'folder';
-                        if (file.__isFile) {
-                            let fileParts = file.name.split('.');
-                            let extension = (fileParts[fileParts.length - 1] || '').toLowerCase();
-                            switch (extension) {
-                                case 'gif':
-                                case 'png':
-                                case 'jpeg':
-                                case 'jpg':
-                                    icon = 'photo';
-                                    break;
-                                case 'wav':
-                                case 'ogg':
-                                case 'mp3':
-                                    icon = 'music_note';
-                                    break;
-                                case 'avi':
-                                case 'mp4':
-                                    icon = 'ondemand_video';
-                                    break;
-                                case 'txt':
-                                case 'docx':
-                                case 'doc':
-                                    icon = 'receipt';
-                                    break;
-                                case 'pptx':
-                                case 'ppt':
-                                    icon = 'picture_in_picture';
-                                    break;
-                                case 'xlsx':
-                                case 'xls':
-                                    icon = 'grid_on';
-                                    break;
-                                default:
-                                    icon = 'receipt';
-                                    break;
-                            }
-                        }
-                        return { name, icon, size, time };
-                    });
-                    this.files.sort(function(a, b) {
-                        let textA = a.name.toUpperCase();
-                        let textB = b.name.toUpperCase();
-                        return textA < textB ? -1 : textA > textB ? 1 : 0;
-                    });
-                    this.files = this.files.filter(d => d.icon === 'folder').concat(this.files.filter(d => d.icon !== 'folder'));
-
-                    this.spinnerService.hideLoader();
-                })
-        );
+        this.readdir(path).then(dirContents => {
+            this.files = dirContents;
+            this.files.sort(function(a, b) {
+                let textA = a.name.toUpperCase();
+                let textB = b.name.toUpperCase();
+                return textA < textB ? -1 : textA > textB ? 1 : 0;
+            });
+            this.files = this.files.filter(d => d.icon === 'folder').concat(this.files.filter(d => d.icon !== 'folder'));
+            this.spinnerService.hideLoader();
+        });
+    }
+    openSaveLocation() {
+        this.appService.electron.remote.shell.openItem(this.adbService.savePath);
+    }
+    async readdir(path: String) {
+        let dirContents: FileFolderListing[];
+        await this.adbService.adbCommand('readdir', { serial: this.adbService.deviceSerial, path }).then(files => {
+            dirContents = files.map(file => {
+                let name = file.name;
+                let size = Math.round((file.size / 1024 / 1024) * 100) / 100;
+                let time = file.mtime;
+                let filePath = this.appService.path.posix.join(path, file.name);
+                let icon = 'folder';
+                if (file.__isFile) {
+                    let fileParts = file.name.split('.');
+                    let extension = (fileParts[fileParts.length - 1] || '').toLowerCase();
+                    switch (extension) {
+                        case 'gif':
+                        case 'png':
+                        case 'jpeg':
+                        case 'jpg':
+                            icon = 'photo';
+                            break;
+                        case 'wav':
+                        case 'ogg':
+                        case 'mp3':
+                            icon = 'music_note';
+                            break;
+                        case 'avi':
+                        case 'mp4':
+                            icon = 'ondemand_video';
+                            break;
+                        case 'txt':
+                        case 'docx':
+                        case 'doc':
+                            icon = 'receipt';
+                            break;
+                        case 'pptx':
+                        case 'ppt':
+                            icon = 'picture_in_picture';
+                            break;
+                        case 'xlsx':
+                        case 'xls':
+                            icon = 'grid_on';
+                            break;
+                        default:
+                            icon = 'receipt';
+                            break;
+                    }
+                }
+                return { name, icon, size, time, filePath };
+            });
+        });
+        return dirContents;
     }
 }
