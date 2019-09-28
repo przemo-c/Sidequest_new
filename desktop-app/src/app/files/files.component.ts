@@ -26,13 +26,14 @@ export class FilesComponent implements OnInit {
     @ViewChild('downloadMediaModal', { static: false }) downloadMediaModal;
     files: FileFolderListing[] = [];
     selectedFiles: FileFolderListing[] = [];
-    currentFileDelete: FileFolderListing;
+    filesToBeDeleted: FileFolderListing[];
     breadcrumbs: BreadcrumbListing[] = [];
     isOpen: boolean = false;
     currentPath: string;
     folderName: string;
     confirmMessage: string;
     currentFile: FileFolderListing;
+    quickSaveModels: string[] = ['Quest', 'Go'];
     constructor(
         public spinnerService: LoadingSpinnerService,
         public adbService: AdbClientService,
@@ -52,7 +53,7 @@ export class FilesComponent implements OnInit {
     }
     makeFolder() {
         if (
-            this.files
+            ~this.files
                 .filter(f => f.icon === 'folder')
                 .map(f => f.name)
                 .indexOf(this.folderName)
@@ -77,12 +78,22 @@ export class FilesComponent implements OnInit {
             }
 
             if (this.selectedFiles.includes(file)) {
-                this.selectedFiles.splice(this.selectedFiles.indexOf(file));
+                this.selectedFiles.splice(this.selectedFiles.indexOf(file), 1);
                 fileElement.classList.remove('selected');
             } else {
                 this.selectedFiles.push(file);
                 fileElement.classList.add('selected');
             }
+        }
+    }
+    clearSelection(file?: FileFolderListing) {
+        if (file) {
+            document
+                .querySelectorAll('.file')
+                .item(this.files.indexOf(file))
+                .classList.remove('selected');
+        } else {
+            document.querySelectorAll('.selected').forEach(element => element.classList.remove('.selected'));
         }
     }
     uploadFile(files): Promise<any> {
@@ -125,8 +136,15 @@ export class FilesComponent implements OnInit {
             files => this.uploadFilesFromList(files)
         );
     }
+    quickSaveSupported() {
+        return this.quickSaveModels.includes(this.adbService.deviceModel);
+    }
     async downloadMedia() {
-        const paths = ['/sdcard/Oculus/Screenshots', '/sdcard/Oculus/VideoShots'];
+        let paths = [];
+        if (this.adbService.deviceModel === 'Quest' || this.adbService.deviceModel === 'Go') {
+            paths = ['/sdcard/Oculus/Screenshots', '/sdcard/Oculus/VideoShots'];
+        }
+
         let media: FileFolderListing[] = [];
 
         for (const path of paths) {
@@ -137,16 +155,23 @@ export class FilesComponent implements OnInit {
 
         this.saveFiles(media);
     }
-    confirmDeleteFile(file: FileFolderListing) {
-        let path = this.appService.path.posix.join(this.currentPath, file.name);
-        this.confirmMessage = 'Are you sure you want to delete this item? - ' + path;
+    deleteFiles(files: FileFolderListing[]) {
+        for (const file of files) {
+            this.deleteFile(file);
+        }
+
+        this.statusService.showStatus(files.length + ' Item(s) Deleted!!');
     }
     deleteFile(file: FileFolderListing) {
-        let path = this.appService.path.posix.join(this.currentPath, file.name);
-        this.adbService.adbCommand('shell', { serial: this.adbService.deviceSerial, command: 'rm "' + path + '" -r' }).then(r => {
-            this.open(this.currentPath);
-            this.statusService.showStatus('Item Deleted!! ' + path);
-        });
+        this.adbService
+            .adbCommand('shell', { serial: this.adbService.deviceSerial, command: 'rm "' + file.filePath + '" -r' })
+            .then(r => {
+                this.files.splice(this.files.indexOf(file), 1);
+
+                if (this.selectedFiles.includes(file)) {
+                    this.selectedFiles.splice(this.selectedFiles.indexOf(file));
+                }
+            });
     }
     async saveFiles(files?: FileFolderListing[]) {
         this.filesModal.closeModal();
@@ -218,6 +243,7 @@ export class FilesComponent implements OnInit {
         this.spinnerService.setMessage('Loading files...');
         this.currentPath = path;
         this.breadcrumbs = [];
+        this.selectedFiles.length = 0;
         this.getCrumb(
             this.currentPath
                 .split('/')
