@@ -35,6 +35,7 @@ export class AdbClientService {
     wifiHost: string;
     isBatteryCharging: boolean;
     batteryLevel: number;
+    deviceModel: string;
     constructor(
         public appService: AppService,
         private spinnerService: LoadingSpinnerService,
@@ -168,6 +169,7 @@ export class AdbClientService {
                 this.getPackages();
                 await this.getBatteryLevel();
                 await this.getIpAddress();
+                await this.getDeviceModel();
                 this.deviceStatusMessage =
                     'Connected -  Wifi IP: ' + (this.deviceIp || 'Not found...') + ', Battery: ' + this.batteryLevel + '% ';
                 this.beatonService.checkIsBeatOnRunning(this);
@@ -810,5 +812,10 @@ export class AdbClientService {
             this.isBatteryCharging = batteryObject['USBpowered'] || batteryObject['ACpowered'];
             this.batteryLevel = batteryObject['level'];
         });
+    }
+    async getDeviceModel() {
+        return this.adbCommand('shell', { serial: this.deviceSerial, command: 'getprop ro.product.model' }).then(
+            data => (this.deviceModel = data.trim())
+        );
     }
 }
