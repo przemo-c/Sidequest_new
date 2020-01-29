@@ -22,11 +22,13 @@ export class PackagesComponent implements OnInit {
     backups: string[];
     dataBackups: string[];
     myApps: any[];
-    isBackingUp: boolean;
+    myBackups: any[];
+    isBackingUp = true;
     isOpen: boolean;
     sub: Subscription;
     show_all: boolean;
     search: string;
+    savePath: string;
     constructor(
         public adbService: AdbClientService,
         public appService: AppService,
@@ -39,6 +41,7 @@ export class PackagesComponent implements OnInit {
     ) {
         appService.webService.isWebviewOpen = false;
         appService.resetTop();
+        appService.isPackagesOpen = true;
         this.appService.setTitle('Installed Apps');
         this.sub = router.events.subscribe(val => {
             if (val instanceof NavigationEnd) {
@@ -55,6 +58,59 @@ export class PackagesComponent implements OnInit {
             localStorage.removeItem('packages_show_all');
         }
         this.isOpen = false;
+    }
+
+    deSelectAll() {
+        if (this.isBackingUp) {
+            this.myApps.forEach(a => (a.backupAll = false));
+        } else {
+            this.myBackups.forEach(a => (a.isRestore = false));
+        }
+    }
+
+    selectAll() {
+        if (this.isBackingUp) {
+            this.myApps.forEach(a => (a.backupAll = true));
+        } else {
+            this.myBackups.forEach(a => (a.isRestore = true));
+        }
+    }
+
+    pickBackupLocation() {
+        this.appService.electron.remote.dialog.showOpenDialog(
+            {
+                properties: ['openDirectory'],
+                defaultPath: this.appService.backupPath,
+            },
+            files => {
+                if (files !== undefined && files.length === 1) {
+                    this.appService.backupPath = files[0];
+                    localStorage.setItem('backup-path', this.appService.backupPath);
+                }
+            }
+        );
+    }
+
+    backupAll() {
+        this.myApps
+            .filter(d => d.backupAll)
+            .forEach(d => {
+                this.backupApk(d.packageName).then(() => this.backupData(d.packageName));
+            });
+        this.statusService.showStatus('Backing up all the selected apps. Check the Tasks screen for more information.');
+    }
+
+    restoreAll() {
+        this.myBackups
+            .filter(d => d.isRestore)
+            .forEach((d: any) => {
+                if (d.dataBackups.length) {
+                    this.adbService.restoreDataBackup(d.name, this.showBackupFileName(d.dataBackups[0]));
+                }
+                if (d.backups.length) {
+                    this.adbService.installAPK(d.backups[0], true);
+                }
+            });
     }
 
     ngOnInit() {}
@@ -103,6 +159,29 @@ export class PackagesComponent implements OnInit {
         return isConnected;
     }
     ngAfterViewInit() {}
+
+    async getBackupFiles(file) {
+        file.isDirectory = this.appService.fs.lstatSync(file.path).isDirectory();
+        if (file.isDirectory) {
+            file.backups = await this.adbService.getBackups(file.name);
+            file.dataBackups = await this.adbService.getDataBackups(file.name);
+        }
+        return file;
+    }
+
+    getMyBackups() {
+        if (this.isBackingUp) return;
+        let backupPath = this.appService.path.join(this.appService.backupPath);
+        let backups = this.appService.fs
+            .readdirSync(backupPath)
+            .map(file => ({ name: file, path: this.appService.path.join(backupPath, file), isRestore: false }));
+        Promise.all(backups.map((file: any) => this.getBackupFiles(file))).then(files => {
+            this.myBackups = files.filter((file: any) => {
+                return file.isDirectory && (file.backups.length || file.dataBackups.length);
+            });
+        });
+    }
+
     getCurrentInstalledInfo() {
         this.adbService
             .getPackageInfo(this.currentPackage.package.packageName)
@@ -111,25 +190,25 @@ export class PackagesComponent implements OnInit {
             .then(() => this.adbService.getDataBackups(this.currentPackage.package.packageName))
             .then(dataBackups => (this.dataBackups = dataBackups));
     }
-    async backupApk() {
+    async backupApk(packageName: string) {
         this.appSettingsModal.closeModal();
-        let location = await this.adbService.getPackageLocation(this.currentPackage.package.packageName);
-        this.adbService.backupPackage(location, this.currentPackage.package.packageName).then(savePath => {
-            if (
-                this.currentPackage.package.packageName === this.bsaberService.beatSaberPackage &&
-                !this.bsaberService.backupExists()
-            ) {
-                this.appService.fs.copyFileSync(savePath, this.appService.path.join(this.appService.appData, 'bsaber-base.apk'));
-                this.appService.fs.copyFileSync(
-                    savePath,
-                    this.appService.path.join(this.appService.appData, 'bsaber-base_patched.apk')
-                );
-            }
+        let location = await this.adbService.getPackageLocation(packageName);
+        this.adbService.backupPackage(location, packageName).then(savePath => {
+            // if (
+            //     packageName === this.bsaberService.beatSaberPackage &&
+            //     !this.bsaberService.backupExists()
+            // ) {
+            //     this.appService.fs.copyFileSync(savePath, this.appService.path.join(this.appService.appData, 'bsaber-base.apk'));
+            //     this.appService.fs.copyFileSync(
+            //         savePath,
+            //         this.appService.path.join(this.appService.appData, 'bsaber-base_patched.apk')
+            //     );
+            // }
         });
     }
-    backupData() {
+    backupData(packageName) {
         this.appSettingsModal.closeModal();
-        this.adbService.makeDataBackup(this.currentPackage.package.packageName);
+        this.adbService.makeDataBackup(packageName);
     }
     showBackupFileName(file) {
         return this.appService.path.basename(file);
@@ -148,6 +227,9 @@ export class PackagesComponent implements OnInit {
         this.appSettingsModal.closeModal();
         this.adbService.uninstallAPK(this.currentPackage.package.packageName);
     }
+    launchApp() {
+        this.adbService.launchApp(this.currentPackage.package.packageName);
+    }
     forceClose() {
         this.adbService
             .adbCommand('shell', {
@@ -165,7 +247,6 @@ export class PackagesComponent implements OnInit {
                 packageName: this.currentPackage.package.packageName,
             })
             .then(r => {
-                console.log(r);
                 this.statusService.showStatus('Clear Data Sent!!');
             });
     }

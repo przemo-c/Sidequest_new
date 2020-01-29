@@ -20,36 +20,36 @@ export class DragAndDropService {
     ) {}
     setupDragAndDrop(ele) {
         let dragTimeout;
-        ele.ondragover = () => {
+        document.body.ondragover = () => {
             clearTimeout(dragTimeout);
             this.message = this.appService.isFilesOpen ? 'Drop files to upload!' : 'Drop the file here to install!';
             this.isDragging = true;
             return false;
         };
 
-        ele.ondragleave = () => {
+        document.body.ondragleave = () => {
             dragTimeout = setTimeout(() => {
                 this.isDragging = false;
             }, 1000);
             return false;
         };
 
-        ele.ondragend = () => {
+        document.body.ondragend = () => {
             this.isDragging = false;
             return false;
         };
 
-        ele.ondrop = async e => {
+        document.body.ondrop = async e => {
             if (!this.isDragging) return;
             this.isDragging = false;
             e.preventDefault();
             if (this.appService.isFilesOpen && this.appService.filesComponent) {
                 return this.appService.filesComponent.uploadFilesFromList(
-                    Object.keys(e.dataTransfer.files).map(i => e.dataTransfer.files[i].path)
+                    Object.keys(e.dataTransfer.files).map(i => (e.dataTransfer.files[i] as any).path)
                 );
             }
             for (let i = 0; i < e.dataTransfer.files.length; i++) {
-                let file = e.dataTransfer.files[i];
+                let file = e.dataTransfer.files[i] as any;
                 let filepath = file.path;
                 if (['.apk', '.obb'].includes(this.appService.path.extname(filepath))) {
                     if (this.appService.path.extname(filepath) === '.apk') {

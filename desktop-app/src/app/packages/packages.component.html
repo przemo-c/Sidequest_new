@@ -2,7 +2,6 @@
 
   <div *ngIf="!isConnected()">
     <h4 [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">No device connected...</h4>
-
   </div>
   <div *ngIf="isConnected()">
     <div class="row">
@@ -20,6 +19,12 @@
         </div>
       </div>
     </div>
+    <div class="right waves-effect waves-light btn pink-button small-button" (click)="backupEverything.openModal()">Backup/Restore All</div>
+    <div class="right waves-effect waves-light btn pink-button small-button margin-right"
+         mzTooltip [tooltip]="'Current Backup Location: '+appService.backupPath"
+         position="bottom"
+         (click)="pickLocation.openModal()">Change Backup Location</div>
+    <br><br>
     <div class="row">
       <ng-container *ngFor="let package of myApps;">
         <app-package-item
@@ -41,6 +46,7 @@
   </mz-modal-header>
   <mz-modal-content>
     <div class="right right-align">
+      <div class="waves-effect waves-light btn green" (click)="launchApp()">Launch App</div><br><br>
       <div class="waves-effect waves-light btn orange" (click)="forceClose()">Force Close App</div><br><br>
       <div class="waves-effect waves-light btn orange " (click)="clearData()">Clear App Data</div><br><br>
       <div class="waves-effect waves-light btn red" (click)="uninstallApk()">Uninstall App</div><br><br>
@@ -55,7 +61,7 @@
     <h4>Game Data Backups</h4>
     Backup data files from your SD Card for this app/game. <br><br>Warning: some games do not store data on the SD Card and
     SideQuest <br>cannot access this data which means for some games, this process is <br>not guaranteed.<br>
-    <a class="waves-effect right waves-light btn backup-this-package" (click)="backupData()">Backup Game Data</a><br><br>
+    <a class="waves-effect right waves-light btn backup-this-package" (click)="backupData(currentPackage.package.packageName)">Backup Game Data</a><br><br>
     <div class="row" *ngFor="let backup of dataBackups">
       <div class="col s1">
         <div
@@ -77,7 +83,7 @@
 
     <h4>Backups</h4>
     Backup your APK file from your device.
-    <a class="waves-effect right waves-light btn backup-this-package" (click)="backupApk()">Backup APK File</a><br><br>
+    <a class="waves-effect right waves-light btn backup-this-package" (click)="backupApk(currentPackage.package.packageName)">Backup APK File</a><br><br>
     <div class="row" *ngFor="let backup of backups">
       <div class="col s1">
         <div
@@ -100,3 +106,76 @@
   </mz-modal-footer>
 </mz-modal>
 
+
+
+<mz-modal #backupEverything [fixedFooter]="true">
+  <mz-modal-header>
+    <h4>
+      <div class="right waves-effect waves-light btn pink-button small-button" (click)="isBackingUp = !isBackingUp;getMyBackups()">{{isBackingUp?'Change To Restore':'Change To Backup'}}</div>
+      {{isBackingUp?'Backup':'Restore'}} Everything
+    </h4>
+  </mz-modal-header>
+  <mz-modal-content>
+    {{!isBackingUp?'WARNING: This will copy the latest available backup for each app to your device including the APK and the data files. It may overwrite existing files! This cannot be undone.':''}}
+    <br *ngIf="!isBackingUp"><br *ngIf="!isBackingUp">
+    This process can take a long time to complete, please do not restart SideQuest while the operation is running. Select which apps you want to backup/restore:
+    <div class="clearfix"></div>
+    <div class="waves-effect right waves-light btn pink-button small-button" (click)="selectAll()">Select All</div>
+    <div class="waves-effect right waves-light btn pink-button small-button margin-right" (click)="deSelectAll()">Deselect All</div>
+    <div class="clearfix"></div><br>
+
+    <ng-container *ngIf="!isBackingUp">
+      <div class="row no-margin" *ngFor="let package of myBackups">
+        <div class="col s9">
+          <span class="chip">{{package.name}}</span>
+        </div>
+        <div class="col s3">
+          <div class="switch">
+            <label>
+              <input type="checkbox" [(ngModel)]="package.isRestore"/>
+              <span class="lever"></span>
+              Restore
+            </label>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="isBackingUp">
+      <div  class="row no-margin" *ngFor="let package of myApps">
+        <div class="col s9">
+          <span class="chip"><img *ngIf="package.icon" [src]="package.icon">{{package.name?package.name:package.packageName}}</span>
+        </div>
+        <div class="col s3">
+          <div class="switch">
+            <label>
+              <input type="checkbox" [(ngModel)]="package.backupAll"/>
+              <span class="lever"></span>
+              Backup
+            </label>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </mz-modal-content>
+  <mz-modal-footer>
+    <button mz-button [flat]="true" mz-modal-close>Close</button>
+    <button mz-button class="pink-button" (click)="(isBackingUp?backupAll():restoreAll()); backupEverything.closeModal()">{{isBackingUp?'Run Backup':'Run Restore'}}</button>
+  </mz-modal-footer>
+</mz-modal>
+
+
+<mz-modal #pickLocation [fixedFooter]="true">
+  <mz-modal-header>
+    <h4>Set the save location for backup data.</h4>
+  </mz-modal-header>
+  <mz-modal-content>
+    <ng-container >
+      Pick a location on your PC to save backup files:<br><br>
+      <button mz-button class="pink-button" (click)="pickBackupLocation()">Select Location</button><br><br>
+      Current Location: {{appService.backupPath}}
+    </ng-container>
+  </mz-modal-content>
+  <mz-modal-footer>
+    <button mz-button [flat]="true" mz-modal-close>Done</button>
+  </mz-modal-footer>
+</mz-modal>

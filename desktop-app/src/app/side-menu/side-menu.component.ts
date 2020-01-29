@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { WebviewService } from '../webview.service';
 import { AdbClientService } from '../adb-client.service';
 import { AppService } from '../app.service';
+import { ProcessBucketService } from '../process-bucket.service';
 
 @Component({
     selector: 'app-side-menu',
@@ -17,7 +18,8 @@ export class SideMenuComponent implements OnInit {
         public repoService: RepoService,
         private webService: WebviewService,
         private adbService: AdbClientService,
-        public appService: AppService
+        public appService: AppService,
+        public processService: ProcessBucketService
     ) {
         this.appService.hideNSFW = !!localStorage.getItem('hideNSFW');
     }

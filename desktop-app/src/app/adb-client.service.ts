@@ -30,6 +30,7 @@ export class AdbClientService {
     adbResolves: any;
     files: any;
     localFiles: any;
+    hasSynthRiderz: any;
     deviceIp: string;
     wifiEnabled: boolean;
     wifiHost: string;
@@ -44,20 +45,30 @@ export class AdbClientService {
         private webService: WebviewService,
         public processService: ProcessBucketService
     ) {
-        this.lastConnectionCheck = performance.now() - 2500;
+        this.lastConnectionCheck = performance.now() - 4000;
         this.adbPath = appService.path.join(appService.appData, 'platform-tools');
-
         this.adbResolves = {};
         this.savePath = localStorage.getItem('save-path') || this.appService.path.join(this.appService.appData, 'tmp');
         this.setSavePath();
         this.webService.isLoaded = this.sendPackages.bind(this);
-
         this.deviceIp = localStorage.getItem('deviceIp');
     }
 
+    launchApp(packageName) {
+        return this.adbCommand('shell', {
+            serial: this.deviceSerial,
+            command: 'dumpsys package ' + packageName + " | grep -A 1 'filter' | head -n 1 | cut -d ' ' -f 10",
+        }).then(res =>
+            res
+                ? this.adbCommand('shell', {
+                      serial: this.deviceSerial,
+                      command: 'am start -n ' + res.trim(),
+                  })
+                : Promise.reject('Could not find activity name for ' + packageName)
+        );
+    }
+
     installMultiFile(filepath) {
-        this.spinnerService.showLoader();
-        this.spinnerService.setMessage('Installing...');
         let extention = this.appService.path.extname(filepath);
         switch (extention) {
             case '.apk':
@@ -66,12 +77,12 @@ export class AdbClientService {
                 if (this.appService.path.basename(filepath).match(/main.[0-9]{1,}.[a-z]{1,}.[A-z]{1,}.[A-z]{1,}.obb/)) {
                     return this.installLocalObb(filepath).then(() => this.spinnerService.hideLoader());
                 } else {
-                    this.spinnerService.hideLoader();
                     return Promise.reject('Invalid OBB');
                 }
             case '.zip':
                 return this.installLocalZip(filepath, false, () => this.spinnerService.hideLoader());
         }
+        return Promise.resolve();
     }
     toggleWifiMode() {
         if (this.wifiEnabled) {
@@ -171,7 +182,12 @@ export class AdbClientService {
                 await this.getIpAddress();
                 await this.getDeviceModel();
                 this.deviceStatusMessage =
-                    'Connected -  Wifi IP: ' + (this.deviceIp || 'Not found...') + ', Battery: ' + this.batteryLevel + '% ';
+                    'Connected -  Wifi IP: ' +
+                    (this.deviceIp || 'Not found...') +
+                    ', Battery: ' +
+                    this.batteryLevel +
+                    '% ' +
+                    (this.isBatteryCharging ? ' Charging' : '');
                 this.beatonService.checkIsBeatOnRunning(this);
                 break;
             case ConnectionStatus.DISCONNECTED:
@@ -323,7 +339,7 @@ export class AdbClientService {
         });
     }
     async makeBackupFolders(packageName: string) {
-        let mainBackupPath = this.appService.path.join(this.appService.appData, 'backups', packageName);
+        let mainBackupPath = this.appService.path.join(this.appService.backupPath, packageName);
         return this.appService
             .mkdir(mainBackupPath)
             .then(() => this.appService.mkdir(this.appService.path.join(mainBackupPath, 'apks')))
@@ -331,19 +347,21 @@ export class AdbClientService {
     }
     async getBackups(packageName: string) {
         await this.makeBackupFolders(packageName);
-        let backupPath = this.appService.path.join(this.appService.appData, 'backups', packageName, 'apks');
+        let backupPath = this.appService.path.join(this.appService.backupPath, packageName, 'apks');
         return this.appService.fs
             .readdirSync(backupPath)
             .map(file => this.appService.path.join(backupPath, file))
-            .filter(file => !this.appService.fs.lstatSync(file).isDirectory() && this.appService.path.extname(file) === '.apk');
+            .filter(file => !this.appService.fs.lstatSync(file).isDirectory() && this.appService.path.extname(file) === '.apk')
+            .reverse();
     }
     async getDataBackups(packageName: string) {
         await this.makeBackupFolders(packageName);
-        let backupPath = this.appService.path.join(this.appService.appData, 'backups', packageName, 'data');
+        let backupPath = this.appService.path.join(this.appService.backupPath, packageName, 'data');
         return this.appService.fs
             .readdirSync(backupPath)
             .map(folder => this.appService.path.join(backupPath, folder))
-            .filter(folder => this.appService.fs.lstatSync(folder).isDirectory());
+            .filter(folder => this.appService.fs.lstatSync(folder).isDirectory())
+            .reverse();
     }
     async backupPackage(apkPath, packageName) {
         return this.processService.addItem('backup_package', async task => {
@@ -354,8 +372,7 @@ export class AdbClientService {
                 return Promise.reject('APK not found, is the app installed? ' + packageName);
             }
             let savePath = this.appService.path.join(
-                this.appService.appData,
-                'backups',
+                this.appService.backupPath,
                 packageName,
                 'apks',
                 this.getFilenameDate() + '_' + version.trim() + '.apk'
@@ -383,30 +400,34 @@ export class AdbClientService {
                 return Promise.reject('Apk install failed: No device connected! ' + filePath);
             }
             const showTotal = number && total ? '(' + number + '/' + total + ') ' : '';
-            task.status = showTotal + 'Installing Apk...<br>' + filePath;
+            task.status = showTotal + 'Installing Apk... ';
             return this.adbCommand('install', { serial: this.deviceSerial, path: filePath, isLocal: !!isLocal }, status => {
                 task.status =
                     (status.percent === 1
-                        ? showTotal + 'Installing Apk... : '
-                        : showTotal + 'Downloading APK... ' + Math.round(status.percent * 100) + '%') +
-                    '<span style="font-style:italic">' +
+                        ? showTotal + 'Installing Apk... '
+                        : showTotal + 'Downloading APK... ' + Math.round(status.percent * 100) + '% ') +
+                    ' <span style="font-style:italic">' +
                     filePath +
                     '</span>';
             })
                 .then(r => {
                     task.status = 'APK file installed ok!! ' + filePath;
-                    if (filePath.indexOf('com.emulamer.beaton') > -1) {
+                    if (filePath.indexOf('com.weloveoculus.BMBF') > -1) {
                         return this.beatonService.setBeatOnPermission(this);
                     }
-                    if (filePath.indexOf('Pavlov-Android-Shipping') > -1) {
-                        return this.setPermission('com.davevillz.pavlov', 'android.permission.RECORD_AUDIO');
+                    if (filePath.toLowerCase().indexOf('pavlov') > -1) {
+                        return this.setPermission('com.vankrupt.pavlov', 'android.permission.RECORD_AUDIO')
+                            .then(() => this.setPermission('com.vankrupt.pavlov', 'android.permission.READ_EXTERNAL_STORAGE'))
+                            .then(() => this.setPermission('com.vankrupt.pavlov', 'android.permission.WRITE_EXTERNAL_STORAGE'))
+                            .then(() =>
+                                this.adbCommand('shell', {
+                                    serial: this.deviceSerial,
+                                    command: 'echo Dave > /sdcard/pavlov.name.txt',
+                                })
+                            );
                     }
                 })
                 .catch(e => {
-                    if (e.code && shouldUninstall) {
-                        this.uninstallAPK('com.beatgames.beatsaber');
-                        this.installAPK(filePath, isLocal);
-                    }
                     return Promise.reject(e.message ? e.message : e.code ? e.code : e.toString() + ' ' + filePath);
                 });
         });
@@ -486,21 +507,25 @@ export class AdbClientService {
     async uploadFile(files, task) {
         if (!files.length) return;
         let f: any = files.shift();
+        task.status = 'Uploading: ' + this.appService.path.basename(f.name);
         return this.adbCommand('push', { serial: this.deviceSerial, path: f.name, savePath: f.savePath }, stats => {
             task.status = 'File uploading: ' + f.name + ' ' + Math.round((stats.bytesTransferred / 1024 / 1024) * 100) / 100 + 'MB';
         }).then(r => this.uploadFile(files, task));
     }
+    async launchYurOverlay() {
+        await this.adbCommand('shell', {
+            serial: this.deviceSerial,
+            command: 'am force-stop com.oculus.vrshell',
+        });
+        await this.adbCommand('shell', {
+            serial: this.deviceSerial,
+            command: 'am startservice com.yur.fitquest/.service.YURCounterService',
+        });
+    }
     async restoreDataBackup(packageName: string, folderName: string) {
         return this.processService.addItem('restore_files', async task => {
             task.status = 'Restoring Files...';
-            let packageBackupPath = this.appService.path.join(
-                this.appService.appData,
-                'backups',
-                packageName,
-                'data',
-                folderName,
-                'files'
-            );
+            let packageBackupPath = this.appService.path.join(this.appService.backupPath, packageName, 'data', folderName, 'files');
             if (this.appService.fs.existsSync(packageBackupPath)) {
                 this.localFiles = [];
                 await this.getLocalFoldersRecursive(packageBackupPath)
@@ -516,16 +541,10 @@ export class AdbClientService {
                         });
                         return this.uploadFile(this.localFiles.filter(f => f.__isFile), task);
                     })
-                    .then(() => this.spinnerService.hideLoader());
+                    .then(() => this.spinnerService.hideLoader())
+                    .then(() => (task.status = 'Restored game data backup OK!! ' + packageName + ' | ' + folderName));
             }
-            let obbBackupPath = this.appService.path.join(
-                this.appService.appData,
-                'backups',
-                packageName,
-                'data',
-                folderName,
-                'obb'
-            );
+            let obbBackupPath = this.appService.path.join(this.appService.backupPath, packageName, 'data', folderName, 'obb');
             if (this.appService.fs.existsSync(obbBackupPath)) {
                 this.appService.fs.readdir(obbBackupPath, async (err, entries) => {
                     for (let i = 0; i < entries.length; i++) {
@@ -555,7 +574,7 @@ export class AdbClientService {
         return this.processService.addItem('save_files', async task => {
             task.status = 'Starting Backup...';
             let folderName = this.getFilenameDate();
-            let packageBackupPath = this.appService.path.join(this.appService.appData, 'backups', packageName, 'data', folderName);
+            let packageBackupPath = this.appService.path.join(this.appService.backupPath, packageName, 'data', folderName);
             this.files = [];
             await this.makeBackupFolders(packageName);
             await this.adbCommand('stat', { serial: this.deviceSerial, path: '/sdcard/Android/data/' + packageName })
@@ -565,6 +584,10 @@ export class AdbClientService {
                         path: '/sdcard/Android/data/' + packageName + '/files/',
                     })
                 )
+                .catch(e => {
+                    task.status = 'Skipped: ' + e;
+                    task.failed = false;
+                })
                 .then(() => {
                     return this.getFoldersRecursive('/sdcard/Android/data/' + packageName + '/files/')
                         .then(() => this.appService.mkdir(packageBackupPath))
@@ -583,10 +606,11 @@ export class AdbClientService {
                         .then(() => this.downloadFile(this.files.filter(f => f.__isFile), task));
                 });
             return this.adbCommand('stat', { serial: this.deviceSerial, path: '/sdcard/Android/obb/' + packageName })
+                .catch(e => console.log(e))
                 .then(() => this.appService.mkdir(this.appService.path.join(packageBackupPath, 'obb')))
                 .then(() => this.getFolders('/sdcard/Android/obb/' + packageName))
-                .then(files =>
-                    files
+                .then(files => {
+                    return files
                         .map(f => {
                             f.name = this.appService.path.posix.join('/sdcard/Android/obb/' + packageName, f.name);
                             f.saveName = this.appService.path.join(
@@ -596,8 +620,8 @@ export class AdbClientService {
                             );
                             return f;
                         })
-                        .filter(f => f.__isFile)
-                )
+                        .filter(f => f.__isFile);
+                })
                 .then(files => this.downloadFile(files, task))
                 .then(() => {
                     task.status = 'Data for app ' + packageName + ' backed up to ' + packageBackupPath;
@@ -610,7 +634,7 @@ export class AdbClientService {
     }
     async getFolders(root) {
         return this.adbCommand('readdir', { serial: this.deviceSerial, path: root }).catch(e =>
-            this.statusService.showStatus(e.toString(), true)
+            this.statusService.showStatus('Error: ' + e.toString() + ' while reading path ' + root, true)
         );
     }
     installFile(url, destinationFolder: string, number?: number, total?: number) {
@@ -685,6 +709,24 @@ export class AdbClientService {
         }
         return p;
     }
+    installZip(url, number?: number, total?: number) {
+        return this.processService.addItem('file_install', async task => {
+            return this.appService
+                .downloadFile(
+                    url,
+                    url,
+                    url,
+                    downloadUrl => {
+                        return this.appService.path.join(this.appService.appData, 'download.zip');
+                    },
+                    task
+                )
+                .then(() => (task.status = 'File Downloaded OK!'))
+                .then((_path: string) =>
+                    this.installLocalZip(this.appService.path.join(this.appService.appData, 'download.zip'), false, () => {}, task)
+                );
+        });
+    }
     installObb(url, number?: number, total?: number) {
         return this.processService.addItem('file_install', async task => {
             return this.appService
@@ -693,7 +735,14 @@ export class AdbClientService {
                     url,
                     url,
                     downloadUrl => {
-                        return this.appService.path.join(this.appService.appData, downloadUrl.split('/').pop());
+                        return this.appService.path.join(
+                            this.appService.appData,
+                            downloadUrl
+                                .split('/')
+                                .pop()
+                                .split('?')
+                                .shift()
+                        );
                     },
                     task
                 )
@@ -745,49 +794,65 @@ export class AdbClientService {
         });
         if (!dontCatchError && !task) {
             p = p.catch(e => {
-                console.log('here');
                 this.spinnerService.hideLoader();
                 this.statusService.showStatus(e.toString(), true);
             });
         }
         return p;
     }
-    installLocalZip(filepath, dontCatchError, cb) {
+    async installLocalZip(filepath, dontCatchError, cb, task?) {
         const typeBasedActions = {
-            '.apk': function(filepath, bind) {
+            '.apk': filepath => {
                 this.installAPK(filepath, true);
             },
-            '.obb': function(filepath, bind) {
+            '.obb': filepath => {
                 if (this.appService.path.basename(filepath).match(/main.[0-9]{1,}.[a-z]{1,}.[A-z]{1,}.[A-z]{1,}.obb/)) {
-                    this.installLocalObb(filepath);
+                    this.processService.addItem('file_install', async task => {
+                        return this.installLocalObb(filepath, false, null, 1, 1, task);
+                    });
                 } else {
                     console.log('Invalid OBB');
                 }
             },
         };
 
-        this.cleanUpFolder();
-        this.appService.extract(filepath, { dir: this.appService.path.join(this.appService.appData, 'tmp') }, extractErr => {
-            if (!extractErr) {
-                console.log('Extracted Zip');
-                this.appService.fs.readdir(this.appService.path.join(this.appService.appData, 'tmp'), (readErr, files) => {
-                    let installableFiles = Object.keys(files).filter((val, index) => {
-                        return Object.keys(typeBasedActions).includes(this.appService.path.extname(files[index]));
-                    });
-                    installableFiles.forEach(file => {
-                        typeBasedActions[this.appService.path.extname(filepath)](filepath, this);
-                    });
-                });
-            } else {
-                console.warn(extractErr);
+        //this.cleanUpFolder();
+        return new Promise(resolve => {
+            if (task) {
+                task.status = 'Extracting zip file download...';
             }
+            this.appService.extract(filepath, { dir: this.appService.path.join(this.appService.appData, 'tmp') }, extractErr => {
+                if (!extractErr) {
+                    if (task) {
+                        task.status = 'Extracted Zip!';
+                    }
+                    resolve();
+                    this.appService.fs.readdir(this.appService.path.join(this.appService.appData, 'tmp'), (readErr, files) => {
+                        let installableFiles = files.filter((val, index) => {
+                            return Object.keys(typeBasedActions).includes(this.appService.path.extname(val));
+                        });
+
+                        installableFiles.sort(function(a, b) {
+                            return a.endsWith('.apk') ? -1 : 1;
+                        });
+                        installableFiles.forEach(file => {
+                            typeBasedActions[this.appService.path.extname(file)](
+                                this.appService.path.join(this.appService.appData, 'tmp', file),
+                                this
+                            );
+                        });
+                    });
+                } else {
+                    console.warn(extractErr);
+                }
+            });
+            cb();
         });
-        cb();
     }
     cleanUpFolder(folderPath = this.appService.path.join(this.appService.appData, 'tmp')) {
         this.appService.fs.readdir(folderPath, (readErr, files) => {
             files.forEach((val, index) => {
-                this.appService.fs.unlink(folderPath + val, delErr => {
+                this.appService.fs.unlink(this.appService.path.join(folderPath, val), delErr => {
                     if (delErr) {
                         console.warn(delErr);
                     }

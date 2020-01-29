@@ -127,53 +127,65 @@ module.exports = class ADB {
         this.client
             .readdir(serial, path)
             .then(res =>
-                res.map(r => {
-                    r.__isFile = r.isFile();
-                    return r;
-                })
+                res
+                    .map(r => {
+                        r.__isFile = r.isFile();
+                        return r;
+                    })
+                    .filter(r => !(r.__isFile && r.name.lastIndexOf('\\') > -1))
             )
             .then(res => cb(res))
             .catch(e => ecb(e));
     }
     push(serial, path, savePath, cb, scb, ecb) {
         if (!this.client) return ecb('Not connected.');
-        this.client.push(serial, fs.createReadStream(path), savePath).then(transfer => {
-            let _stats, autocancel;
-            const interval = setInterval(() => {
-                scb(_stats);
-            }, 1000);
-            transfer.on('progress', stats => {
-                clearTimeout(autocancel);
-                _stats = stats;
-                autocancel = setTimeout(() => {
+        this.client
+            .push(serial, fs.createReadStream(path), savePath)
+            .then(transfer => {
+                let _stats, autocancel;
+                const interval = setInterval(() => {
+                    scb(_stats);
+                }, 1000);
+                transfer.on('progress', stats => {
+                    clearTimeout(autocancel);
+                    _stats = stats;
+                    autocancel = setTimeout(() => {
+                        clearInterval(interval);
+                        cb();
+                    }, 90000);
+                });
+                transfer.on('end', () => {
+                    clearTimeout(autocancel);
                     clearInterval(interval);
                     cb();
-                }, 40000);
-            });
-            transfer.on('end', () => {
-                clearTimeout(autocancel);
-                clearInterval(interval);
-                cb();
-            });
-            transfer.on('error', e => {
+                });
+                transfer.on('error', e => {
+                    ecb(e);
+                });
+            })
+            .catch(e => {
                 ecb(e);
             });
-        });
     }
     pull(serial, path, savePath, cb, scb, ecb) {
         if (!this.client) return ecb('Not connected.');
-        this.client.pull(serial, path).then(transfer => {
-            transfer.on('progress', stats => {
-                scb(stats);
-            });
-            transfer.on('end', () => {
-                cb();
-            });
-            transfer.on('error', e => {
+        this.client
+            .pull(serial, path)
+            .then(transfer => {
+                transfer.on('progress', stats => {
+                    scb(stats);
+                });
+                transfer.on('end', () => {
+                    cb();
+                });
+                transfer.on('error', e => {
+                    ecb(e);
+                });
+                transfer.pipe(fs.createWriteStream(savePath));
+            })
+            .catch(e => {
                 ecb(e);
             });
-            transfer.pipe(fs.createWriteStream(savePath));
-        });
     }
     stat(serial, path, cb, ecb) {
         if (!this.client) return ecb('Not connected.');

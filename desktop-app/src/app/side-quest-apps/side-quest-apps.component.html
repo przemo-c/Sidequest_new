@@ -1,14 +1,23 @@
-<div class="row" *ngIf="isLoaded">
-  <div class="col s6 l3"  *ngFor="let app of this.apps">
-    <app-side-quest-card [app]="app" [index]="currentRepo"></app-side-quest-card>
+<div class="row">
+  <div class="col s12">
+    <div (click)="back()" class="waves-effect waves-light btn pink-button">
+      Back
+    </div>
   </div>
-</div>
-<div class="row" *ngIf="!isLoaded">
-  <div class="col s12 center-align">
-    <br><br><br><br><br><br><br><br>
-    <app-loading-spinner-small></app-loading-spinner-small>
-    <br>
-    <div class="section-title" [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">Loading...</div>
+  <div class="col s12">
+    <div class="row" *ngIf="isLoaded">
+      <div class="col s6 l3"  *ngFor="let app of this.apps">
+        <app-side-quest-card [app]="app" [index]="currentRepo"></app-side-quest-card>
+      </div>
+    </div>
+    <div class="row" *ngIf="!isLoaded">
+      <div class="col s12 center-align">
+        <br><br><br><br><br><br><br><br>
+        <app-loading-spinner-small></app-loading-spinner-small>
+        <br>
+        <div class="section-title" [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">Loading...</div>
 
+      </div>
+    </div>
   </div>
 </div>

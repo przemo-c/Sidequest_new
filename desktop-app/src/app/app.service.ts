@@ -26,6 +26,9 @@ export class AppService {
     updateAvailable: boolean;
     showRepo: boolean;
     isFilesOpen: boolean;
+    isPackagesOpen: boolean;
+    isSettingsOpen: boolean;
+    isTasksOpen: boolean;
     hideNSFW: boolean;
     filesComponent: FilesComponent;
 
@@ -51,8 +54,10 @@ export class AppService {
     titleEle: HTMLElement;
     webService: WebviewService;
     currentTheme: string = 'dark';
-    versionName: string = '0.7.1';
+    versionName: string = '0.8.7';
     showBack: boolean = false;
+    backupPath: string;
+    scrcpyBinaryPath: string;
     constructor(private spinnerService: LoadingSpinnerService) {
         this.path = (<any>window).require('path');
         this.fs = (<any>window).require('fs');
@@ -73,12 +78,19 @@ export class AppService {
         this.execSync = (<any>window).require('child_process').execSync;
         this.uuidv4 = (<any>window).require('uuid/v4');
         this.ping = (<any>window).require('ping');
-        this.makeFolders().then(() => this.spinnerService.hideLoader());
+        this.makeFolders()
+            .then(() => this.downloadScrCpyBinary())
+            .then(() => this.spinnerService.hideLoader());
         let theme = localStorage.getItem('theme');
         if (theme && theme === 'light') {
             this.currentTheme = 'light';
         }
         this.hideNSFW = !!localStorage.getItem('hideNSFW');
+        this.backupPath = localStorage.getItem('backup-path');
+        if (!this.backupPath) {
+            this.backupPath = this.path.join(this.appData, 'backups');
+            localStorage.setItem('backup-path', this.backupPath);
+        }
     }
 
     getBase64Image(imagePath: string) {
@@ -97,6 +109,9 @@ export class AppService {
         this.showTaskActions = false;
         this.showRepo = false;
         this.isFilesOpen = false;
+        this.isPackagesOpen = false;
+        this.isSettingsOpen = false;
+        this.isTasksOpen = false;
     }
     doesFileExist(path) {
         try {
@@ -157,7 +172,7 @@ export class AppService {
                 this.electron.shell.openItem(this.path.join(this.appData, 'saber-quest-patch', 'questsaberpatch'));
                 break;
             case FolderType.APP_BACKUP:
-                this.electron.shell.openItem(this.path.join(this.appData, 'backups', packageName));
+                this.electron.shell.openItem(this.path.join(this.backupPath, packageName));
                 break;
             case FolderType.SONG_FOLDER:
                 this.electron.shell.openItem(this.path.join(this.appData, 'bsaber', packageName));
@@ -181,6 +196,7 @@ export class AppService {
             .then(() => this.mkdir(this.path.join(this.appData, 'bsaber-data-backups')))
             .then(() => this.mkdir(this.path.join(this.appData, 'bsaber')))
             .then(() => this.mkdir(this.path.join(this.appData, 'saber-quest-patch')))
+            .then(() => this.mkdir(this.path.join(this.appData, 'scrcpy')))
             .then(() => {});
     }
     async mkdir(path) {
@@ -245,6 +261,62 @@ export class AppService {
         const packageString = 'OpenStoreVR';
         const computerString = `Hostname/${this.os.hostname()} Platform/${this.os.platform()} PlatformVersion/${this.os.release()}`;
         return `${packageString} ${nodeString} ${computerString}`;
+    }
+
+    runScrCpy(options: any) {
+        return new Promise((resolve, reject) => {
+            let command =
+                '"' +
+                this.scrcpyBinaryPath +
+                '" --crop ' +
+                options.crop +
+                ' ' +
+                ' -b ' +
+                options.bit_rate +
+                ' ' +
+                (options.max_size ? ' --max-fps ' + options.max_fps + ' ' : '') +
+                (options.max_size ? ' --max-size ' + options.max_size + ' ' : '') +
+                (options.always_on_top ? '--always-on-top' : '') +
+                ' ' +
+                (options.fullscreen ? '-f' : '') +
+                ' ' +
+                (options.no_control ? '-n' : '') +
+                ' --window-title "SideQuest Stream"';
+            console.log(command);
+            this.exec(command, function(err, stdout, stderr) {
+                if (err) {
+                    return reject({ err, stderr, command });
+                }
+                resolve(stdout);
+            });
+        });
+    }
+
+    downloadScrCpyBinary() {
+        if (this.os.platform() === 'win32') {
+            let url = 'https://github.com/Genymobile/scrcpy/releases/download/v1.11/scrcpy-win64-v1.11.zip';
+            let downloadPath = this.path.join(this.appData, 'scrcpy', 'scrcpy.exe');
+            if (this.doesFileExist(downloadPath)) {
+                this.scrcpyBinaryPath = downloadPath;
+                return Promise.resolve();
+            }
+            return new Promise<void>((resolve, reject) => {
+                this.downloadFile(url, url, url, () => {
+                    return this.path.join(this.appData, 'scrcpy.zip');
+                }).then((path: any) => {
+                    let callback = error => {
+                        if (error) return reject(error);
+                        this.fs.unlink(path, err => {
+                            // if(err) return reject(err);
+                            resolve(path.split('.')[0]);
+                        });
+                    };
+
+                    this.extract(path, { dir: this.path.join(this.appData, 'scrcpy') }, callback);
+                    this.scrcpyBinaryPath = downloadPath;
+                });
+            });
+        }
     }
     deleteFolderRecursive(path) {
         if (this.fs.existsSync(path)) {

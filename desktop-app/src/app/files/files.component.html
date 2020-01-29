@@ -1,5 +1,6 @@
-<br><br><br>
+
 <div *ngIf="isConnected()">
+  <br><br><br>
   <nav class="pink lighten-2 breadcrumb-wrapper ">
     <div class="nav-wrapper container">
       <div class="col s12">
@@ -51,11 +52,11 @@
         class="btn-floating purple"><i class="material-icons">insert_drive_file</i></a></li>
     <li mz-tooltip position="left" tooltip="Make folder in this folder" (click)="mkDirModal.openModal()"><a
         class="btn-floating blue"><i class="material-icons">folder</i></a></li>
+    <li mz-tooltip position="left" tooltip="Open current save location" (click)="openSaveLocation()"><a
+        class="btn-floating yellow darken-2"><i class="material-icons">folder</i></a></li>
     <li *ngIf="selectedFiles.length > 0" mz-tooltip position="left" tooltip="Delete selected items"
       (click)="filesToBeDeleted = selectedFiles; confirmModal.openModal()"><a class="btn-floating red darken-2"><i
           class="material-icons">delete</i></a></li>
-    <li mz-tooltip position="left" tooltip="Open current save location" (click)="openSaveLocation()"><a
-        class="btn-floating yellow darken-2"><i class="material-icons">folder</i></a></li>
     <li *ngIf="quickSaveSupported()" mz-tooltip position="left" tooltip="Save screenshots and recordings"
       (click)="downloadMediaModal.openModal()"><a class="btn-floating green"><i class="material-icons">get_app</i></a>
     </li>
@@ -72,7 +73,7 @@
   <mz-modal-content>
     Please enter a folder name.
     <div class="input-field ">
-      <input id="devicePaste" type="text" [(ngModel)]="folderName" />
+      <input id="devicePaste" type="text" [(ngModel)]="folderName" autofocus/>
       <label for="devicePaste">Folder Name</label>
     </div>
   </mz-modal-content>
@@ -93,7 +94,7 @@
             <div>
               <i class="material-icons cursor orange-text drag-indicator"
                 (click)="filesToBeSaved.splice(filesToBeSaved.indexOf(file), 1);
-                clearSelection(file);
+                clearSelection([file]);
                 filesToBeSaved.length === 0 && filesModal.closeModal()">close</i>
               {{file.name}}
             </div>
@@ -107,7 +108,7 @@
   </mz-modal-content>
   <mz-modal-footer>
     <button mz-button [flat]="true" mz-modal-close>Close</button>
-    <button mz-button class="pink-button" mz-modal-close (click)="saveFiles(filesToBeSaved); filesToBeSaved.length === 1 ? filesToBeSaved.splice(filesToBeSaved[0], 1) : clearSelection()">Save To PC</button>
+    <button mz-button class="pink-button" mz-modal-close (click)="saveFiles(filesToBeSaved); clearSelection(filesToBeSaved)">Save To PC</button>
   </mz-modal-footer>
 </mz-modal>
 
@@ -141,7 +142,7 @@
             <div>
               <i class="material-icons cursor orange-text drag-indicator"
                 (click)="filesToBeDeleted.splice(filesToBeDeleted.indexOf(file), 1);
-                clearSelection(file);
+                clearSelection([file]);
                 filesToBeDeleted.length === 0 && confirmModal.closeModal()">close</i>
               {{file.name}}
             </div>
@@ -152,6 +153,6 @@
   </mz-modal-content>
   <mz-modal-footer>
     <button mz-button [flat]="true" mz-modal-close>Close</button>
-    <button mz-button class="red" mz-modal-close (click)="deleteFiles(filesToBeDeleted); clearSelection()">Delete Items</button>
+    <button mz-button class="red" mz-modal-close (click)="deleteFiles(filesToBeDeleted); clearSelection(filesToBeDeleted)">Delete Items</button>
   </mz-modal-footer>
 </mz-modal>

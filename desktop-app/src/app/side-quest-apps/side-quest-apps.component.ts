@@ -64,4 +64,7 @@ export class SideQuestAppsComponent implements OnInit {
     ngOnDestroy() {
         if (this.sub) this.sub.unsubscribe();
     }
+    back() {
+        (window as any).history.back();
+    }
 }

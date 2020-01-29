@@ -33,8 +33,6 @@ export class AppComponent {
     ngOnInit() {
         this.adbService
             .setupAdb()
-            // .then(() => this.bsaberSerivce.downloadQSP())
-            // .then(() => this.adbService.setupAdb())
             .then(() => this.adbService.connectedStatus())
             .then(() => this.bsaberSerivce.getMySongs())
             .then(() => (this.bsaberSerivce.jSon = this.bsaberSerivce.getAppJson()))
@@ -42,9 +40,11 @@ export class AppComponent {
                 if (!localStorage.getItem('first_run')) {
                     localStorage.setItem('first_run', 'true');
                     this.statusService.showStatus(
-                        'Thanks for downloading SideQuest! Please check the Setup & How To on the top right for a one time setup!'
+                        'Thanks for downloading SideQuest! Please click "Setup" on the top menu to begin and then "Sign Up" to get app updates, remote installing and more!'
                     );
                 }
+
+                this.dragService.setupDragAndDrop(this.webview.nativeElement);
             });
     }
     ngAfterViewInit() {

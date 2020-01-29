@@ -119,4 +119,7 @@ export class SideQuestDetailComponent implements OnInit {
         this.app = null;
         this.getRepo();
     }
+    back() {
+        (window as any).history.back();
+    }
 }

@@ -57,7 +57,7 @@ export class BeatOnService {
                         adbService
                             .adbCommand('installRemote', {
                                 serial: adbService.deviceSerial,
-                                path: '/sdcard/Android/data/com.emulamer.beaton/cache/beatsabermod.apk',
+                                path: '/sdcard/Android/data/com.weloveoculus.BMBF/cache/beatsabermod.apk',
                             })
                             .then(() =>
                                 adbService.setPermission('com.beatgame.beatsaber', 'android.permission.WRITE_EXTERNAL_STORAGE')
@@ -67,7 +67,7 @@ export class BeatOnService {
                             )
                             .then(() => {
                                 this.spinnerService.hideLoader();
-                                this.statusService.showStatus('Beat On Installed!');
+                                this.statusService.showStatus('Installed!');
                             })
                             .catch(e => {
                                 this.spinnerService.hideLoader();
@@ -101,7 +101,7 @@ export class BeatOnService {
         return adbService
             .adbCommand('shell', {
                 serial: adbService.deviceSerial,
-                command: 'pidof com.emulamer.beaton',
+                command: 'pidof com.weloveoculus.BMBF',
             })
             .then(res => {
                 this.beatOnEnabled = !!res;
@@ -116,11 +116,11 @@ export class BeatOnService {
             })
             .catch(e => {
                 console.log(e);
-                this.statusService.showStatus(
-                    'Your PC and quest should be on the same network! Try to Ping your Quest IP address. ' +
-                        (e.message ? e.message : e.code ? e.code : e.toString()),
-                    true
-                );
+                // this.statusService.showStatus(
+                //     'Your PC and quest should be on the same network! Try to Ping your Quest IP address. ' +
+                //         (e.message ? e.message : e.code ? e.code : e.toString()),
+                //     true
+                // );
             });
     }
     async syncSongs(adbService) {
@@ -149,7 +149,7 @@ export class BeatOnService {
                 .then(() => {
                     setTimeout(() => {
                         this.spinnerService.hideLoader();
-                        this.statusService.showStatus('Songs synced to Beat On OK!');
+                        this.statusService.showStatus('Songs synced OK!');
                     }, 5000);
                 });
         }
@@ -159,12 +159,12 @@ export class BeatOnService {
         return adbService
             .adbCommand('shell', {
                 serial: adbService.deviceSerial,
-                command: 'pm grant com.emulamer.beaton android.permission.READ_EXTERNAL_STORAGE',
+                command: 'pm grant com.weloveoculus.BMBF android.permission.READ_EXTERNAL_STORAGE',
             })
             .then(() =>
                 adbService.adbCommand('shell', {
                     serial: adbService.deviceSerial,
-                    command: 'pm grant com.emulamer.beaton android.permission.WRITE_EXTERNAL_STORAGE',
+                    command: 'pm grant com.weloveoculus.BMBF android.permission.WRITE_EXTERNAL_STORAGE',
                 })
             );
     }
@@ -216,7 +216,7 @@ export class BeatOnService {
                 timeout: 30000,
                 'User-Agent': this.appService.getUserAgent(),
             };
-            task.status = 'Saving to BeatOn...';
+            task.status = 'Saving to BMBF...';
             return new Promise((resolve, reject) => {
                 if (
                     adbService.deviceIp &&
@@ -232,7 +232,7 @@ export class BeatOnService {
                             reject(error);
                         })
                         .on('progress', state => {
-                            task.status = 'Saving to BeatOn... ' + Math.round(state.percent * 100) + '%';
+                            task.status = 'Saving to BMBF... ' + Math.round(state.percent * 100) + '%';
                         })
                         .on('end', () => {
                             let formData = {
@@ -286,7 +286,9 @@ export class BeatOnService {
                 } else {
                     reject(
                         new Error(
-                            'BeatOn not installed / enabled. Please enable Beat On and ensure your on the same wifi as your headset.'
+                            'Cant reach the unicorns, this is most lightly caused by a network issue. Please open BeatOn/BMBF inside the headset or from a browser at http://' +
+                                adbService.deviceIp +
+                                ':50000.'
                         )
                     );
                 }

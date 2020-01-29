@@ -35,9 +35,10 @@ export class LoadingSpinnerService {
         }
     }
     setupConfirm() {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             this.spinner.isConfirm = true;
             this.spinner.confirmResolve = resolve;
+            this.spinner.confirmReject = reject;
         });
     }
 }

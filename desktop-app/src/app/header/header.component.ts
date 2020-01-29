@@ -14,6 +14,7 @@ interface ReplaceText {
     key: string;
     value: string;
 }
+declare const process;
 @Component({
     selector: 'app-header',
     templateUrl: './header.component.html',
@@ -22,6 +23,7 @@ interface ReplaceText {
 export class HeaderComponent implements OnInit {
     @ViewChild('header', { static: false }) header;
     @ViewChild('syncSongsModal', { static: false }) syncSongsModal;
+    @ViewChild('bookmarksModal', { static: false }) bookmarksModal;
     @ViewChild('installAPKModal', { static: false }) installAPKModal;
     @ViewChild('autoFixModal', { static: false }) autoFixModal;
     @ViewChild('beatOnModal', { static: false }) beatOnModal;
@@ -40,6 +42,17 @@ export class HeaderComponent implements OnInit {
     qspResponse: QuestSaberPatchResponseJson;
     adbCommandToRun: string;
     adbResponse: string;
+    osPlatform: string;
+    scrcpy_options: any = {
+        always_on_top: false,
+        bit_rate: '8000000',
+        crop: '1280:720:1500:550',
+        no_control: true,
+        fullscreen: false,
+        max_size: '0',
+        max_fps: '0',
+    };
+
     constructor(
         public adbService: AdbClientService,
         public appService: AppService,
@@ -52,8 +65,21 @@ export class HeaderComponent implements OnInit {
         public dragAndDropService: DragAndDropService,
         public router: Router,
         public processService: ProcessBucketService
-    ) {}
+    ) {
+        this.osPlatform = this.appService.os.platform();
+    }
+
     ngOnInit() {}
+
+    connectWifi() {
+        this.adbCommandToRun = 'adb tcpip 5555';
+        this.runAdbCommand().then(() => {
+            setTimeout(() => {
+                this.adbCommandToRun = 'adb connect ' + this.adbService.deviceIp + ':5555';
+                this.runAdbCommand();
+            }, 5000);
+        });
+    }
 
     runAdbCommand() {
         this.adbResponse = 'Loading...';
@@ -61,7 +87,7 @@ export class HeaderComponent implements OnInit {
         if (command.substr(0, 3).toLowerCase() === 'adb') {
             command = command.substr(3);
         }
-        new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             this.appService.exec(
                 '"' + this.appService.path.join(this.adbService.adbPath, this.adbService.getAdbBinary()) + '" ' + command,
                 function(err, stdout, stderr) {
@@ -80,12 +106,38 @@ export class HeaderComponent implements OnInit {
                 this.statusService.showStatus(e, true);
             });
     }
+
     isConnected() {
         return this.adbService.deviceStatus === ConnectionStatus.CONNECTED;
     }
+
+    updateAvailable() {
+        if (process.platform == 'win32') {
+            this.spinnerService.setMessage('Downloading update...');
+            this.spinnerService.showLoader();
+            this.appService.electron.ipcRenderer.send('automatic-update', {});
+        } else {
+            this.appService.opn('https://sidequestvr.com/#/download');
+        }
+    }
+
+    runscrcpy() {
+        this.appService
+            .runScrCpy(this.scrcpy_options)
+            .then(() => this.statusService.showStatus('Stream closed.'))
+            .catch(e => this.statusService.showStatus('ScrCpy Error: ' + JSON.stringify(e), true));
+    }
+
+    gogo(e) {
+        if (e.keyCode === 13) {
+            this.webService.loadUrl(this.webService.currentAddress);
+            this.bookmarksModal.closeModal();
+        }
+    }
+
     ngAfterViewInit() {
-        this.appService.setTitleEle(this.header.nativeElement);
-        this.dragAndDropService.setupDragAndDrop(this.mainLogo.nativeElement);
+        //this.appService.setTitleEle(this.header.nativeElement);
+        //this.dragAndDropService.setupDragAndDrop(this.mainLogo.nativeElement);
     }
     getConnectionCssClass() {
         return {
@@ -124,18 +176,12 @@ export class HeaderComponent implements OnInit {
                 defaultPath: this.adbService.savePath,
             },
             files => {
-                files.forEach(f => {
-                    let filepath = f;
-                    this.spinnerService.setMessage(`Installing ${filepath}, Please wait...`);
+                files.forEach(filepath => {
                     let install = this.adbService.installMultiFile(filepath);
                     if (install) {
-                        install
-                            .then(() => {
-                                this.statusService.showStatus('Installed APK File: ' + filepath, false);
-                            })
-                            .catch(e => {
-                                this.statusService.showStatus(e.toString(), true);
-                            });
+                        install.catch(e => {
+                            this.statusService.showStatus(e.toString(), true);
+                        });
                     }
                 });
             }
@@ -157,10 +203,10 @@ export class HeaderComponent implements OnInit {
 
     confirmRestore() {
         this.spinnerService.showLoader();
-        this.spinnerService.setMessage('Restoring BeatOn<br>Please Wait...');
+        this.spinnerService.setMessage('Restoring BMBF<br>Please Wait...');
         this.beatonService.confirmRestore(this.adbService).then(r => {
             this.spinnerService.hideLoader();
-            this.statusService.showStatus('BeatOn Restored Successfully!!');
+            this.statusService.showStatus('BMBF Restored Successfully!!');
             this.beatOnModal.openModal();
             this.beatonService.checkHasRestore(this.adbService);
         });
@@ -307,13 +353,13 @@ export class HeaderComponent implements OnInit {
             this.adbService
                 .adbCommand('shell', {
                     serial: this.adbService.deviceSerial,
-                    command: 'am startservice com.emulamer.beaton/com.emulamer.BeatOnService',
+                    command: 'am startservice com.weloveoculus.BMBF/com.weloveoculus.BMBFService',
                 })
                 // .then(() =>
                 //   this.adbService.adbCommand('shell', {
                 //     serial: this.adbService.deviceSerial,
                 //     command:
-                //       'am start -S -W -a android.intent.action.VIEW -c android.intent.category.LEANBACK_LAUNCHER -n com.oculus.vrshell/com.oculus.vrshell.MainActivity -d com.oculus.tv --es "uri" "com.emulamer.beaton/com.emulamer.beaton.MainActivity"',
+                //       'am start -S -W -a android.intent.action.VIEW -c android.intent.category.LEANBACK_LAUNCHER -n com.oculus.vrshell/com.oculus.vrshell.MainActivity -d com.oculus.tv --es "uri" "com.weloveoculus.BMBF/com.weloveoculus.BMBF.MainActivity"',
                 //   })
                 // )
                 .then(r => {
@@ -337,7 +383,7 @@ export class HeaderComponent implements OnInit {
                 .then(() =>
                     this.adbService.adbCommand('shell', {
                         serial: this.adbService.deviceSerial,
-                        command: 'am force-stop com.emulamer.beaton',
+                        command: 'am force-stop com.weloveoculus.BMBF',
                     })
                 )
                 .then(r => {})
@@ -352,7 +398,7 @@ export class HeaderComponent implements OnInit {
                 return this.beatonService.checkIsBeatOnRunning(this.adbService);
             }, 5000);
         } else {
-            if (~this.adbService.devicePackages.indexOf('com.emulamer.beaton')) {
+            if (~this.adbService.devicePackages.indexOf('com.weloveoculus.BMBF')) {
                 await this.launchBeatOn();
                 this.beatonService.checkHasRestore(this.adbService);
             } else {
@@ -375,7 +421,7 @@ export class HeaderComponent implements OnInit {
                 this.beatOnLoading = true;
                 setTimeout(() => {
                     this.adbService.getPackages().then(async () => {
-                        if (~this.adbService.devicePackages.indexOf('com.emulamer.beaton')) {
+                        if (~this.adbService.devicePackages.indexOf('com.weloveoculus.BMBF')) {
                             await this.setBeatOnPermission();
                             await this.launchBeatOn();
                             setTimeout(() => {

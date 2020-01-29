@@ -4,6 +4,7 @@ import { AdbClientService } from '../adb-client.service';
 import { LoadingSpinnerService } from '../loading-spinner.service';
 import { StatusBarService } from '../status-bar.service';
 import { BsaberService } from '../bsaber.service';
+import { RepoService } from '../repo.service';
 enum FFR {
     OFF,
     LOW,
@@ -34,6 +35,11 @@ enum SVR {
     _1024,
     _1536,
 }
+enum CR {
+    _480,
+    _720,
+    _1080,
+}
 enum SVB {
     _5Mbps,
     _15Mbps,
@@ -54,16 +60,20 @@ export class ToolsComponent implements OnInit {
     SVB = SVB;
     SSO = SSO;
     CA = CA;
+    CR = CR;
     GPU = GPU;
+    pavlovName;
     constructor(
         public appService: AppService,
         public adbService: AdbClientService,
         private spinnerService: LoadingSpinnerService,
         private statusService: StatusBarService,
-        private bsaberService: BsaberService
+        private bsaberService: BsaberService,
+        public repoService: RepoService
     ) {
         this.appService.resetTop();
         appService.webService.isWebviewOpen = false;
+        appService.isSettingsOpen = true;
     }
 
     ngOnInit() {
@@ -200,7 +210,6 @@ export class ToolsComponent implements OnInit {
                 value = 25000000;
                 break;
         }
-
         this.adbService
             .adbCommand('setProperties', {
                 serial: this.adbService.deviceSerial,
@@ -211,8 +220,41 @@ export class ToolsComponent implements OnInit {
                 this.statusService.showStatus('Video Bitrate set OK!!');
             });
     }
+    setCR(svr: CR) {
+        let width: number = 1280;
+        let height: number = 720;
+        switch (svr) {
+            case CR._480:
+                width = 640;
+                height = 480;
+                break;
+            case CR._720:
+                width = 1280;
+                height = 720;
+                break;
+            case CR._1080:
+                width = 1920;
+                height = 1080;
+                break;
+        }
+        this.adbService
+            .adbCommand('setProperties', {
+                serial: this.adbService.deviceSerial,
+                command: 'setprop debug.oculus.capture.width ' + width,
+            })
+            .then(() =>
+                this.adbService.adbCommand('setProperties', {
+                    serial: this.adbService.deviceSerial,
+                    command: 'setprop debug.oculus.capture.height ' + height,
+                })
+            )
+            .then(r => {
+                console.log(r);
+                this.statusService.showStatus('Texture Resolution set OK!!');
+            });
+    }
     setSVR(svr: SVR) {
-        let value: number = 5000000;
+        let value: number = 1024;
         switch (svr) {
             case SVR._1024:
                 value = 1024;
@@ -232,7 +274,16 @@ export class ToolsComponent implements OnInit {
             });
     }
     setPavlovPermission() {
-        this.adbService.setPermission('com.davevillz.pavlov', 'android.permission.RECORD_AUDIO');
+        return this.adbService
+            .setPermission('com.vankrupt.pavlov', 'android.permission.RECORD_AUDIO')
+            .then(() => this.adbService.setPermission('com.vankrupt.pavlov', 'android.permission.READ_EXTERNAL_STORAGE'))
+            .then(() => this.adbService.setPermission('com.vankrupt.pavlov', 'android.permission.WRITE_EXTERNAL_STORAGE'));
+    }
+    setPavlovName() {
+        this.adbService.adbCommand('shell', {
+            serial: this.adbService.deviceSerial,
+            command: 'echo ' + this.pavlovName + ' > /sdcard/pavlov.name.txt',
+        });
     }
     pasteToDevice() {
         this._textToSend = this.textToSend.split('');
@@ -258,7 +309,7 @@ export class ToolsComponent implements OnInit {
                 command: 'input text "' + character + '"',
             })
             .then(res => {
-                if (this.textToSend.length) {
+                if (this._textToSend.length) {
                     return this.inputCharacters();
                 }
             });

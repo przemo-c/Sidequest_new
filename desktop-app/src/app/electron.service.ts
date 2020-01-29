@@ -8,6 +8,8 @@ import { AdbClientService } from './adb-client.service';
 import { WebviewService } from './webview.service';
 import { Router } from '@angular/router';
 import { BeatOnService } from './beat-on.service';
+import { SynthriderService } from './synthrider.service';
+import { SongBeaterService } from './song-beater.service';
 
 @Injectable({
     providedIn: 'root',
@@ -24,7 +26,9 @@ export class ElectronService {
         private adbService: AdbClientService,
         private webviewService: WebviewService,
         private beatonService: BeatOnService,
-        private router: Router
+        private router: Router,
+        private synthriderService: SynthriderService,
+        private songbeaterService: SongBeaterService
     ) {
         this.setupIPC();
     }
@@ -36,6 +40,11 @@ export class ElectronService {
                 i + 1,
                 urls.length
             );
+        }
+    }
+    async installSynthridersMultiple(urls) {
+        for (let i = 0; i < urls.length; i++) {
+            await this.synthriderService.downloadSong(urls[i], this.adbService);
         }
     }
     async installMultiple(urls) {
@@ -58,11 +67,21 @@ export class ElectronService {
 
     setupIPC() {
         this.appService.electron.ipcRenderer.on('pre-open-url', (event, data) => {
+            console.log(data);
             this.spinnerService.showLoader();
-            this.spinnerService.setMessage('Do you want to install this file?<br><br>' + data);
+            this.spinnerService.setMessage('Do you want to install this file?<br><br>' + data.name);
             this.spinnerService.setupConfirm().then(() => {
-                this.spinnerService.hideLoader();
-                this.adbService.installAPK(data);
+                switch (this.appService.path.extname(data.name)) {
+                    case '.zip':
+                        this.adbService.installZip(data.url);
+                        break;
+                    case '.obb':
+                        this.adbService.installObb(data.url);
+                        break;
+                    case '.apk':
+                        this.adbService.installAPK(data.url);
+                        break;
+                }
             });
         });
         this.appService.electron.ipcRenderer.on('update-status', (event, data) => {
@@ -70,11 +89,9 @@ export class ElectronService {
                 this.statusService.showStatus('Checking for an update...');
             } else if (data.status === 'update-available') {
                 this.statusService.showStatus(
-                    this.appService.os.platform() === 'win32'
-                        ? 'Update Available to version ' + data.info.version + '. Restarting to install the new version...'
-                        : 'Update Available to version ' +
-                              data.info.version +
-                              '. Click Update Available at the top to get the latest version.'
+                    'Update Available to version ' +
+                        data.info.version +
+                        '. Click Update Available at the top to get the latest version.'
                 );
                 this.appService.updateAvailable = true;
             } else if (data.status === 'no-update') {
@@ -89,12 +106,10 @@ export class ElectronService {
             }
         });
         this.appService.electron.ipcRenderer.on('open-url', (event, data) => {
+            console.log(data);
             if (data) {
                 let url = data.split('#');
                 switch (url[0]) {
-                    case 'sidequest://repo/':
-                        this.repoService.addRepo(url[1]);
-                        break;
                     case 'sidequest://unload/':
                         this.adbService.uninstallAPK(url[1]);
                         break;
@@ -127,42 +142,51 @@ export class ElectronService {
                             this.statusService.showStatus('Launcher already installed!');
                         }
                         break;
-                    case 'sidequest://navigate/':
-                        this.router.navigateByUrl(url[1]);
-                        this.appService.showBack = true;
-                        this.webviewService.isWebviewLoading = false;
+                    case 'sidequest://songbeater/':
+                        this.statusService.showStatus('SongBeater download started... See the tasks screen for more info.');
+                        this.songbeaterService.downloadSong(url[1], this.adbService);
                         break;
-                    case 'sidequest://api/':
-                        // grab and parse a url like this - sidequest://api/#adbService:installAPK:<url_of_apk>:true
-                        // let parts = url[1].split(':');
-                        // let service = parts.unshift();
-                        // let method = parts.unshift();
-                        // if (
-                        //   service &&
-                        //   this[service] &&
-                        //   method &&
-                        //   this[service][method] &&
-                        //   typeof this[service][method] === 'function'
-                        // ) {
-                        //   parts = parts.map(p => {
-                        //     switch (p) {
-                        //       case 'null':
-                        //         return null;
-                        //       case 'true':
-                        //         return true;
-                        //       case 'false':
-                        //         return false;
-                        //       default:
-                        //         return p.trim();
-                        //     }
-                        //   });
-                        //   console.log(parts, service, method);
-                        //   this[service][method].call.apply(parts);
-                        // }
+                    case 'sidequest://synthriders/':
+                        this.statusService.showStatus('SynthRiders download started... See the tasks screen for more info.');
+                        this.synthriderService.downloadSong(url[1], this.adbService);
+
+                        break;
+                    case 'sidequest://synthriders-multi/':
+                        this.statusService.showStatus('SynthRiders download started... See the tasks screen for more info.');
+                        try {
+                            let urls = JSON.parse(
+                                data
+                                    .replace('sidequest://synthriders-multi/#', '')
+                                    .split('%22,%22')
+                                    .join('","')
+                                    .split('[%22')
+                                    .join('["')
+                                    .split('%22]')
+                                    .join('"]')
+                            );
+                            this.installSynthridersMultiple(urls);
+                        } catch (e) {
+                            this.statusService.showStatus('Could not parse install url: ' + data, true);
+                        }
+                        this.webviewService.isWebviewLoading = false;
                         break;
                     case 'sidequest://bsaber/':
                         this.statusService.showStatus('Song download started... See the tasks screen for more info.');
-                        this.beatonService.downloadSong(url[1], this.adbService);
+                        if (~this.adbService.devicePackages.indexOf('com.playito.songbeater')) {
+                            this.spinnerService.showLoader();
+                            this.spinnerService.setMessage('Send this to Song Beater instead of BMBF?<br><br>' + data);
+                            this.spinnerService
+                                .setupConfirm()
+                                .then(() => {
+                                    this.songbeaterService.downloadSong(url[1], this.adbService);
+                                })
+                                .catch(() => {
+                                    this.beatonService.downloadSong(url[1], this.adbService);
+                                });
+                        } else {
+                            this.beatonService.downloadSong(url[1], this.adbService);
+                        }
+                        this.webviewService.isWebviewLoading = false;
                         break;
                     case 'sidequest://firefox-skybox/':
                         this.statusService.showStatus(
@@ -199,7 +223,7 @@ export class ElectronService {
                             );
                             (async () => {
                                 this.spinnerService.showLoader();
-                                this.spinnerService.setMessage('Saving to BeatOn...');
+                                this.spinnerService.setMessage('Saving to BMBF...');
                                 for (let i = 0; i < urls.length; i++) {
                                     await this.beatonService.downloadSong(urls[i], this.adbService);
                                 }

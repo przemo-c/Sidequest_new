@@ -33,7 +33,6 @@ export class FilesComponent implements OnInit {
     isOpen: boolean = false;
     currentPath: string;
     folderName: string;
-    confirmMessage: string;
     currentFile: FileFolderListing;
     quickSaveModels: string[] = ['Quest', 'Go'];
     constructor(
@@ -72,7 +71,7 @@ export class FilesComponent implements OnInit {
     selectFile(event: Event, file: FileFolderListing) {
         let fileElement = event.target as Element;
 
-        if (file.icon === 'folder' && !fileElement.classList.contains('save-icon')) {
+        if (file.icon === 'folder' && !(fileElement.classList.contains('save-icon') || fileElement.classList.contains('delete'))) {
             this.selectedFiles.length = 0;
             this.open(this.appService.path.posix.join(this.currentPath, file.name));
         } else if (!fileElement.classList.contains('delete') && !fileElement.classList.contains('save-icon')) {
@@ -89,17 +88,20 @@ export class FilesComponent implements OnInit {
             }
         }
     }
-    clearSelection(file?: FileFolderListing) {
-        if (file) {
-            document
-                .querySelectorAll('.file')
-                .item(this.files.indexOf(file))
-                .classList.remove('selected');
+    clearSelection(files?: [FileFolderListing]) {
+        if (files) {
+            for (const file of files) {
+                document
+                    .querySelectorAll('.file')
+                    .item(this.files.indexOf(file))
+                    .classList.remove('selected');
+                this.selectedFiles = this.selectedFiles.filter(f => f !== file);
+            }
         } else {
             document.querySelectorAll('.selected').forEach(element => {
-                console.log(element);
                 element.classList.remove('selected');
             });
+            this.selectedFiles.length = 0;
         }
     }
     async uploadFolder(folder, files, task) {
@@ -124,9 +126,11 @@ export class FilesComponent implements OnInit {
         }
     }
     uploadFile(files, task): Promise<any> {
-        if (!files.length) return Promise.resolve();
-        let f = files.shift();
-        let savePath = this.appService.path.posix.join(this.currentPath, this.appService.path.basename(f));
+        if (!files.length) {
+            return Promise.resolve();
+        }
+        const f = files.shift();
+        const savePath = this.appService.path.posix.join(this.currentPath, this.appService.path.basename(f));
         if (!this.appService.fs.existsSync(f)) {
             return Promise.resolve().then(() => setTimeout(() => this.uploadFile(files, task), 500));
         }
@@ -179,11 +183,11 @@ export class FilesComponent implements OnInit {
     }
     async downloadMedia() {
         let paths = [];
+        let media: FileFolderListing[] = [];
+
         if (this.adbService.deviceModel === 'Quest' || this.adbService.deviceModel === 'Go') {
             paths = ['/sdcard/Oculus/Screenshots', '/sdcard/Oculus/VideoShots'];
         }
-
-        let media: FileFolderListing[] = [];
 
         for (const path of paths) {
             await this.readdir(path).then(dirContents => {
@@ -205,56 +209,45 @@ export class FilesComponent implements OnInit {
             .adbCommand('shell', { serial: this.adbService.deviceSerial, command: 'rm "' + file.filePath + '" -r' })
             .then(r => {
                 this.files.splice(this.files.indexOf(file), 1);
-
-                if (this.selectedFiles.includes(file)) {
-                    this.selectedFiles.splice(this.selectedFiles.indexOf(file));
-                }
             });
     }
-    async saveFiles(files: FileFolderListing[]) {
+    saveFiles(files: FileFolderListing[]) {
         this.filesModal.closeModal();
-        this.spinnerService.showLoader();
 
-        for (const file of this.filesToBeSaved) {
+        for (const file of files) {
             if (file.icon !== 'folder') {
-                await this.saveFile(file);
+                this.saveFile(file);
             } else {
                 this.saveFolder(file);
             }
         }
-
-        this.spinnerService.hideLoader();
-
-        if (files[0].icon !== 'folder') {
-            this.statusService.showStatus(
-                (!files ? this.selectedFiles.length : files.length) + ' files saved to ' + this.adbService.savePath + '!!'
-            );
-        }
     }
     saveFile(file: FileFolderListing) {
-        let savePath = this.appService.path.join(this.adbService.savePath, file.name);
-        let path = file.filePath;
-        this.spinnerService.showLoader();
-        return this.adbService
-            .adbCommand('pull', { serial: this.adbService.deviceSerial, path, savePath }, stats => {
-                this.spinnerService.setMessage(
-                    'File downloading: ' +
+        const savePath = this.appService.path.join(this.adbService.savePath, file.name);
+        const path = file.filePath;
+        return this.processService.addItem('save_files', async task => {
+            return this.adbService
+                .adbCommand('pull', { serial: this.adbService.deviceSerial, path, savePath }, stats => {
+                    task.status =
+                        'File downloading: ' +
                         this.appService.path.basename(savePath) +
-                        '<br>' +
+                        ' - ' +
                         Math.round(stats.bytesTransferred / 1024 / 1024) +
-                        'MB'
-                );
-            })
-            .then(file => {
-                const selectedFile = Array.from(document.getElementsByClassName('selected'));
-                console.log(selectedFile.filter(e => e.innerHTML.indexOf(file.name)));
-            })
-            .catch(e => this.statusService.showStatus(e.toString(), true));
+                        ' / ' +
+                        file.size +
+                        ' MB';
+                })
+                .then(() => {
+                    task.status = 'Files Saved to ' + savePath + '!!';
+                    this.statusService.showStatus('File (' + file.name + ') Saved OK!');
+                })
+                .catch(e => this.statusService.showStatus(e.toString(), true));
+        });
     }
     saveFolder(file: FileFolderListing) {
         this.filesModal.closeModal();
-        let savePath = this.appService.path.join(this.adbService.savePath, file.name);
-        let path = file.filePath;
+        const savePath = this.appService.path.join(this.adbService.savePath, file.name);
+        const path = file.filePath;
         this.adbService.files = [];
         return this.processService.addItem('save_files', async task => {
             return this.adbService
@@ -287,7 +280,7 @@ export class FilesComponent implements OnInit {
         );
     }
     isConnected() {
-        let isConnected = this.adbService.deviceStatus === ConnectionStatus.CONNECTED;
+        const isConnected = this.adbService.deviceStatus === ConnectionStatus.CONNECTED;
         if (isConnected && !this.isOpen) {
             this.isOpen = true;
             this.open('/sdcard/');
@@ -295,9 +288,9 @@ export class FilesComponent implements OnInit {
         return isConnected;
     }
     getCrumb(path: string) {
-        let parts = path.split('/');
-        let name = parts.pop();
-        let parentPath = parts.join('/');
+        const parts = path.split('/');
+        const name = parts.pop();
+        const parentPath = parts.join('/');
         if (parts.length > 0) {
             this.getCrumb(parentPath);
         }
@@ -321,8 +314,8 @@ export class FilesComponent implements OnInit {
         this.readdir(path).then(dirContents => {
             this.files = dirContents;
             this.files.sort(function(a, b) {
-                let textA = a.name.toUpperCase();
-                let textB = b.name.toUpperCase();
+                const textA = a.name.toUpperCase();
+                const textB = b.name.toUpperCase();
                 return textA < textB ? -1 : textA > textB ? 1 : 0;
             });
             this.files = this.files.filter(d => d.icon === 'folder').concat(this.files.filter(d => d.icon !== 'folder'));
@@ -336,14 +329,14 @@ export class FilesComponent implements OnInit {
         let dirContents: FileFolderListing[];
         await this.adbService.adbCommand('readdir', { serial: this.adbService.deviceSerial, path }).then(files => {
             dirContents = files.map(file => {
-                let name = file.name;
-                let size = Math.round((file.size / 1024 / 1024) * 100) / 100;
-                let time = file.mtime;
-                let filePath = this.appService.path.posix.join(path, file.name);
+                const name = file.name;
+                const size = Math.round((file.size / 1024 / 1024) * 100) / 100;
+                const time = file.mtime;
+                const filePath = this.appService.path.posix.join(path, file.name);
                 let icon = 'folder';
                 if (file.__isFile) {
-                    let fileParts = file.name.split('.');
-                    let extension = (fileParts[fileParts.length - 1] || '').toLowerCase();
+                    const fileParts = file.name.split('.');
+                    const extension = (fileParts[fileParts.length - 1] || '').toLowerCase();
                     switch (extension) {
                         case 'gif':
                         case 'png':

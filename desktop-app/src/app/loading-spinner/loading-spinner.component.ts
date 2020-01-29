@@ -12,6 +12,7 @@ export class LoadingSpinnerComponent implements OnInit {
     isLoading: boolean;
     loadingMessage: string;
     confirmResolve: () => void;
+    confirmReject: () => void;
     constructor(private spinnerService: LoadingSpinnerService, public changes: ChangeDetectorRef) {
         spinnerService.setSpinner(this);
     }
@@ -19,12 +20,19 @@ export class LoadingSpinnerComponent implements OnInit {
     confirm() {
         if (this.confirmResolve) {
             this.confirmResolve();
-            this.isConfirm = false;
         }
+        this.isConfirm = false;
+        this.confirmResolve = null;
+        this.confirmReject = null;
+        this.spinnerService.hideLoader();
     }
     cancel() {
-        this.confirmResolve = null;
+        if (this.confirmReject) {
+            this.confirmReject();
+        }
         this.isConfirm = false;
+        this.confirmResolve = null;
+        this.confirmReject = null;
         this.spinnerService.hideLoader();
     }
 }

@@ -25,13 +25,36 @@
       </div>
 
 
+      <div class="section-title" [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">Manage 3rd Party Repos</div>
+      WARNING: these are deprecated and may be removed in a future release.
+      <div class="button-section">
 
-      <div class="section-title" [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">Pavlov Audio</div>
+        <div *ngFor="let repo of repoService.repos; let i = index" >
+          <div class="waves-effect waves-light btn margin-bottom margin-right pink-button"
+               [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}"
+               routerLink="/apps/{{i}}"
+          >{{repo.name}}</div
+          >&nbsp;&nbsp;&nbsp;&nbsp;
+        </div>
+        <div class="waves-effect waves-light btn margin-bottom margin-right pink-button"
+             [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}"
+             routerLink="/repos"
+        >Manage Repos</div
+        >&nbsp;&nbsp;&nbsp;&nbsp;
+      </div>
+
+
+      <div class="section-title" [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">Pavlov Settings</div>
       <div class="button-section">
         <div class="waves-effect waves-light btn margin-bottom margin-right pink-button"
              [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}"
              (click)="setPavlovPermission()"
-        >Grant Pavlov Audio Permission</div
+        >Grant Pavlov Permissions</div
+        >&nbsp;&nbsp;&nbsp;&nbsp;
+        <div class="waves-effect waves-light btn margin-bottom margin-right pink-button"
+             [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}"
+             (click)="changePavlov.openModal()"
+        >Change Pavlov Name </div
         >&nbsp;&nbsp;&nbsp;&nbsp;
       </div>
       <div class="section-title" [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">Chromatic Aberration</div>
@@ -95,6 +118,19 @@
           class="waves-effect waves-light btn margin-bottom margin-right pink-button"
           [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}" (click)="setFFR(FFR.HIGH_TOP)">High Top</div>
       </div>
+      <div class="section-title" [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">Set Video Capture Size</div>
+      This an increase the resolution of captured videos on the Quest
+      <div class="button-section">
+        <div class="waves-effect waves-light btn margin-bottom margin-right pink-button"
+             [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}"
+             (click)="setCR(CR._480)">480</div>
+        <div class="waves-effect waves-light btn margin-bottom margin-right pink-button"
+             [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}"
+             (click)="setCR(CR._720)">720</div>
+        <div class="waves-effect waves-light btn margin-bottom margin-right pink-button"
+             [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}"
+             (click)="setCR(CR._1080)">1080</div>
+      </div>
       <div class="section-title" [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">Set CPU and GPU level</div>
       This can improve performance for 2D apps & games.
       <div class="button-section">
@@ -142,31 +178,52 @@
         <div class="waves-effect waves-light btn set-svb margin-bottom margin-right pink-button"
              [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}" (click)="setSVB(SVB._25Mbps)">25Mbps</div>
       </div>
-      <div class="section-title" [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">Video Recording Resolution ( Go Only )</div>
-      This will increase the resolution of captured videos on Oculus Go.
-      <div class="button-section">
-        <div class="waves-effect waves-light btn set-svr margin-bottom margin-right pink-button"
-             [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}" (click)="setSVR(SVR._1024)">Default</div>
-        <div class="waves-effect waves-light btn set-svr margin-bottom margin-right pink-button"
-             [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}" (click)="setSVR(SVR._1024)">1024</div>
-        <div class="waves-effect waves-light btn set-svr margin-bottom margin-right pink-button"
-             [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}" (click)="setSVR(SVR._1536)">1536</div>
-      </div>
-      <div class="section-title" [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">Destroy The World</div>
-      Click this to release all the goblins and endanger the future of humanity. Do not do this!
-      <div class="button-section">
-        <div class="switch">
-          <label>
-            Bad
-            <input type="checkbox" [(ngModel)]="appService.hideNSFW" (change)="setHideNSFW()"/>
-            <span class="lever"></span>
-            Safe
-          </label>
-        </div>
-      </div>
+<!--      <div class="section-title" [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">Video Recording Resolution ( Go Only )</div>-->
+<!--      This will increase the resolution of captured videos on Oculus Go.-->
+<!--      <div class="button-section">-->
+<!--        <div class="waves-effect waves-light btn set-svr margin-bottom margin-right pink-button"-->
+<!--             [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}" (click)="setSVR(SVR._1024)">Default</div>-->
+<!--        <div class="waves-effect waves-light btn set-svr margin-bottom margin-right pink-button"-->
+<!--             [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}" (click)="setSVR(SVR._1024)">1024</div>-->
+<!--        <div class="waves-effect waves-light btn set-svr margin-bottom margin-right pink-button"-->
+<!--             [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}" (click)="setSVR(SVR._1536)">1536</div>-->
+<!--      </div>-->
+<!--      <div class="section-title" [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">Destroy The World</div>-->
+<!--      Click this to release all the goblins and endanger the future of humanity. Do not do this!-->
+<!--      <div class="button-section">-->
+<!--        <div class="switch">-->
+<!--          <label>-->
+<!--            Bad-->
+<!--            <input type="checkbox" [(ngModel)]="appService.hideNSFW" (change)="setHideNSFW()"/>-->
+<!--            <span class="lever"></span>-->
+<!--            Safe-->
+<!--          </label>-->
+<!--        </div>-->
+<!--      </div>-->
     </div>
   </div>
 
 
 
 </div>
+
+
+<mz-modal #changePavlov [fixedFooter]="true">
+  <mz-modal-header>
+    <h4>Change Pavlov Name</h4>
+  </mz-modal-header>
+  <mz-modal-content>
+    Enter a name to set in Pavlov
+    <br />
+    <div class="input-field repo-url">
+      <input id="repoUrl" type="text" [(ngModel)]="pavlovName"/>
+      <label for="repoUrl">Name</label>
+    </div>
+
+
+  </mz-modal-content>
+  <mz-modal-footer>
+    <button mz-button [flat]="true" mz-modal-close>Close</button>
+    <button mz-button class="pink-button" mz-modal-close (click)="setPavlovName()">Save</button>
+  </mz-modal-footer>
+</mz-modal>

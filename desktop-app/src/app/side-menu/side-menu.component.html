@@ -64,15 +64,15 @@
 
   <div class="menu-item-repo" >
     <div
-      class="menu-item-inner add-menu side-sub-menu" mz-tooltip routerLink="/repos"
+      class="menu-item-inner add-menu side-sub-menu" mz-tooltip routerLink="/tasks"
       position="right"
-      tooltip="Manage the app repos shown in the side menu."
+      tooltip="Manage the app tasks."
     >
       <div class="row no-margin" >
         <div class="col s4 no-padding">
-          <i class="material-icons fixed-menu-icon">list</i>
+          <i class="material-icons fixed-menu-icon">playlist_add_check</i>
         </div>
-        <div class="col s8 no-padding icon-text truncate">My Repos</div>
+        <div class="col s8 no-padding icon-text truncate">{{processService.left_length ? processService.left_length : 'No'}} Tasks</div>
       </div>
     </div>
   </div>

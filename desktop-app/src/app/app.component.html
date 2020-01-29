@@ -1,9 +1,9 @@
 <app-header></app-header>
 <div class="app-container full-height">
-  <app-side-menu></app-side-menu>
+  <!--<app-side-menu></app-side-menu>-->
   <app-content class="full-height"></app-content>
 </div>
 
 <app-loading-spinner #spinner></app-loading-spinner>
 <app-status-bar #status></app-status-bar>
-<webview id="beatView" #webview src="https://sidequestvr.com" [ngStyle]="{'left':webService.isWebviewOpen?'135px':'-100%'}" class="bsaber-webview"></webview>
+<webview id="beatView" #webview src="https://sidequestvr.com" [ngStyle]="{'left':webService.isWebviewOpen?'0':'-100%'}" class="bsaber-webview"></webview>

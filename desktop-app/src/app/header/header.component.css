@@ -26,6 +26,9 @@
   margin-right: 13px;
   margin-left: 13px
 }
+.margin-left{
+  margin-left: 1em;
+}
 .pointer{
   cursor: pointer;
 }
@@ -35,9 +38,9 @@
   color: white;
   display: inline-block;
   margin-right: 10px;
-  margin-left: -34px;
+  margin-left: -36px;
   vertical-align: super;
-  width: 25px;
+  width: 29px;
   text-align: center;
   cursor: pointer;
 }
@@ -45,24 +48,62 @@
   position: absolute;
   top: 65px;
   left: 400px;
-  width: calc(100% - 450px);
+  width: calc(100% - 487px);
   -webkit-app-region: no-drag;
 }
-
+.synthrideerz{
+  width: 40px;
+  height: 40px;
+}
 .topper{
   background: #202225;
   height: 35px;
   width: 100%;
+  -webkit-app-region: drag;
+}
+.logo img{
+  height: 90px;
+  position:absolute;
+  top: 55px;
+  left: 20px;
+  transition: 0.35s;
+}
+
+#nav-mobile{
+  margin-left: 60px;
+}
+.top-banner{
+  background: #100e11 url(../../assets/images/TopBack.png) bottom right no-repeat;
+  background-size: cover;
+  height: 170px;
+  width: 100%;
+  border-bottom: 1px solid #8f8f8f;
+  transition: 0.35s;
+}
+.spider-image{
+  margin-top: 50px;
+  margin-left: -17px;
+  position: relative;
+  z-index: 99999;
+}
+.over-menu{
+  position:absolute;
+  top: 20px;
+  left: 20px;
+}
+.top-buttons{
+  position: absolute;
+  top: 120px;
+  left: 120px;
 }
 .header {
-  height: 160px;
-  background: #312249 url(../../assets/images/bg-header.png) left bottom no-repeat;
+  height: 205px;
+  /*background: #312249 url(../../assets/images/bg-header.png) left bottom no-repeat;*/
   position: relative;
   -webkit-user-select: none;
   border-top-right-radius: 12px;
   border-top-left-radius: 12px;
   overflow:hidden;
-  -webkit-app-region: drag;
 }
 .header-title{
   position:absolute;
@@ -77,8 +118,8 @@
 .apk-install {
   font-size: 0.9rem;
   position: absolute;
-  top: 105px;
-  left: 155px;
+  top: 150px;
+  left: 140px;
   color: #ffffff;
   font-family: 'PT Sans', sans-serif;
   -webkit-app-region: no-drag;
@@ -155,7 +196,6 @@
 .add-repo,
 .sync-songs,
 .sync-songs-now,
-.update-available,
 .beast-saber-buttons,
 .back-webserver{
   position: absolute;
@@ -165,14 +205,18 @@
   -webkit-app-region: no-drag;
 }
 .update-available {
-  top: 6px;
-  right: 330px;
+  margin-top: -16px;
+  margin-right: 10px;
 }
 .sync-songs{
   right: 15px;
 }
+.fixed-height{
+  height: 120px;
+}
 .sync-songs-now,.beast-saber-buttons {
-  top: 45px;
+  top: 83px;
+  right: 73px;
 }
 .beaton-icon{
   height: 22px;
@@ -190,15 +234,17 @@
   font-size: 14px;
 }
 .browser-loading {
-  top: 15px;
-  position: relative;
-  left: 15px;
+  transform: scale(0.3);
+}
+.bookmark{
+  margin-right: 15px;
+  margin-bottom: 15px;
 }
 .logo {
   background: transparent url('../../assets/images/score-logo.png') center center no-repeat;
-  background-size: 100px 100px;
+  background-size: 110px 110px;
   width: 135px;
-  height: 130px;
+  height: 150px;
   -webkit-user-select: none;
   cursor: pointer;
   border-top-left-radius: 5px;
@@ -218,5 +264,5 @@
   left: 16px;
   width: 300px;
   height: 120px;
-  z-index: 1;
+  z-index: 9999;
 }

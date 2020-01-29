@@ -3,12 +3,13 @@ const path = require('path');
 let mainWindow, open_url, is_loaded;
 const ADB = require('./adbkit');
 const { autoUpdater } = require('electron-updater');
+let hasUpdate = false;
 function createWindow() {
     // Create the browser window.
     mainWindow = new BrowserWindow({
         width: 1280,
         height: 768,
-        minWidth: 990,
+        minWidth: 1280,
         minHeight: 480,
         transparent: true,
         frame: false,
@@ -61,15 +62,23 @@ function createWindow() {
     mainWindow.webContents.session.on('will-download', (evt, item, webContents) => {
         let url = item.getURL();
         let etx = path.extname(url.split('?')[0]).toLowerCase();
+
         if (~url.indexOf('https://beatsaver.com/cdn')) {
             // beat saber mods /songs
             mainWindow.webContents.send('open-url', 'sidequest://bsaber/#' + url);
+        } else if (~url.indexOf('http://songbeater.com/')) {
+            // songbeater mods /songs
+            mainWindow.webContents.send('open-url', 'sidequest://songbeater/#' + url);
+        } else if (~url.indexOf('https://synthriderz.com/')) {
+            // synthriderz mods /songs
+            mainWindow.webContents.send('open-url', 'sidequest://synthriders/#' + url);
         } else if (etx === '.apk') {
             // any file ending with apk.
             mainWindow.webContents.send('pre-open-url', url);
         } else if (~url.indexOf('ssl.hwcdn.net/')) {
             //itch.io
-            mainWindow.webContents.send('pre-open-url', url);
+            let name = item.getFilename();
+            mainWindow.webContents.send('pre-open-url', { url, name });
         }
         item.cancel();
     });
@@ -128,12 +137,11 @@ function setupMenu() {
 
 const gotTheLock = app.requestSingleInstanceLock ? app.requestSingleInstanceLock() : true;
 let parseOpenUrl = argv => {
+    //fs.writeFileSync(path.join(app.getPath('appData'), 'SideQuest', 'test_output_loaded.txt'), JSON.stringify(argv));
     if (argv[1] && argv[1].length && argv[1].substr(0, 12) === 'sidequest://') {
-        //fs.writeFileSync(path.join(app.getPath('appData'), 'SideQuest', 'test_output_loaded.txt'), argv[1].toString());
-        mainWindow.webContents.send('open-url', argv[1].toString());
+        setTimeout(() => mainWindow.webContents.send('open-url', argv[1].toString()), 5000);
     }
 };
-
 if (!gotTheLock) {
     app.quit();
 } else {
@@ -164,6 +172,15 @@ if (!gotTheLock) {
             open_url = url;
         }
     });
+
+    app.on('web-contents-created', (e, contents) => {
+        if (contents.getType() === 'webview') {
+            contents.on('new-window', (e, url) => {
+                e.preventDefault();
+                contents.loadURL(url);
+            });
+        }
+    });
 }
 autoUpdater.on('checking-for-update', () => {
     if (mainWindow) {
@@ -173,11 +190,7 @@ autoUpdater.on('checking-for-update', () => {
 autoUpdater.on('update-available', info => {
     if (mainWindow) {
         mainWindow.webContents.send('update-status', { status: 'update-available', info });
-    }
-    if (process.platform !== 'darwin') {
-        setTimeout(() => {
-            autoUpdater.downloadUpdate().then(() => autoUpdater.quitAndInstall(false, false));
-        }, 5000);
+        hasUpdate = true;
     }
 });
 autoUpdater.on('update-not-available', info => {
@@ -207,6 +220,13 @@ global.receiveMessage = function(text) {
 };
 const { ipcMain } = require('electron');
 const adb = new ADB();
+ipcMain.on('automatic-update', (event, arg) => {
+    if (process.platform !== 'darwin' && hasUpdate) {
+        setTimeout(() => {
+            autoUpdater.downloadUpdate().then(() => autoUpdater.quitAndInstall(false, false));
+        }, 5000);
+    }
+});
 ipcMain.on('adb-command', (event, arg) => {
     const success = d => {
         if (!event.sender.isDestroyed()) {
