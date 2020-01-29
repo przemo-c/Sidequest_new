@@ -88,7 +88,7 @@ export class FilesComponent implements OnInit {
             }
         }
     }
-    clearSelection(files?: [FileFolderListing]) {
+    clearSelection(files?: FileFolderListing[]) {
         if (files) {
             for (const file of files) {
                 document
