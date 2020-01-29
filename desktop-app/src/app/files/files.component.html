@@ -29,6 +29,7 @@
         <div class="right">
           <span *ngIf="file.icon !== 'folder'">{{file.size|number:'1.2-2'}}MB | </span>{{file.time|date:'short'}}
 
+          <i class="material-icons cursor white-text drag-indicator save-icon"  (click)="filesToBeSaved = [file]; filesModal.openModal();">save</i>
           <i class="material-icons cursor orange-text drag-indicator right delete"
             (click)="filesToBeDeleted = [file]; confirmModal.openModal()">close</i>
         </div>
@@ -55,10 +56,10 @@
           class="material-icons">delete</i></a></li>
     <li mz-tooltip position="left" tooltip="Open current save location" (click)="openSaveLocation()"><a
         class="btn-floating yellow darken-2"><i class="material-icons">folder</i></a></li>
-    <li *ngIf="quickSaveSupported()" mz-tooltip position="left" tooltip="Quick save screenshots and recordings"
+    <li *ngIf="quickSaveSupported()" mz-tooltip position="left" tooltip="Save screenshots and recordings"
       (click)="downloadMediaModal.openModal()"><a class="btn-floating green"><i class="material-icons">get_app</i></a>
     </li>
-    <li *ngIf="selectedFiles.length > 0" mz-tooltip position="left" tooltip="Save selected items to computer" (click)="filesModal.openModal()">
+    <li *ngIf="selectedFiles.length > 0" mz-tooltip position="left" tooltip="Save selected items to computer" (click)="filesToBeSaved = selectedFiles; filesModal.openModal()">
       <a class="btn-floating orange"><i class="material-icons">get_app</i></a>
     </li>
   </ul>
@@ -80,12 +81,25 @@
     <button mz-button class="pink-button" mz-modal-close (click)="makeFolder()">Make Folder</button>
   </mz-modal-footer>
 </mz-modal>
+
 <mz-modal #filesModal [fixedFooter]="true">
   <mz-modal-header>
     <h4>Save selected file(s) to your PC</h4>
   </mz-modal-header>
   <mz-modal-content>
-    Pick a location on your PC to save selected file(s):<br><br>
+    Pick a location on your PC to save the following file(s):<br><br>
+    <div *ngFor="let file of filesToBeSaved">
+          <div class="file">
+            <div>
+              <i class="material-icons cursor orange-text drag-indicator"
+                (click)="filesToBeSaved.splice(filesToBeSaved.indexOf(file), 1);
+                clearSelection(file);
+                filesToBeSaved.length === 0 && filesModal.closeModal()">close</i>
+              {{file.name}}
+            </div>
+          </div>
+    </div>
+    <br><br>
     <button mz-button class="pink-button" (click)="pickLocation()">Select Location</button><br><br>
     Current Location: {{adbService.savePath}}
 
@@ -93,7 +107,7 @@
   </mz-modal-content>
   <mz-modal-footer>
     <button mz-button [flat]="true" mz-modal-close>Close</button>
-    <button mz-button class="pink-button" mz-modal-close (click)="saveFiles()">Save To PC</button>
+    <button mz-button class="pink-button" mz-modal-close (click)="saveFiles(filesToBeSaved); filesToBeSaved.length === 1 ? filesToBeSaved.splice(filesToBeSaved[0], 1) : clearSelection()">Save To PC</button>
   </mz-modal-footer>
 </mz-modal>
 

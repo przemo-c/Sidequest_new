@@ -3,12 +3,13 @@ import { AdbClientService, ConnectionStatus } from '../adb-client.service';
 import { AppService } from '../app.service';
 import { LoadingSpinnerService } from '../loading-spinner.service';
 import { StatusBarService } from '../status-bar.service';
+import { ProcessBucketService } from '../process-bucket.service';
 interface FileFolderListing {
     name: string;
     icon: string;
     size: number;
     time: Date;
-    filePath: String;
+    filePath: string;
 }
 interface BreadcrumbListing {
     name: string;
@@ -26,6 +27,7 @@ export class FilesComponent implements OnInit {
     @ViewChild('downloadMediaModal', { static: false }) downloadMediaModal;
     files: FileFolderListing[] = [];
     selectedFiles: FileFolderListing[] = [];
+    filesToBeSaved: FileFolderListing[];
     filesToBeDeleted: FileFolderListing[];
     breadcrumbs: BreadcrumbListing[] = [];
     isOpen: boolean = false;
@@ -38,7 +40,8 @@ export class FilesComponent implements OnInit {
         public spinnerService: LoadingSpinnerService,
         public adbService: AdbClientService,
         public appService: AppService,
-        public statusService: StatusBarService
+        public statusService: StatusBarService,
+        private processService: ProcessBucketService
     ) {
         this.appService.resetTop();
         appService.filesComponent = this;
@@ -51,7 +54,7 @@ export class FilesComponent implements OnInit {
     ngOnInit() {
         this.appService.setTitle('Headset Files');
     }
-    makeFolder() {
+    async makeFolder() {
         if (
             ~this.files
                 .filter(f => f.icon === 'folder')
@@ -60,7 +63,7 @@ export class FilesComponent implements OnInit {
         ) {
             return this.statusService.showStatus('A folder already exists with that name!!', true);
         } else {
-            this.adbService.makeDirectory(this.appService.path.posix.join(this.currentPath, this.folderName)).then(r => {
+            await this.adbService.makeDirectory(this.appService.path.posix.join(this.currentPath, this.folderName)).then(r => {
                 this.folderName = '';
                 this.open(this.currentPath);
             });
@@ -69,10 +72,10 @@ export class FilesComponent implements OnInit {
     selectFile(event: Event, file: FileFolderListing) {
         let fileElement = event.target as Element;
 
-        if (file.icon === 'folder') {
+        if (file.icon === 'folder' && !fileElement.classList.contains('save-icon')) {
             this.selectedFiles.length = 0;
             this.open(this.appService.path.posix.join(this.currentPath, file.name));
-        } else if (!fileElement.classList.contains('delete')) {
+        } else if (!fileElement.classList.contains('delete') && !fileElement.classList.contains('save-icon')) {
             while (!fileElement.classList.contains('file')) {
                 fileElement = fileElement.parentElement;
             }
@@ -93,38 +96,73 @@ export class FilesComponent implements OnInit {
                 .item(this.files.indexOf(file))
                 .classList.remove('selected');
         } else {
-            document.querySelectorAll('.selected').forEach(element => element.classList.remove('.selected'));
+            document.querySelectorAll('.selected').forEach(element => {
+                console.log(element);
+                element.classList.remove('selected');
+            });
         }
     }
-    uploadFile(files): Promise<any> {
+    async uploadFolder(folder, files, task) {
+        task.status = 'Restoring Folder... ' + folder;
+        if (this.appService.fs.existsSync(folder)) {
+            this.adbService.localFiles = [];
+            await this.adbService
+                .getLocalFoldersRecursive(folder)
+                .then(() => {
+                    this.adbService.localFiles.forEach(file => {
+                        file.savePath = this.appService.path.posix.join(
+                            this.currentPath,
+                            file.name
+                                .replace(folder, this.appService.path.basename(folder))
+                                .split('\\')
+                                .join('/')
+                        );
+                    });
+                    return this.adbService.uploadFile(this.adbService.localFiles.filter(f => f.__isFile), task);
+                })
+                .then(() => setTimeout(() => this.uploadFile(files, task), 500));
+        }
+    }
+    uploadFile(files, task): Promise<any> {
         if (!files.length) return Promise.resolve();
         let f = files.shift();
         let savePath = this.appService.path.posix.join(this.currentPath, this.appService.path.basename(f));
+        if (!this.appService.fs.existsSync(f)) {
+            return Promise.resolve().then(() => setTimeout(() => this.uploadFile(files, task), 500));
+        }
+        if (this.appService.fs.lstatSync(f).isDirectory()) {
+            return new Promise(async resolve => {
+                this.folderName = this.appService.path.basename(f);
+                await this.makeFolder();
+                await this.uploadFolder(f, files, task);
+                resolve();
+            });
+        }
         return this.adbService
             .adbCommand('push', { serial: this.adbService.deviceSerial, path: f, savePath }, stats => {
-                this.spinnerService.setMessage(
+                task.status =
                     'File uploading: ' +
-                        this.appService.path.basename(f) +
-                        ' ' +
-                        Math.round((stats.bytesTransferred / 1024 / 1024) * 100) / 100 +
-                        'MB'
-                );
+                    this.appService.path.basename(f) +
+                    ' ' +
+                    Math.round((stats.bytesTransferred / 1024 / 1024) * 100) / 100 +
+                    'MB';
             })
-            .then(() => setTimeout(() => this.uploadFile(files), 500));
+            .then(() => setTimeout(() => this.uploadFile(files, task), 500));
     }
     uploadFilesFromList(files: string[]) {
         if (files !== undefined && files.length) {
-            this.spinnerService.showLoader();
-            this.uploadFile(files)
-                .then(() => {
-                    this.spinnerService.setMessage('Files Uploaded!!');
-                    setTimeout(() => {
-                        this.open(this.currentPath);
-                        this.spinnerService.hideLoader();
-                        this.statusService.showStatus('Files Uploaded!!');
-                    }, 500);
-                })
-                .catch(e => this.statusService.showStatus(e.toString(), true));
+            return this.processService.addItem('restore_files', async task => {
+                task.status = 'Starting Upload to ' + this.currentPath;
+                this.uploadFile(files, task)
+                    .then(() => {
+                        setTimeout(() => {
+                            this.open(this.currentPath);
+                            task.status = 'Upload complete! ' + this.currentPath;
+                            this.statusService.showStatus('Files/Folders uploaded successfully!');
+                        }, 1500);
+                    })
+                    .catch(e => this.statusService.showStatus(e.toString(), true));
+            });
         }
     }
     uploadFiles() {
@@ -173,22 +211,24 @@ export class FilesComponent implements OnInit {
                 }
             });
     }
-    async saveFiles(files?: FileFolderListing[]) {
+    async saveFiles(files: FileFolderListing[]) {
         this.filesModal.closeModal();
         this.spinnerService.showLoader();
 
-        for (const file of !files ? this.selectedFiles : files) {
-            await this.saveFile(file);
+        for (const file of this.filesToBeSaved) {
+            if (file.icon !== 'folder') {
+                await this.saveFile(file);
+            } else {
+                this.saveFolder(file);
+            }
         }
 
         this.spinnerService.hideLoader();
-        this.statusService.showStatus(
-            (!files ? this.selectedFiles.length : files.length) + ' files saved to ' + this.adbService.savePath + '!!'
-        );
 
-        if (!files) {
-            Array.from(document.getElementsByClassName('selected')).forEach(element => element.classList.remove('selected'));
-            this.selectedFiles.length = 0;
+        if (files[0].icon !== 'folder') {
+            this.statusService.showStatus(
+                (!files ? this.selectedFiles.length : files.length) + ' files saved to ' + this.adbService.savePath + '!!'
+            );
         }
     }
     saveFile(file: FileFolderListing) {
@@ -205,7 +245,32 @@ export class FilesComponent implements OnInit {
                         'MB'
                 );
             })
+            .then(file => {
+                const selectedFile = Array.from(document.getElementsByClassName('selected'));
+                console.log(selectedFile.filter(e => e.innerHTML.indexOf(file.name)));
+            })
             .catch(e => this.statusService.showStatus(e.toString(), true));
+    }
+    saveFolder(file: FileFolderListing) {
+        this.filesModal.closeModal();
+        let savePath = this.appService.path.join(this.adbService.savePath, file.name);
+        let path = file.filePath;
+        this.adbService.files = [];
+        return this.processService.addItem('save_files', async task => {
+            return this.adbService
+                .getFoldersRecursive(path)
+                .then(() => this.appService.mkdir(savePath))
+                .then(
+                    () =>
+                        (this.adbService.files = this.adbService.files.map(f => {
+                            f.saveName = this.appService.path.join(savePath, f.name.replace(path, ''));
+                            return f;
+                        }))
+                )
+                .then(() => this.adbService.makeFolder(this.adbService.files.filter(f => !f.__isFile)))
+                .then(() => this.adbService.downloadFile(this.adbService.files.filter(f => f.__isFile), task))
+                .then(() => this.statusService.showStatus('Folder Saved OK!'));
+        });
     }
     pickLocation() {
         this.appService.electron.remote.dialog.showOpenDialog(
