@@ -286,7 +286,7 @@ export class BeatOnService {
                 } else {
                     reject(
                         new Error(
-                            'Cant reach the unicorns, this is most lightly caused by a network issue. Please open BeatOn/BMBF inside the headset or from a browser at http://' +
+                            'Cant reach the unicorns, this is most likely caused by a network issue. Please open BeatOn/BMBF inside the headset or from a browser at http://' +
                                 adbService.deviceIp +
                                 ':50000.'
                         )
