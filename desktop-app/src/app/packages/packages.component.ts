@@ -118,43 +118,48 @@ export class PackagesComponent implements OnInit {
         let isConnected = this.adbService.deviceStatus === ConnectionStatus.CONNECTED;
         if (isConnected && !this.isOpen) {
             this.isOpen = true;
-            this.adbService.getPackages(this.show_all).then(() => {
-                this.myApps = this.adbService.devicePackages
-                    .map(p => {
-                        if (this.repoService.allApps[p]) {
+            this.adbService
+                .getPackages(this.show_all)
+                .then(() => {
+                    this.myApps = this.adbService.devicePackages
+                        .map(p => {
+                            if (this.repoService.allApps[p]) {
+                                return {
+                                    name: this.repoService.allApps[p].name,
+                                    icon: this.repoService.allApps[p].icon,
+                                    packageName: p,
+                                };
+                            }
                             return {
-                                name: this.repoService.allApps[p].name,
-                                icon: this.repoService.allApps[p].icon,
                                 packageName: p,
                             };
+                        })
+                        .sort((a, b) => {
+                            let textA = (a.name || a.packageName).toUpperCase();
+                            let textB = (b.name || b.packageName).toUpperCase();
+                            return textA < textB ? -1 : textA > textB ? 1 : 0;
+                        });
+                    this.myApps.forEach(p => {
+                        if (this.routerPackage && p.packageName === this.routerPackage) {
+                            this.currentPackage.package = p;
                         }
-                        return {
-                            packageName: p,
-                        };
-                    })
-                    .sort((a, b) => {
-                        let textA = (a.name || a.packageName).toUpperCase();
-                        let textB = (b.name || b.packageName).toUpperCase();
-                        return textA < textB ? -1 : textA > textB ? 1 : 0;
                     });
-                this.myApps.forEach(p => {
-                    if (this.routerPackage && p.packageName === this.routerPackage) {
-                        this.currentPackage.package = p;
-                    }
-                });
 
-                if (
-                    this.currentPackage.package.packageName &&
-                    ~this.adbService.devicePackages.indexOf(this.currentPackage.package.packageName)
-                ) {
-                    this.appSettingsModal.openModal();
-                } else if (this.currentPackage.package.packageName) {
-                    this.statusService.showStatus(
-                        'App not installed...' + (this.currentPackage.package ? this.currentPackage.package.packageName : ''),
-                        true
-                    );
-                }
-            });
+                    if (
+                        this.currentPackage.package.packageName &&
+                        ~this.adbService.devicePackages.indexOf(this.currentPackage.package.packageName)
+                    ) {
+                        this.appSettingsModal.openModal();
+                    } else if (this.currentPackage.package.packageName) {
+                        this.statusService.showStatus(
+                            'App not installed...' + (this.currentPackage.package ? this.currentPackage.package.packageName : ''),
+                            true
+                        );
+                    }
+                })
+                .catch(() => {
+                    this.statusService.showStatus('There was an error retrieving information from the headset', true);
+                });
         }
         return isConnected;
     }
