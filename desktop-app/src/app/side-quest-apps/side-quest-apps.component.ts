@@ -51,12 +51,17 @@ export class SideQuestAppsComponent implements OnInit {
             this.appService.setTitle(apps.name);
             this.apps = apps.body.apps;
             this.changes.detectChanges();
-            this.adbService.getPackages().then(() => {
-                this.apps.forEach(app => {
-                    app.__is_installed = !!~this.adbService.devicePackages.indexOf(app.packageName);
+            this.adbService
+                .getPackages()
+                .then(() => {
+                    this.apps.forEach(app => {
+                        app.__is_installed = !!~this.adbService.devicePackages.indexOf(app.packageName);
+                    });
+                    this.isLoaded = true;
+                })
+                .catch(() => {
+                    setTimeout(() => this.getApps(), 1000);
                 });
-                this.isLoaded = true;
-            });
         } else {
             setTimeout(() => this.getApps(), 1000);
         }

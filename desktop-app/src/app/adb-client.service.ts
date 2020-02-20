@@ -177,18 +177,29 @@ export class AdbClientService {
                 this.deviceStatusMessage = 'Warning: Please connect only one android device to your PC';
                 break;
             case ConnectionStatus.CONNECTED:
-                this.getPackages();
-                await this.getBatteryLevel();
-                await this.getIpAddress();
-                await this.getDeviceModel();
-                this.deviceStatusMessage =
-                    'Connected -  Wifi IP: ' +
-                    (this.deviceIp || 'Not found...') +
-                    ', Battery: ' +
-                    this.batteryLevel +
-                    '% ' +
-                    (this.isBatteryCharging ? ' Charging' : '');
-                this.beatonService.checkIsBeatOnRunning(this);
+                try {
+                    await this.getPackages();
+                    await this.getBatteryLevel();
+                    await this.getIpAddress();
+                    await this.getDeviceModel();
+                    this.deviceStatusMessage =
+                        'Connected -  Wifi IP: ' +
+                        (this.deviceIp || 'Not found...') +
+                        ', Battery: ' +
+                        this.batteryLevel +
+                        '% ' +
+                        (this.isBatteryCharging ? ' Charging' : '');
+                    this.beatonService.checkIsBeatOnRunning(this);
+                } catch (e) {
+                    const isBadConnection = e && e.message === "Failure: 'closed'" && e.name === 'FailError';
+                    if (isBadConnection) {
+                        this.deviceStatusMessage =
+                            'Warning: Cannot retrieve information from the headset, try another USB cable or port. Try a USB2 port.';
+                        this.deviceStatus = ConnectionStatus.DISCONNECTED;
+                    } else {
+                        throw e;
+                    }
+                }
                 break;
             case ConnectionStatus.DISCONNECTED:
                 this.deviceStatusMessage =
