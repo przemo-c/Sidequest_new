@@ -158,7 +158,10 @@ export class PackagesComponent implements OnInit {
                     }
                 })
                 .catch(() => {
-                    this.statusService.showStatus('There was an error retrieving information from the headset', true);
+                    this.statusService.showStatus(
+                        'Warning: Cannot retrieve information from the headset, try another USB cable or port. Try a USB2 port.',
+                        true
+                    );
                 });
         }
         return isConnected;

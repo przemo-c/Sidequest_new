@@ -190,9 +190,15 @@ export class AdbClientService {
                         '% ' +
                         (this.isBatteryCharging ? ' Charging' : '');
                     this.beatonService.checkIsBeatOnRunning(this);
-                } catch {
-                    this.deviceStatusMessage =
-                        'Warning: Cannot retrieve information from the headset. Please reconnect your headset.';
+                } catch (e) {
+                    const isBadConnection = e && e.message === "Failure: 'closed'" && e.name === 'FailError';
+                    if (isBadConnection) {
+                        this.deviceStatusMessage =
+                            'Warning: Cannot retrieve information from the headset, try another USB cable or port. Try a USB2 port.';
+                        this.deviceStatus = ConnectionStatus.DISCONNECTED;
+                    } else {
+                        throw e;
+                    }
                 }
                 break;
             case ConnectionStatus.DISCONNECTED:
