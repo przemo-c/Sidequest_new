@@ -21,21 +21,33 @@ module.exports = class ADB {
     }
     install(serial, path, isLocal, cb, scb, ecb) {
         if (!this.client) return ecb('Not connected.');
+        let stream;
+        try {
+            stream = isLocal
+                ? fs.createReadStream(path)
+                : new Readable().wrap(
+                      progress(request(path), {
+                          throttle: 60,
+                      })
+                          .on('progress', state => {
+                              scb(state);
+                          })
+                          .on('end', () => {
+                              scb({
+                                  percent: 1,
+                              });
+                          })
+                  );
+        } catch (e) {
+            const isInvalidURI = e && typeof e.message === 'string' && e.message.startsWith('Invalid URI "');
+            if (isInvalidURI) {
+                return ecb("Can't download file. Invalid URL:");
+            } else {
+                throw e;
+            }
+        }
         this.client
-            .install(
-                serial,
-                isLocal
-                    ? fs.createReadStream(path)
-                    : new Readable().wrap(
-                          progress(request(path), { throttle: 60 })
-                              .on('progress', state => {
-                                  scb(state);
-                              })
-                              .on('end', () => {
-                                  scb({ percent: 1 });
-                              })
-                      )
-            )
+            .install(serial, stream)
             .then(cb)
             .catch(e => ecb(e));
     }
