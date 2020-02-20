@@ -34,6 +34,7 @@ jspm_packages/
 
 build/app
 .idea
+.vscode
 platform-tools
 dist
 /app
