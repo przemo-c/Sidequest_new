@@ -155,16 +155,11 @@ export class AdbClientService {
     }
     async getAppVersionCode(packageName: string): Promise<string> {
         const command = `dumpsys package ${packageName} | grep versionCode | cut -d'=' -f 2 | cut -d ' ' -f 1`;
-        try {
-            const versionCode = await this.adbCommand('shell', { serial: this.deviceSerial, command });
-            if (versionCode.length === 0) {
-                throw new Error('Cannot read versionCode');
-            }
-            return versionCode.trim();
-        } catch (e) {
-            this.statusService.showStatus(e.message ? e.message : e.toString(), true);
-            throw e;
+        const versionCode = await this.adbCommand('shell', { serial: this.deviceSerial, command });
+        if (versionCode.length === 0) {
+            throw new Error('Cannot read versionCode');
         }
+        return versionCode.trim();
     }
     makeDirectory(dir) {
         return this.adbCommand('shell', { serial: this.deviceSerial, command: 'mkdir "' + dir + '"' });
@@ -382,6 +377,7 @@ export class AdbClientService {
             try {
                 version = await this.getAppVersionCode(packageName);
             } catch (e) {
+                this.statusService.showStatus(e.message ? e.message : e.toString(), true);
                 return Promise.reject('APK not found, is the app installed? ' + packageName);
             }
             const savePath = this.appService.path.join(
