@@ -192,8 +192,7 @@ export class PackagesComponent implements OnInit {
 
     getCurrentInstalledInfo() {
         this.adbService
-            .getPackageInfo(this.currentPackage.package.packageName)
-            .then(() => this.adbService.getBackups(this.currentPackage.package.packageName))
+            .getBackups(this.currentPackage.package.packageName)
             .then(backups => (this.backups = backups))
             .then(() => this.adbService.getDataBackups(this.currentPackage.package.packageName))
             .then(dataBackups => (this.dataBackups = dataBackups));
