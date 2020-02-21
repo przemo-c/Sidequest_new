@@ -158,18 +158,13 @@ export class AdbClientService {
             this.sendPackages();
         });
     }
-    getPackageInfo(packageName) {
-        return this.adbCommand('shell', {
-            serial: this.deviceSerial,
-            command: 'dumpsys package ' + packageName + ' | grep versionName',
-        })
-            .then(res => {
-                let versionParts = res.split('=');
-                return versionParts.length ? versionParts[1] : '0.0.0.0';
-            })
-            .catch(e => {
-                this.statusService.showStatus(e.message ? e.message : e.toString(), true);
-            });
+    async getAppVersionCode(packageName: string): Promise<string> {
+        const command = `dumpsys package ${packageName} | grep versionCode | cut -d'=' -f 2 | cut -d ' ' -f 1`;
+        const versionCode = await this.adbCommand('shell', { serial: this.deviceSerial, command });
+        if (versionCode.length === 0) {
+            throw new Error('Cannot read versionCode');
+        }
+        return versionCode.trim();
     }
     makeDirectory(dir) {
         return this.adbCommand('shell', { serial: this.deviceSerial, command: 'mkdir "' + dir + '"' });
@@ -383,15 +378,18 @@ export class AdbClientService {
         return this.processService.addItem('backup_package', async task => {
             task.status = packageName + ' backing up... 0MB';
             this.isTransferring = true;
-            let version = await this.getPackageInfo(packageName);
-            if (!version) {
+            let version: string;
+            try {
+                version = await this.getAppVersionCode(packageName);
+            } catch (e) {
+                this.statusService.showStatus(e.message ? e.message : e.toString(), true);
                 return Promise.reject('APK not found, is the app installed? ' + packageName);
             }
-            let savePath = this.appService.path.join(
+            const savePath = this.appService.path.join(
                 this.appService.backupPath,
                 packageName,
                 'apks',
-                this.getFilenameDate() + '_' + version.trim() + '.apk'
+                this.getFilenameDate() + '_' + version + '.apk'
             );
             return this.makeBackupFolders(packageName)
                 .then(() =>
