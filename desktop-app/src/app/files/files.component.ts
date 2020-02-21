@@ -213,7 +213,6 @@ export class FilesComponent implements OnInit {
     }
     saveFiles(files: FileFolderListing[]) {
         this.filesModal.closeModal();
-
         for (const file of files) {
             if (file.icon !== 'folder') {
                 this.saveFile(file);

@@ -59,6 +59,7 @@ export class AppService {
     showBack: boolean = false;
     backupPath: string;
     scrcpyBinaryPath: string;
+    downloadResolves: any = {};
     constructor(private spinnerService: LoadingSpinnerService) {
         this.path = (<any>window).require('path');
         this.fs = (<any>window).require('fs');
@@ -214,10 +215,6 @@ export class AppService {
         });
     }
     async downloadFile(winUrl, linUrl, macUrl, getPath, task?) {
-        const requestOptions = {
-            timeout: 30000,
-            'User-Agent': this.getUserAgent(),
-        };
         let downloadUrl = linUrl;
         switch (this.os.platform()) {
             case 'win32':
@@ -230,33 +227,64 @@ export class AppService {
                 downloadUrl = linUrl;
                 break;
         }
-        if (!downloadUrl) return;
         let downloadPath = getPath(downloadUrl);
-        return new Promise((resolve, reject) => {
-            this.progress(this.request(downloadUrl, requestOptions), { throttle: 300 })
-                .on('error', error => {
-                    console.log(`Request Error ${error}`);
-                    reject(error);
-                })
-                .on('progress', state => {
-                    if (task) {
-                        task.status = 'Downloading... ' + Math.round(state.percent * 100) + '%';
-                    } else {
-                        this.spinnerService.setMessage('Downloading... ' + Math.round(state.percent * 100) + '%');
-                        this.spinnerService.spinner.changes.detectChanges();
-                    }
-                })
-                .on('end', () => {
-                    if (task) {
-                        task.status = 'Processing file... This might take 30 - 60 seconds depending on size etc...';
-                    } else {
-                        this.spinnerService.setMessage(
-                            'Processing file... <br>This might take 30 - 60 seconds depending on size etc..'
-                        );
-                    }
-                    return resolve(downloadPath);
-                })
-                .pipe(this.fs.createWriteStream(downloadPath));
+        return this.downloadFileAPI(downloadUrl, this.path.dirname(downloadPath), this.path.basename(downloadPath)).then(
+            () => downloadPath
+        );
+    }
+    // async downloadFile(winUrl, linUrl, macUrl, getPath, task?) {
+    //     const requestOptions = {
+    //         timeout: 30000,
+    //         'User-Agent': this.getUserAgent(),
+    //     };
+    //     let downloadUrl = linUrl;
+    //     switch (this.os.platform()) {
+    //         case 'win32':
+    //             downloadUrl = winUrl;
+    //             break;
+    //         case 'darwin':
+    //             downloadUrl = macUrl;
+    //             break;
+    //         case 'linux':
+    //             downloadUrl = linUrl;
+    //             break;
+    //     }
+    //     if (!downloadUrl) return;
+    //     let downloadPath = getPath(downloadUrl);
+    //     return new Promise((resolve, reject) => {
+    //         this.progress(this.request(downloadUrl, requestOptions), { throttle: 300 })
+    //             .on('error', error => {
+    //                 console.log(`Request Error ${error}`);
+    //                 reject(error);
+    //             })
+    //             .on('progress', state => {
+    //                 if (task) {
+    //                     task.status = 'Downloading... ' + Math.round(state.percent * 100) + '%';
+    //                 } else {
+    //                     this.spinnerService.setMessage('Downloading... ' + Math.round(state.percent * 100) + '%');
+    //                     this.spinnerService.spinner.changes.detectChanges();
+    //                 }
+    //             })
+    //             .on('end', () => {
+    //                 if (task) {
+    //                     task.status = 'Processing file... This might take 30 - 60 seconds depending on size etc...';
+    //                 } else {
+    //                     this.spinnerService.setMessage(
+    //                         'Processing file... <br>This might take 30 - 60 seconds depending on size etc..'
+    //                     );
+    //                 }
+    //                 return resolve(downloadPath);
+    //             })
+    //             .pipe(this.fs.createWriteStream(downloadPath));
+    //     });
+    // }
+
+    downloadFileAPI(url, directory, filename) {
+        // Send request to application thread to download a file. Store the callback for the response.
+        return new Promise(resolve => {
+            let token = this.uuidv4();
+            this.downloadResolves[token] = resolve;
+            this.electron.ipcRenderer.send('download-url', { token, url, directory, filename });
         });
     }
     getUserAgent() {
