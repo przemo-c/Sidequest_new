@@ -29,6 +29,7 @@ export class PackagesComponent implements OnInit {
     show_all: boolean;
     search: string;
     savePath: string;
+    perms: any;
     constructor(
         public adbService: AdbClientService,
         public appService: AppService,
@@ -75,6 +76,8 @@ export class PackagesComponent implements OnInit {
             this.myBackups.forEach(a => (a.isRestore = true));
         }
     }
+
+    setPerm(perm) {}
 
     pickBackupLocation() {
         this.appService.electron.remote.dialog.showOpenDialog(
@@ -185,6 +188,10 @@ export class PackagesComponent implements OnInit {
     getCurrentInstalledInfo() {
         this.adbService
             .getPackageInfo(this.currentPackage.package.packageName)
+            .then(() => this.adbService.getPackageDetail(this.currentPackage.package.packageName))
+            .then(perms => {
+                this.perms = perms;
+            })
             .then(() => this.adbService.getBackups(this.currentPackage.package.packageName))
             .then(backups => (this.backups = backups))
             .then(() => this.adbService.getDataBackups(this.currentPackage.package.packageName))

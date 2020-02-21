@@ -100,6 +100,24 @@
         </div>
       </div>
     </div>
+
+    <h4>Permissions</h4>
+    Manage permissions for this app.
+    <br>
+    <br>
+    <div class="row no-margin" *ngFor="let perm of perms">
+      <div class="col s10">
+        {{perm.permission}}
+      </div>
+      <div class="row s2">
+        <div class="switch">
+          <label>
+            <input type="checkbox" [(ngModel)]="perm.enabled" (change)="setPerm(perm)"/>
+            <span class="lever"></span>
+          </label>
+        </div>
+      </div>
+    </div>
   </mz-modal-content>
   <mz-modal-footer>
     <button mz-button [flat]="true" mz-modal-close>Close</button>

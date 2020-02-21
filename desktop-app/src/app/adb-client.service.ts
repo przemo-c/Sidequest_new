@@ -858,6 +858,25 @@ export class AdbClientService {
             });
         });
     }
+
+    async getPackageDetail(packagename) {
+        return this.adbCommand('shell', { serial: this.deviceSerial, command: 'dumpsys package ' + packagename }).then(data => {
+            let lines = data.split('\n').map(l => l.trim());
+            let start = lines.indexOf('runtime permissions:') + 1;
+            let end = lines.indexOf('Dexopt state:');
+            return lines
+                .slice(start, end)
+                .filter(l => l)
+                .map(l => {
+                    let parts = l.split(':');
+                    return {
+                        permission: parts.length ? parts[0].trim() : 'android.permission.READ_EXTERNAL_STORAGE',
+                        enabled: parts.length > 1 && parts[1].trim() === 'granted=true',
+                    };
+                });
+        });
+    }
+
     async getBatteryLevel() {
         return this.adbCommand('shell', { serial: this.deviceSerial, command: 'dumpsys battery' }).then(data => {
             let batteryObject = {};
