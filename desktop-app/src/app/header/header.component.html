@@ -374,8 +374,8 @@
         <input id="adbCommand"  type="text" [(ngModel)]="adbCommandToRun" placeholder="Command To Run..."/>
       </div>
       <code>
-        <pre *ngIf="adbResponse">
-          {{adbResponse}}
+        <pre *ngIf="adbService.adbResponse">
+          {{adbService.adbResponse}}
         </pre>
       </code>
     </div>

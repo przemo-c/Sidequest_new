@@ -4,7 +4,7 @@
 
 export const environment = {
     production: false,
-    safeSideApiUrl: 'https://safe-side-test.glitch.me',
+    safeSideApiUrl: 'https://sdq.st',
 };
 
 /*

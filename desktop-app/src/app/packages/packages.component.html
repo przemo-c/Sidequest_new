@@ -102,8 +102,7 @@
     </div>
 
     <h4>Permissions</h4>
-    Manage permissions for this app.
-    <br>
+    <div>{{perms && !perms.length ? 'No permissions for this app...' : 'Manage permissions for this app.'}}</div>
     <br>
     <div class="row no-margin" *ngFor="let perm of perms">
       <div class="col s10">

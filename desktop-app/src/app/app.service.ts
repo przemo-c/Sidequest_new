@@ -94,7 +94,6 @@ export class AppService {
             localStorage.setItem('backup-path', this.backupPath);
         }
     }
-
     getBase64Image(imagePath: string) {
         try {
             return (
@@ -249,9 +248,11 @@ export class AppService {
                 })
                 .on('end', () => {
                     if (task) {
-                        task.status = 'Processing... This might take 10 - 30 seconds.';
+                        task.status = 'Processing file... This might take 30 - 60 seconds depending on size etc...';
                     } else {
-                        this.spinnerService.setMessage('Processing... <br>This might take 10 - 30 seconds.');
+                        this.spinnerService.setMessage(
+                            'Processing file... <br>This might take 30 - 60 seconds depending on size etc..'
+                        );
                     }
                     return resolve(downloadPath);
                 })

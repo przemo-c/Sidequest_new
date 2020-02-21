@@ -41,6 +41,8 @@ export class AdbClientService {
     isBatteryCharging: boolean;
     batteryLevel: number;
     deviceModel: string;
+    adbResponse: string;
+
     constructor(
         public appService: AppService,
         private spinnerService: LoadingSpinnerService,
@@ -59,6 +61,32 @@ export class AdbClientService {
         this.deviceIp = localStorage.getItem('deviceIp');
     }
 
+    runAdbCommand(adbCommandToRun) {
+        this.adbResponse = 'Loading...';
+        let command = adbCommandToRun.trim();
+        if (command.substr(0, 3).toLowerCase() === 'adb') {
+            command = command.substr(3);
+        }
+        return new Promise((resolve, reject) => {
+            this.appService.exec('"' + this.appService.path.join(this.adbPath, this.getAdbBinary()) + '" ' + command, function(
+                err,
+                stdout,
+                stderr
+            ) {
+                if (err) {
+                    return reject(err);
+                }
+                if (stderr) return reject(stderr);
+                return resolve(stdout);
+            });
+        })
+            .then((resp: string) => {
+                this.adbResponse = resp.trim();
+            })
+            .catch(e => {
+                this.statusService.showStatus(e, true);
+            });
+    }
     launchApp(packageName) {
         return this.adbCommand('shell', {
             serial: this.deviceSerial,
@@ -285,10 +313,10 @@ export class AdbClientService {
         // }catch(e){}
         return this.doesFileExist(this.adbPath);
     }
-    setPermission(packageName: string, permission: string) {
+    setPermission(packageName: string, permission: string, isRevoke?: boolean) {
         return this.adbCommand('shell', {
             serial: this.deviceSerial,
-            command: 'pm grant ' + packageName + ' ' + permission,
+            command: 'pm ' + (isRevoke ? 'revoke' : 'grant') + ' ' + packageName + ' ' + permission,
         }).then(r => {
             console.log(r);
             this.statusService.showStatus('Permission set OK!!');
@@ -381,6 +409,7 @@ export class AdbClientService {
             let version: string;
             try {
                 version = await this.getAppVersionCode(packageName);
+                version = version.replace(/(\r\n|\n|\r)/gm, '');
             } catch (e) {
                 this.statusService.showStatus(e.message ? e.message : e.toString(), true);
                 return Promise.reject('APK not found, is the app installed? ' + packageName);
@@ -809,34 +838,36 @@ export class AdbClientService {
         let packageId = filename.match(/main.[0-9]{1,}.([a-z]{1,}.[A-z]{1,}.[A-z]{1,}).obb/)[1];
         const showTotal = number && total ? '(' + number + '/' + total + ') ' : '';
         if (!task) this.spinnerService.showLoader();
-        let p = this.adbCommand(
-            'push',
-            {
-                serial: this.deviceSerial,
-                path: filepath,
-                savePath: `/sdcard/Android/obb/${packageId}/${filename}`,
-            },
-            stats => {
-                if (task) {
-                    task.status =
-                        showTotal +
-                        'File uploading: ' +
-                        filename +
-                        ' ' +
-                        Math.round((stats.bytesTransferred / 1024 / 1024) * 100) / 100 +
-                        'MB';
-                } else {
-                    this.spinnerService.setMessage(
-                        showTotal +
-                            'File uploading: ' +
-                            filename +
-                            ' <br>' +
-                            Math.round((stats.bytesTransferred / 1024 / 1024) * 100) / 100 +
-                            'MB'
-                    );
-                }
-            }
-        );
+
+        let p = this.runAdbCommand('adb push "' + filepath + '" /sdcard/Android/obb/' + packageId + '/' + filename);
+        // let p = this.adbCommand(
+        //     'push',
+        //     {
+        //         serial: this.deviceSerial,
+        //         path: filepath,
+        //         savePath: `/sdcard/Android/obb/${packageId}/${filename}`,
+        //     },
+        //     stats => {
+        //         if (task) {
+        //             task.status =
+        //                 showTotal +
+        //                 'File uploading: ' +
+        //                 filename +
+        //                 ' ' +
+        //                 Math.round((stats.bytesTransferred / 1024 / 1024) * 100) / 100 +
+        //                 'MB';
+        //         } else {
+        //             this.spinnerService.setMessage(
+        //                 showTotal +
+        //                     'File uploading: ' +
+        //                     filename +
+        //                     ' <br>' +
+        //                     Math.round((stats.bytesTransferred / 1024 / 1024) * 100) / 100 +
+        //                     'MB'
+        //             );
+        //         }
+        //     }
+        // );
         if (cb) {
             cb();
         }
@@ -916,21 +947,47 @@ export class AdbClientService {
         });
     }
 
-    async getPackageDetail(packagename) {
+    async getPackagePermissions(packagename) {
         return this.adbCommand('shell', { serial: this.deviceSerial, command: 'dumpsys package ' + packagename }).then(data => {
             let lines = data.split('\n').map(l => l.trim());
+            let start_needs = lines.indexOf('requested permissions:') + 1;
+            let end_needs = lines.indexOf('installed permissions:');
             let start = lines.indexOf('runtime permissions:') + 1;
             let end = lines.indexOf('Dexopt state:');
-            return lines
+
+            let current = lines
+                .slice(start_needs, end_needs)
+                .filter(l => l && l.startsWith('android.permission'))
+                .map(p => p.split(':')[0].trim());
+            let read_perm = 'android.permission.READ_EXTERNAL_STORAGE';
+            let write_perm = 'android.permission.WRITE_EXTERNAL_STORAGE';
+            let record_perm = 'android.permission.RECORD_AUDIO';
+
+            let permsList = [];
+            if (~current.indexOf(read_perm)) {
+                permsList.push(read_perm);
+            }
+            if (~current.indexOf(write_perm)) {
+                permsList.push(write_perm);
+            }
+            if (~current.indexOf(record_perm)) {
+                permsList.push(record_perm);
+            }
+            let perms = permsList.map(p => ({ permission: p, enabled: false }));
+            lines
                 .slice(start, end)
-                .filter(l => l)
-                .map(l => {
+                .filter(l => l && l.startsWith('android.permission'))
+                .forEach(l => {
                     let parts = l.split(':');
-                    return {
-                        permission: parts.length ? parts[0].trim() : 'android.permission.READ_EXTERNAL_STORAGE',
-                        enabled: parts.length > 1 && parts[1].trim() === 'granted=true',
-                    };
+                    if (parts.length) {
+                        let perm = parts[0].trim();
+                        let index = permsList.indexOf(perm);
+                        if (~index) {
+                            perms[index].enabled = parts.length > 1 && parts[1].trim() === 'granted=true';
+                        }
+                    }
                 });
+            return perms;
         });
     }
 

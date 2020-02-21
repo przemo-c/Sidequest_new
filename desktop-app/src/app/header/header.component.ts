@@ -41,7 +41,6 @@ export class HeaderComponent implements OnInit {
     addvalue: string;
     qspResponse: QuestSaberPatchResponseJson;
     adbCommandToRun: string;
-    adbResponse: string;
     osPlatform: string;
     scrcpy_options: any = {
         always_on_top: false,
@@ -70,7 +69,9 @@ export class HeaderComponent implements OnInit {
     }
 
     ngOnInit() {}
-
+    runAdbCommand() {
+        return this.adbService.runAdbCommand(this.adbCommandToRun);
+    }
     connectWifi() {
         this.adbCommandToRun = 'adb tcpip 5555';
         this.runAdbCommand().then(() => {
@@ -79,32 +80,6 @@ export class HeaderComponent implements OnInit {
                 this.runAdbCommand();
             }, 5000);
         });
-    }
-
-    runAdbCommand() {
-        this.adbResponse = 'Loading...';
-        let command = this.adbCommandToRun.trim();
-        if (command.substr(0, 3).toLowerCase() === 'adb') {
-            command = command.substr(3);
-        }
-        return new Promise((resolve, reject) => {
-            this.appService.exec(
-                '"' + this.appService.path.join(this.adbService.adbPath, this.adbService.getAdbBinary()) + '" ' + command,
-                function(err, stdout, stderr) {
-                    if (err) {
-                        return reject(err);
-                    }
-                    if (stderr) return reject(stderr);
-                    return resolve(stdout);
-                }
-            );
-        })
-            .then((resp: string) => {
-                this.adbResponse = resp.trim();
-            })
-            .catch(e => {
-                this.statusService.showStatus(e, true);
-            });
     }
 
     isConnected() {

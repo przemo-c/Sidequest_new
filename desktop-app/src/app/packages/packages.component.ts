@@ -77,7 +77,9 @@ export class PackagesComponent implements OnInit {
         }
     }
 
-    setPerm(perm) {}
+    setPerm(perm) {
+        this.adbService.setPermission(this.currentPackage.package.packageName, perm.permission, !perm.enabled);
+    }
 
     pickBackupLocation() {
         this.appService.electron.remote.dialog.showOpenDialog(
@@ -197,7 +199,7 @@ export class PackagesComponent implements OnInit {
         this.adbService
             .getBackups(this.currentPackage.package.packageName)
             .then(backups => (this.backups = backups))
-            .then(() => this.adbService.getPackageDetail(this.currentPackage.package.packageName))
+            .then(() => this.adbService.getPackagePermissions(this.currentPackage.package.packageName))
             .then(perms => {
                 this.perms = perms;
             })
