@@ -8,9 +8,9 @@ const { download } = require('electron-dl');
 function createWindow() {
     // Create the browser window.
     mainWindow = new BrowserWindow({
-        width: 1280,
+        width: 1024,
         height: 768,
-        minWidth: 1280,
+        minWidth: 800,
         minHeight: 480,
         transparent: true,
         frame: false,
@@ -18,6 +18,7 @@ function createWindow() {
             nodeIntegration: true,
         },
     });
+    mainWindow.maximize();
     if (process.env.NODE_ENV === 'dev') {
         mainWindow.loadURL('http://localhost:4205');
         //mainWindow.webContents.openDevTools();

@@ -57,6 +57,7 @@
       {{currentPackage.package.name?currentPackage.package.name:currentPackage.package.packageName}}
     </span><br>
     <div *ngIf="currentPackage.package.name">{{currentPackage.package.packageName}}</div>
+    <div *ngIf="currentPackage.versionCode">Version: {{currentPackage.versionCode}}</div>
     <br>
     <h4>Game Data Backups</h4>
     Backup data files from your SD Card for this app/game. <br><br>Warning: some games do not store data on the SD Card and

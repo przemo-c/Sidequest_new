@@ -17,7 +17,7 @@ export class PackagesComponent implements OnInit {
     @ViewChild('appSettingsModal', { static: false }) appSettingsModal;
 
     folder = FolderType;
-    currentPackage: any = { package: { packageName: '', name: '', icon: '' } };
+    currentPackage: any = { package: { packageName: '', name: '', icon: '' }, versionCode: 0 };
     routerPackage: string;
     backups: string[];
     dataBackups: string[];
@@ -194,11 +194,12 @@ export class PackagesComponent implements OnInit {
             });
         });
     }
-
     getCurrentInstalledInfo() {
         this.adbService
             .getBackups(this.currentPackage.package.packageName)
             .then(backups => (this.backups = backups))
+            .then(() => this.adbService.getAppVersionCode(this.currentPackage.package.packageName))
+            .then(version => (this.currentPackage.versionCode = version))
             .then(() => this.adbService.getPackagePermissions(this.currentPackage.package.packageName))
             .then(perms => {
                 this.perms = perms;

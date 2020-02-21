@@ -74,7 +74,8 @@ export class HeaderComponent implements OnInit {
     }
     connectWifi() {
         this.adbCommandToRun = 'adb tcpip 5555';
-        this.runAdbCommand().then(() => {
+        this.adbService.deviceStatusMessage = 'Attempting wifi connection...';
+        (this.isConnected() ? this.runAdbCommand() : Promise.resolve()).then(() => {
             setTimeout(() => {
                 this.adbCommandToRun = 'adb connect ' + this.adbService.deviceIp + ':5555';
                 this.runAdbCommand();
@@ -152,6 +153,7 @@ export class HeaderComponent implements OnInit {
             },
             files => {
                 files.forEach(filepath => {
+                    this.adbService.savePath = this.appService.path.dirname(filepath);
                     let install = this.adbService.installMultiFile(filepath);
                     if (install) {
                         install.catch(e => {
