@@ -5,6 +5,10 @@ import { StatusBarService } from './status-bar.service';
 import { BeatOnService } from './beat-on.service';
 import { WebviewService } from './webview.service';
 import { ProcessBucketService } from './process-bucket.service';
+import { SafeSideService } from './safe-side.service';
+
+type InstallDecision = 'DoInstall' | 'DontInstall';
+
 declare const process;
 export enum ConnectionStatus {
     CONNECTED,
@@ -43,7 +47,8 @@ export class AdbClientService {
         private statusService: StatusBarService,
         private beatonService: BeatOnService,
         private webService: WebviewService,
-        public processService: ProcessBucketService
+        public processService: ProcessBucketService,
+        public safeSideService: SafeSideService
     ) {
         this.lastConnectionCheck = performance.now() - 4000;
         this.adbPath = appService.path.join(appService.appData, 'platform-tools');
@@ -411,37 +416,78 @@ export class AdbClientService {
                 return Promise.reject('Apk install failed: No device connected! ' + filePath);
             }
             const showTotal = number && total ? '(' + number + '/' + total + ') ' : '';
-            task.status = showTotal + 'Installing Apk... ';
-            return this.adbCommand('install', { serial: this.deviceSerial, path: filePath, isLocal: !!isLocal }, status => {
-                task.status =
-                    (status.percent === 1
-                        ? showTotal + 'Installing Apk... '
-                        : showTotal + 'Downloading APK... ' + Math.round(status.percent * 100) + '% ') +
-                    ' <span style="font-style:italic">' +
-                    filePath +
-                    '</span>';
-            })
-                .then(r => {
-                    task.status = 'APK file installed ok!! ' + filePath;
-                    if (filePath.indexOf('com.weloveoculus.BMBF') > -1) {
-                        return this.beatonService.setBeatOnPermission(this);
-                    }
-                    if (filePath.toLowerCase().indexOf('pavlov') > -1) {
-                        return this.setPermission('com.vankrupt.pavlov', 'android.permission.RECORD_AUDIO')
-                            .then(() => this.setPermission('com.vankrupt.pavlov', 'android.permission.READ_EXTERNAL_STORAGE'))
-                            .then(() => this.setPermission('com.vankrupt.pavlov', 'android.permission.WRITE_EXTERNAL_STORAGE'))
-                            .then(() =>
-                                this.adbCommand('shell', {
-                                    serial: this.deviceSerial,
-                                    command: 'echo Dave > /sdcard/pavlov.name.txt',
-                                })
-                            );
-                    }
-                })
-                .catch(e => {
-                    return Promise.reject(e.message ? e.message : e.code ? e.code : e.toString() + ' ' + filePath);
-                });
+            const updateStatus = (text: string): void => {
+                const newStatus = `${showTotal}${text} `;
+                if (task.status !== newStatus) {
+                    task.status = newStatus;
+                }
+            };
+            const checkReported: Promise<InstallDecision> = isLocal
+                ? this.checkIsAPKReported(updateStatus, filePath)
+                : Promise.resolve('DoInstall');
+            return checkReported.then(installDecision => {
+                if (installDecision === 'DoInstall') {
+                    task.status = showTotal + 'Installing Apk... ';
+                    return this.adbCommand('install', { serial: this.deviceSerial, path: filePath, isLocal: !!isLocal }, status => {
+                        task.status =
+                            (status.percent === 1
+                                ? showTotal + 'Installing Apk... '
+                                : showTotal + 'Downloading APK... ' + Math.round(status.percent * 100) + '% ') +
+                            ' <span style="font-style:italic">' +
+                            filePath +
+                            '</span>';
+                    })
+                        .then(r => {
+                            task.status = 'APK file installed ok!! ' + filePath;
+                            if (filePath.indexOf('com.weloveoculus.BMBF') > -1) {
+                                return this.beatonService.setBeatOnPermission(this);
+                            }
+                            if (filePath.toLowerCase().indexOf('pavlov') > -1) {
+                                return this.setPermission('com.vankrupt.pavlov', 'android.permission.RECORD_AUDIO')
+                                    .then(() =>
+                                        this.setPermission('com.vankrupt.pavlov', 'android.permission.READ_EXTERNAL_STORAGE')
+                                    )
+                                    .then(() =>
+                                        this.setPermission('com.vankrupt.pavlov', 'android.permission.WRITE_EXTERNAL_STORAGE')
+                                    )
+                                    .then(() =>
+                                        this.adbCommand('shell', {
+                                            serial: this.deviceSerial,
+                                            command: 'echo Dave > /sdcard/pavlov.name.txt',
+                                        })
+                                    );
+                            }
+                        })
+                        .catch(e => {
+                            return Promise.reject(e.message ? e.message : e.code ? e.code : e.toString() + ' ' + filePath);
+                        });
+                } else {
+                    updateStatus('Canceled Install.');
+                    return Promise.resolve();
+                }
+            });
         });
+    }
+    async checkIsAPKReported(updateStatus: (string) => void, filePath: string): Promise<InstallDecision> {
+        let isReported: boolean;
+        try {
+            isReported = await this.safeSideService.checkAPK(updateStatus, filePath);
+        } catch {
+            isReported = false;
+        }
+        if (isReported) {
+            updateStatus('Confirming you want to install APK...');
+            const buttonIndex = await this.appService.remote.dialog.showMessageBox({
+                type: 'question',
+                buttons: ["Don't Install", 'Install Anyway'],
+                title: 'This APK may be dangerous or illegal to install',
+                message:
+                    'This APK has been reported as potentially dangerous or illegal. You assume all risk associated with installing malicious or illegal APKs to your device. If you would still like to install this APK on your device, please confirm.',
+            });
+            return buttonIndex === 1 ? 'DoInstall' : 'DontInstall';
+        } else {
+            return 'DoInstall';
+        }
     }
     uninstallAPK(pkg) {
         return this.processService.addItem('apk_uninstall', task => {

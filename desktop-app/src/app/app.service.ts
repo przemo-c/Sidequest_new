@@ -51,6 +51,7 @@ export class AppService {
     execSync: any;
     uuidv4: any;
     ping: any;
+    crypto: any;
     titleEle: HTMLElement;
     webService: WebviewService;
     currentTheme: string = 'dark';
@@ -70,6 +71,7 @@ export class AppService {
         this.md5 = (<any>window).require('md5');
         this.spawn = (<any>window).require('child_process').spawn;
         this.semver = (<any>window).require('semver');
+        this.crypto = (<any>window).require('crypto');
         this.electron = (<any>window).require('electron');
         this.remote = this.electron.remote;
         this.nativeApp = this.electron.remote.app;
