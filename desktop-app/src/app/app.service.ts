@@ -55,7 +55,7 @@ export class AppService {
     titleEle: HTMLElement;
     webService: WebviewService;
     currentTheme: string = 'dark';
-    versionName: string = '0.8.7';
+    versionName: string = '0.9.0';
     showBack: boolean = false;
     backupPath: string;
     scrcpyBinaryPath: string;
