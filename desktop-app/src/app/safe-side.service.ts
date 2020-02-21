@@ -14,12 +14,10 @@ export class SafeSideService {
     constructor(private appService: AppService, private http: HttpClient) {}
 
     async checkAPK(updateStatus: (string) => void, filePath: string): Promise<boolean> {
-        const url = `${environment.safeSideApiUrl}/check-submission`;
-        const params = {
-            hash: await this.computeFileHash(updateStatus, filePath),
-        };
+        const hash = await this.computeFileHash(updateStatus, filePath);
+        const url = `${environment.safeSideApiUrl}/check-app-hash/${hash}`;
         updateStatus('Checking APK against blacklist...');
-        const response = await this.http.get<CheckSubmissionResponse>(url, { params }).toPromise();
+        const response = await this.http.get<CheckSubmissionResponse>(url).toPromise();
         return response.found;
     }
     async computeFileHash(updateStatus: (string) => void, filePath: string): Promise<string> {
