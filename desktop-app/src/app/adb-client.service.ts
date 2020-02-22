@@ -469,6 +469,9 @@ export class AdbClientService {
                             if (filePath.indexOf('com.weloveoculus.BMBF') > -1) {
                                 return this.beatonService.setBeatOnPermission(this);
                             }
+                            if (filePath.toLowerCase().indexOf('sidequest.legends') > -1) {
+                                return this.setPermission('com.sidequest.legends', 'android.permission.RECORD_AUDIO');
+                            }
                             if (filePath.toLowerCase().indexOf('pavlov') > -1) {
                                 return this.setPermission('com.vankrupt.pavlov', 'android.permission.RECORD_AUDIO')
                                     .then(() =>
@@ -480,7 +483,7 @@ export class AdbClientService {
                                     .then(() =>
                                         this.adbCommand('shell', {
                                             serial: this.deviceSerial,
-                                            command: 'echo Dave > /sdcard/pavlov.name.txt',
+                                            command: 'echo null > /sdcard/pavlov.name.txt',
                                         })
                                     );
                             }

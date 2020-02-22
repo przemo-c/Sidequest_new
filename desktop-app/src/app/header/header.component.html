@@ -46,21 +46,35 @@
       <div class="user-menu" #userMenu >
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
              (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.loadUrl('https://sidequestvr.com')"
-             routerLink="/webview">Home</div><br>
+             routerLink="/webview"><i class="material-icons left">home</i>Home</div><br>
         <div class="btn-flat waves-light waves-light full-width center-align white-text" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.back()"
-             routerLink="/webview" >Back</div>
+             routerLink="/webview" ><i class="material-icons left">arrow_back</i>Back</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.forward()"
-             routerLink="/webview">Forward</div>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';bookmarksModal.openModal()">Bookmarks</div>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text" *ngIf="isConnected()&&osPlatform === 'win32'" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';scrcpyModal.openModal();">Streaming</div>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text" *ngIf="adbService.deviceIp" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';wifiModal.openModal()">Wifi</div>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';selectAppToInstall()">Select APK</div>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="/device-files">File Explorer</div>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="packages">My Apps</div>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="tasks">Tasks</div><br>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="tools">Tools</div>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';adbModal.openModal()">ADB Commands</div>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';openDebugger()">Debugger</div>
+             routerLink="/webview"><i class="material-icons left">arrow_forward</i>Forward</div>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';bookmarksModal.openModal()">
+          <i class="material-icons left">public</i>Bookmarks</div>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+             *ngIf="isConnected()&&osPlatform === 'win32'" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';scrcpyModal.openModal();">
+          <i class="material-icons left">live_tv</i>Streaming</div>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+             *ngIf="adbService.deviceIp" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';wifiModal.openModal()"><i class="material-icons left">wifi</i>Wifi</div>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+             (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';selectAppToInstall()"><i class="material-icons left">archive</i>Select APK</div>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+             (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="/device-files"><i class="material-icons left">folder</i>File Explorer</div>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+             (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="packages"><i class="material-icons left">apps</i>My Apps</div>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+             (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="tasks"><i class="material-icons left">playlist_add_check</i>Tasks</div><br>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+             (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="tools"><i class="material-icons left">build</i>Tools</div>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+             (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';adbModal.openModal()"><i class="material-icons left">input</i>ADB Commands</div>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+             (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';openDebugger()"><i class="material-icons left">bug_report</i>Debugger</div>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+             routerLink="webview" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.loadUrl('http://tee.pub/lic/L295azlpJYk')"
+             ><i class="material-icons left">storefront</i>GiftShop</div>
       </div>
       <app-link *ngIf="appService.updateAvailable" class="waves-effect waves-light btn-flat update-available link small-button "
                 (click)="updateAvailable()" text="Update Available"></app-link>
@@ -104,14 +118,14 @@
       <i id="device-settings" routerLink="tools" mz-tooltip class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Device Settings & Tools">
         build
       </i>
-      <i (click)="webService.loadUrl('http://tee.pub/lic/L295azlpJYk')" routerLink="webview" mz-tooltip class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="SideQuest Gift Shop">
-        storefront
-      </i>
       <i mz-tooltip (click)="adbModal.openModal()" class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Run ADB commands">
         input
       </i>
       <i (click)="openDebugger()" id="open-debugger" mz-tooltip class="material-icons white-text top-menu-bar-icon" position="bottom" tooltip="Open Debugger">
         bug_report
+      </i>
+      <i (click)="webService.loadUrl('http://tee.pub/lic/L295azlpJYk')" routerLink="webview" mz-tooltip class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="SideQuest Gift Shop">
+        storefront
       </i>
       <!--<i *ngIf="appService.currentTheme === 'light'" (click)="appService.currentTheme = 'dark'" id="day-mode" mz-tooltip class="material-icons white-text no-outline" position="bottom" tooltip="Dark theme.">-->
       <!--brightness_2-->
