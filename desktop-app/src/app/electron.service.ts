@@ -73,7 +73,7 @@ export class ElectronService {
             this.spinnerService.setupConfirm().then(() => {
                 switch (this.appService.path.extname(data.name)) {
                     case '.zip':
-                        this.adbService.installZip(data.url);
+                        this.adbService.installZip(data.url, 0, 0, true);
                         break;
                     case '.obb':
                         this.adbService.installObb(data.url);

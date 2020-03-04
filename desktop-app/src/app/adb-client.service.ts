@@ -437,7 +437,14 @@ export class AdbClientService {
                 });
         });
     }
-    installAPK(filePath: string, isLocal?: boolean, shouldUninstall?: boolean, number?: number, total?: number) {
+    installAPK(
+        filePath: string,
+        isLocal?: boolean,
+        shouldUninstall?: boolean,
+        number?: number,
+        total?: number,
+        deleteAfter?: boolean
+    ) {
         return this.processService.addItem('apk_install', task => {
             if (this.deviceStatus !== ConnectionStatus.CONNECTED) {
                 return Promise.reject('Apk install failed: No device connected! ' + filePath);
@@ -466,6 +473,9 @@ export class AdbClientService {
                     })
                         .then(r => {
                             task.status = 'APK file installed ok!! ' + filePath;
+                            if (deleteAfter) {
+                                this.appService.fs.unlink(filePath, err => {});
+                            }
                             if (filePath.indexOf('com.weloveoculus.BMBF') > -1) {
                                 return this.beatonService.setBeatOnPermission(this);
                             }
@@ -796,7 +806,7 @@ export class AdbClientService {
         }
         return p;
     }
-    installZip(url, number?: number, total?: number) {
+    installZip(url, number?: number, total?: number, deleteAfter?: boolean) {
         return this.processService.addItem('file_install', async task => {
             return this.appService
                 .downloadFile(
@@ -810,7 +820,13 @@ export class AdbClientService {
                 )
                 .then(() => (task.status = 'File Downloaded OK!'))
                 .then((_path: string) =>
-                    this.installLocalZip(this.appService.path.join(this.appService.appData, 'download.zip'), false, () => {}, task)
+                    this.installLocalZip(
+                        this.appService.path.join(this.appService.appData, 'download.zip'),
+                        false,
+                        () => {},
+                        task,
+                        deleteAfter
+                    )
                 );
         });
     }
@@ -843,34 +859,6 @@ export class AdbClientService {
         if (!task) this.spinnerService.showLoader();
 
         let p = this.runAdbCommand('adb push "' + filepath + '" /sdcard/Android/obb/' + packageId + '/' + filename);
-        // let p = this.adbCommand(
-        //     'push',
-        //     {
-        //         serial: this.deviceSerial,
-        //         path: filepath,
-        //         savePath: `/sdcard/Android/obb/${packageId}/${filename}`,
-        //     },
-        //     stats => {
-        //         if (task) {
-        //             task.status =
-        //                 showTotal +
-        //                 'File uploading: ' +
-        //                 filename +
-        //                 ' ' +
-        //                 Math.round((stats.bytesTransferred / 1024 / 1024) * 100) / 100 +
-        //                 'MB';
-        //         } else {
-        //             this.spinnerService.setMessage(
-        //                 showTotal +
-        //                     'File uploading: ' +
-        //                     filename +
-        //                     ' <br>' +
-        //                     Math.round((stats.bytesTransferred / 1024 / 1024) * 100) / 100 +
-        //                     'MB'
-        //             );
-        //         }
-        //     }
-        // );
         if (cb) {
             cb();
         }
@@ -889,15 +877,19 @@ export class AdbClientService {
         }
         return p;
     }
-    async installLocalZip(filepath, dontCatchError, cb, task?) {
+    async installLocalZip(filepath, dontCatchError, cb, task?, deleteAfter?) {
         const typeBasedActions = {
             '.apk': filepath => {
-                this.installAPK(filepath, true);
+                this.installAPK(filepath, true, false, 0, 0, deleteAfter);
             },
             '.obb': filepath => {
                 if (this.appService.path.basename(filepath).match(/main.[0-9]{1,}.[a-z]{1,}.[A-z]{1,}.[A-z]{1,}.obb/)) {
                     this.processService.addItem('file_install', async task => {
-                        return this.installLocalObb(filepath, false, null, 1, 1, task);
+                        return this.installLocalObb(filepath, false, null, 1, 1, task).then(() => {
+                            if (deleteAfter) {
+                                this.appService.fs.unlink(filepath, err => {});
+                            }
+                        });
                     });
                 } else {
                     console.log('Invalid OBB');
