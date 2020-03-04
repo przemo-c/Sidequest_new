@@ -427,4 +427,8 @@ export class HeaderComponent implements OnInit {
         this.beatonService.setupBeatOnSocket(this.adbService);
         this.beatOnModal.openModal();
     }
+
+    connectionStatusTooltip() {
+        return this.isConnected() ? `Battery: ${this.adbService.batteryLevel}%` : 'No headset is currently connected.';
+    }
 }

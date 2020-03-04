@@ -2,38 +2,45 @@
   <div class="left-col">
     <div class="packs-left side-packs">
       <h4>
-        <div
-          class="waves-effect waves-light btn small-button pink-button right"
-          mz-tooltip
-          position="bottom"
+        <div class="waves-effect waves-light btn small-button pink-button right" mz-tooltip position="bottom"
           tooltip="Add a song pack." (click)="addPack.emit()">
           Add Pack
         </div>
         My Song Packs
       </h4>
       <div class="pack-container" #pack_container dragula="SONGS" [(dragulaModel)]="packs">
-        <div class="packOuter" *ngFor="let pack of packs" >
+        <div class="packOuter" *ngFor="let pack of packs">
           <i mz-tooltip tooltip="Collapse this pack" position="bottom"
-             class="material-icons right blue-text show-pack cursor"
-             (click)="pack.isOpen = !pack.isOpen">
+            class="material-icons right blue-text show-pack cursor" (click)="pack.isOpen = !pack.isOpen">
             {{pack.isOpen?'expand_less':'expand_more'}}
           </i>
-          <i mz-tooltip tooltip="Sort by Recent" position="bottom" class="material-icons right cursor" (click)="sortPack(pack,true)">swap_vert</i>
-          <i mz-tooltip tooltip="Sort Alphabetically" position="bottom" class="material-icons right cursor" (click)="sortPack(pack)">sort</i>
-          <i mz-tooltip tooltip="Remove Duplicates" position="bottom" class="material-icons right cursor" (click)="uniquePack(pack)">filter_1</i>
-          <i mz-tooltip tooltip="Edit Pack" (click)="editPack.emit(pack)" position="bottom" class="material-icons right cursor">edit</i>
-          <i mz-tooltip *ngIf="hasSelected()" (click)="addSelected(pack)" tooltip="Copy Selected Songs into this pack" position="bottom" class="material-icons right cursor">done_all</i>
-          <img *ngIf="pack.icon" [src]="pack.icon" class="pack-image"/>
+          <i mz-tooltip tooltip="Sort by recent" position="bottom" class="material-icons right cursor"
+            (click)="sortPack(pack,true)">swap_vert</i>
+          <i mz-tooltip tooltip="Sort alphabetically" position="bottom" class="material-icons right cursor"
+            (click)="sortPack(pack)">sort</i>
+          <i mz-tooltip tooltip="Remove duplicates" position="bottom" class="material-icons right cursor"
+            (click)="uniquePack(pack)">filter_1</i>
+          <i mz-tooltip tooltip="Edit pack" (click)="editPack.emit(pack)" position="bottom"
+            class="material-icons right cursor">edit</i>
+          <i mz-tooltip *ngIf="hasSelected()" (click)="addSelected(pack)" tooltip="Copy selected Songs into this pack"
+            position="bottom" class="material-icons right cursor">done_all</i>
+          <img *ngIf="pack.icon" [src]="pack.icon" class="pack-image" />
           <h5 class="name truncate">{{pack.name}}</h5>
           <div class="pack-song-container-outer">
-            <ul class="collection pack-song-container" *ngIf="pack.isOpen"  dragula="SONGS" [(dragulaModel)]="pack.levelIDs">
+            <ul class="collection pack-song-container" *ngIf="pack.isOpen" dragula="SONGS"
+              [(dragulaModel)]="pack.levelIDs">
               <li *ngFor="let song of pack.levelIDs" class="collection-song avatar">
-                <i class="material-icons cursor orange-text drag-indicator right" (click)="removeSongFromPack(song,pack)">close</i>
+                <i class="material-icons cursor orange-text drag-indicator right"
+                  (click)="removeSongFromPack(song,pack)">close</i>
                 <i class="material-icons cursor drag-indicator right" (click)="openSong.emit(song.id)">folder_open</i>
                 <img [src]="song.cover" alt="" class="circle red" />
                 <i class="material-icons cursor grey-text drag-indicator">drag_indicator</i>
-                <span class="title truncate" [ngStyle]="{'width': checkboxChecked?'calc(100% - 250px)':'calc(100% - 150px)'}">{{song.name}}</span>
-                <p class="description truncate" [ngStyle]="{'width': checkboxChecked?'calc(100% - 250px)':'calc(100% - 150px)'}">{{song._levelAuthorName?'Level Author: '+song._levelAuthorName:''}}{{song._songAuthorName?' - Song Author: '+song._songAuthorName:''}}{{song._beatsPerMinute?' - BPM: '+song._beatsPerMinute:''}}</p>
+                <span class="title truncate"
+                  [ngStyle]="{'width': checkboxChecked?'calc(100% - 250px)':'calc(100% - 150px)'}">{{song.name}}</span>
+                <p class="description truncate"
+                  [ngStyle]="{'width': checkboxChecked?'calc(100% - 250px)':'calc(100% - 150px)'}">
+                  {{song._levelAuthorName?'Level Author: '+song._levelAuthorName:''}}{{song._songAuthorName?' - Song Author: '+song._songAuthorName:''}}{{song._beatsPerMinute?' - BPM: '+song._beatsPerMinute:''}}
+                </p>
               </li>
               <li class="add-to-drag">Drop song here to add!</li>
             </ul>
@@ -46,31 +53,37 @@
     <div class="packs-right">
       <h4>
         <div class="right song-sort">
-          <i mz-tooltip tooltip="Refresh Songs" position="bottom" class="material-icons right cursor" (click)="refreshSongs.emit()">refresh</i>
-          <i mz-tooltip tooltip="Sort by Recent" position="bottom" class="material-icons right cursor" (click)="orderSongs.emit('recent')">swap_vert</i>
-          <i mz-tooltip tooltip="Sort Alphabetically" position="bottom" class="material-icons right cursor" (click)="orderSongs.emit('name')">sort</i>
-          <i mz-tooltip tooltip="Select multiple songs to add to a pack" (click)="checkboxChecked = !checkboxChecked" position="bottom" class="material-icons right cursor">check_box</i>
-          <i mz-tooltip tooltip="Select all" (click)="selectAll()" position="bottom" class="material-icons right cursor">done_all</i>
+          <i mz-tooltip tooltip="Refresh songs" position="bottom" class="material-icons right cursor"
+            (click)="refreshSongs.emit()">refresh</i>
+          <i mz-tooltip tooltip="Sort by recent" position="bottom" class="material-icons right cursor"
+            (click)="orderSongs.emit('recent')">swap_vert</i>
+          <i mz-tooltip tooltip="Sort alphabetically" position="bottom" class="material-icons right cursor"
+            (click)="orderSongs.emit('name')">sort</i>
+          <i mz-tooltip tooltip="Select multiple songs to add to a pack" (click)="checkboxChecked = !checkboxChecked"
+            position="bottom" class="material-icons right cursor">check_box</i>
+          <i mz-tooltip tooltip="Select all" (click)="selectAll()" position="bottom"
+            class="material-icons right cursor">done_all</i>
         </div>
         All My Songs
       </h4>
-      <ul class="collection song-container" #song_container  dragula="SONGS" [(dragulaModel)]="songs">
+      <ul class="collection song-container" #song_container dragula="SONGS" [(dragulaModel)]="songs">
         <li *ngFor="let song of songs;let i = index" class="collection-song avatar">
           <i class="material-icons cursor orange-text drag-indicator right" (click)="removeSong.emit(song.id)">close</i>
           <i class="material-icons cursor drag-indicator right" (click)="openSong.emit(song.id)">folder_open</i>
           <i mz-tooltip tooltip="This song does not contain all information and may not work" position="right"
-             *ngIf="!song.isValid" class="material-icons red-text drag-indicator right">warning</i>
+            *ngIf="!song.isValid" class="material-icons red-text drag-indicator right">warning</i>
           <mz-checkbox-container class="right checkbox-container" *ngIf="checkboxChecked">
-            <input mz-checkbox
-                   [label]="'Select Song'"
-                   id="select_song_{{i}}"
-                   [(ngModel)]="song.selected"
-                   type="checkbox">
+            <input mz-checkbox [label]="'Select Song'" id="select_song_{{i}}" [(ngModel)]="song.selected"
+              type="checkbox">
           </mz-checkbox-container>
           <img [src]="song.cover" alt="" class="circle red" />
           <i class="material-icons cursor grey-text drag-indicator">drag_indicator</i>
-          <span class="title truncate" [ngStyle]="{'width': checkboxChecked?'calc(100% - 290px)':'calc(100% - 170px)'}">{{song.name}}</span>
-          <p class="description truncate" [ngStyle]="{'width': checkboxChecked?'calc(100% - 290px)':'calc(100% - 170px)'}">{{song._levelAuthorName?'Level Author: '+song._levelAuthorName:''}}{{song._songAuthorName?' - Song Author: '+song._songAuthorName:''}}{{song._beatsPerMinute?' - BPM: '+song._beatsPerMinute:''}}</p>
+          <span class="title truncate"
+            [ngStyle]="{'width': checkboxChecked?'calc(100% - 290px)':'calc(100% - 170px)'}">{{song.name}}</span>
+          <p class="description truncate"
+            [ngStyle]="{'width': checkboxChecked?'calc(100% - 290px)':'calc(100% - 170px)'}">
+            {{song._levelAuthorName?'Level Author: '+song._levelAuthorName:''}}{{song._songAuthorName?' - Song Author: '+song._songAuthorName:''}}{{song._beatsPerMinute?' - BPM: '+song._beatsPerMinute:''}}
+          </p>
         </li>
       </ul>
     </div>

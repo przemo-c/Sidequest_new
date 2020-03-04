@@ -1,4 +1,4 @@
-<div class="header" >
+<div class="header">
   <div class="top-dnd-backing">
     <div class="topper"></div>
     <div class="top-banner">
@@ -7,7 +7,7 @@
         <!--<div class="apk-install">Make it your own</div>-->
         <a href="#/" class="logo">
           <!--<img src="assets/images/logo-large icony.png"/>-->
-          <img src="assets/images/new-logo.png"/>
+          <img src="assets/images/new-logo.png" />
           <!--<img class="spider-image" src="https://i.giphy.com/media/V3sjIPOXgP5Zu/giphy.webp"/>-->
         </a>
       </div>
@@ -21,10 +21,13 @@
       <!--<div class="logo no-outline" (click)="webService.webView.loadURL('http://localhost:4201');" routerLink="webview"></div>-->
       <!--<div class="header-title" #header><img src="assets/images/logo-textual.png" class="responsive-img"/></div>-->
       <!--<div class="apk-install">Drag and drop your APK/OBB files <br>over this message to install!</div>-->
-      <div class="apk-install" *ngIf="appService.isFilesOpen">Manage the files on your headset.<br>Drag and drop to move files onto your headset.</div>
-      <div class="apk-install" *ngIf="appService.isPackagesOpen">Manage the apps on your headset.<br>Click Show All to see all apps including system apps.</div>
+      <div class="apk-install" *ngIf="appService.isFilesOpen">Manage the files on your headset.<br>Drag and drop to move
+        files onto your headset.</div>
+      <div class="apk-install" *ngIf="appService.isPackagesOpen">Manage the apps on your headset.<br>Click Show All to
+        see all apps including system apps.</div>
       <div class="apk-install" *ngIf="appService.isSettingsOpen">Manage settings on your headset.</div>
-      <div class="apk-install" *ngIf="appService.isTasksOpen">Manage tasks for installing, <br>downloading and uploading from your headset.</div>
+      <div class="apk-install" *ngIf="appService.isTasksOpen">Manage tasks for installing, <br>downloading and uploading
+        from your headset.</div>
       <!--<div class="apk-install" *ngIf="appService.showCustomActions">Special thanks to-->
       <!--<app-link url="https://github.com/trishume/QuestSaberPatch" text="@trishume"></app-link>,-->
       <!--<app-link url="https://github.com/ATechAdventurer" text="@ATechAdventurer"></app-link>,<br>-->
@@ -42,89 +45,126 @@
       <!--src="{{beatonService.beatOnEnabled?'assets/images/beaton.png':'assets/images/beatoff.png'}}"-->
       <!--position="bottom" tooltip="BeatOn mods & custom songs on Beat Saber"/>-->
 
-      <div class="user-menu-back" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none'" #userMenuBack></div>
-      <div class="user-menu" #userMenu >
+      <div class="user-menu-back" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none'"
+        #userMenuBack></div>
+      <div class="user-menu" #userMenu>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-             (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.loadUrl('https://sidequestvr.com')"
-             routerLink="/webview"><i class="material-icons left">home</i>Home</div><br>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.back()"
-             routerLink="/webview" ><i class="material-icons left">arrow_back</i>Back</div>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.forward()"
-             routerLink="/webview"><i class="material-icons left">arrow_forward</i>Forward</div>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';bookmarksModal.openModal()">
+          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.loadUrl('https://sidequestvr.com')"
+          routerLink="/webview"><i class="material-icons left">home</i>Home</div><br>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.back()"
+          routerLink="/webview"><i class="material-icons left">arrow_back</i>Back</div>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.forward()"
+          routerLink="/webview"><i class="material-icons left">arrow_forward</i>Forward</div>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';bookmarksModal.openModal()">
           <i class="material-icons left">public</i>Bookmarks</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-             *ngIf="isConnected()&&osPlatform === 'win32'" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';scrcpyModal.openModal();">
+          *ngIf="isConnected()&&osPlatform === 'win32'"
+          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';scrcpyModal.openModal();">
           <i class="material-icons left">live_tv</i>Streaming</div>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text" *ngIf="adbService.deviceIp"
+          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';wifiModal.openModal()"><i
+            class="material-icons left">wifi</i>Wifi</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-             *ngIf="adbService.deviceIp" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';wifiModal.openModal()"><i class="material-icons left">wifi</i>Wifi</div>
+          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';selectAppToInstall()"><i
+            class="material-icons left">archive</i>Select APK</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-             (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';selectAppToInstall()"><i class="material-icons left">archive</i>Select APK</div>
+          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="/device-files"><i
+            class="material-icons left">folder</i>File Explorer</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-             (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="/device-files"><i class="material-icons left">folder</i>File Explorer</div>
+          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="packages"><i
+            class="material-icons left">apps</i>My Apps</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-             (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="packages"><i class="material-icons left">apps</i>My Apps</div>
+          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="tasks"><i
+            class="material-icons left">playlist_add_check</i>Tasks</div><br>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-             (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="tasks"><i class="material-icons left">playlist_add_check</i>Tasks</div><br>
+          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="tools"><i
+            class="material-icons left">build</i>Tools</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-             (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="tools"><i class="material-icons left">build</i>Tools</div>
+          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';adbModal.openModal()"><i
+            class="material-icons left">input</i>ADB Commands</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-             (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';adbModal.openModal()"><i class="material-icons left">input</i>ADB Commands</div>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text"
-             (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';openDebugger()"><i class="material-icons left">bug_report</i>Debugger</div>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text"
-             routerLink="webview" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.loadUrl('http://tee.pub/lic/L295azlpJYk')"
-             ><i class="material-icons left">storefront</i>GiftShop</div>
+          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';openDebugger()"><i
+            class="material-icons left">bug_report</i>Debugger</div>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text" routerLink="webview"
+          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.loadUrl('http://tee.pub/lic/L295azlpJYk')">
+          <i class="material-icons left">storefront</i>GiftShop</div>
       </div>
-      <app-link *ngIf="appService.updateAvailable" class="waves-effect waves-light btn-flat update-available link small-button "
-                (click)="updateAvailable()" text="Update Available"></app-link>
-      <i mz-tooltip class="material-icons white-text no-outline top-menu-bar-icon-down" position="bottom" tooltip="Menu" (click)="userMenu.style.height = 'auto';userMenuBack.style.display = 'block'">
+      <app-link *ngIf="appService.updateAvailable"
+        class="waves-effect waves-light btn-flat update-available link small-button " (click)="updateAvailable()"
+        text="Update Available"></app-link>
+      <i mz-tooltip class="material-icons white-text no-outline top-menu-bar-icon-down" position="bottom" tooltip="Menu"
+        (click)="userMenu.style.height = 'auto';userMenuBack.style.display = 'block'">
         arrow_drop_down
       </i>
-      <i mz-tooltip routerLink="/webview" (click)="webService.loadUrl('https://sidequestvr.com')" class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Home">
+      <i mz-tooltip routerLink="/webview" (click)="webService.loadUrl('https://sidequestvr.com')"
+        class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Home">
         home
       </i>
-      <i mz-tooltip routerLink="/webview" (click)="webService.back()" class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Back">
+      <i mz-tooltip routerLink="/webview" (click)="webService.back()"
+        class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Back">
         arrow_back
       </i>
-      <i mz-tooltip *ngIf="!webService.isWebviewLoading" (click)="bookmarksModal.openModal()" class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Web Browser">
+      <i mz-tooltip *ngIf="!webService.isWebviewLoading" (click)="bookmarksModal.openModal()"
+        class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Web Browser">
         public
       </i>
-      <div mz-tooltip *ngIf="webService.isWebviewLoading" class="loader-tiny top-menu-bar-icon" position="bottom" tooltip="Web Browser Loading..."></div>
-      <i mz-tooltip routerLink="/webview" (click)="webService.forward()" class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Forward">
+      <div mz-tooltip *ngIf="webService.isWebviewLoading" class="loader-tiny top-menu-bar-icon" position="bottom"
+        tooltip="Web Browser Loading..."></div>
+      <i mz-tooltip routerLink="/webview" (click)="webService.forward()"
+        class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Forward">
         arrow_forward
       </i>
-      <i mz-tooltip *ngIf="isConnected()&&osPlatform === 'win32'" (click)="scrcpyModal.openModal();" class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Stream from your headset to your PC with ScrCpy.">
+      <i mz-tooltip *ngIf="isConnected()&&osPlatform === 'win32'" (click)="scrcpyModal.openModal();"
+        class="material-icons white-text no-outline top-menu-bar-icon" position="bottom"
+        tooltip="Stream from your headset to your PC with ScrCpy.">
         live_tv
       </i>
-      <i mz-tooltip *ngIf="adbService.deviceIp" (click)="wifiModal.openModal()" class="material-icons no-outline top-menu-bar-icon" [ngClass]="{'green-text':adbService.wifiEnabled,'white-text':!adbService.wifiEnabled}" position="bottom" tooltip="Enable Wireless mode. ( Experimental ) ">
+      <i mz-tooltip *ngIf="adbService.deviceIp" (click)="wifiModal.openModal()"
+        class="material-icons no-outline top-menu-bar-icon"
+        [ngClass]="{'green-text':adbService.wifiEnabled,'white-text':!adbService.wifiEnabled}" position="bottom"
+        tooltip="Enable wireless mode. (Experimental)">
         wifi
       </i>
-      <i mz-tooltip #mainLogo (click)="selectAppToInstall()" class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Install APK file from folder.">
+      <i mz-tooltip #mainLogo (click)="selectAppToInstall()"
+        class="material-icons white-text no-outline top-menu-bar-icon" position="bottom"
+        tooltip="Install APK file from folder on computer.">
         archive
       </i>
       <i mz-tooltip class="material-icons white-text no-outline top-menu-bar-icon" routerLink="/device-files"
-         position="bottom"
-         tooltip="Manage files on the device.">
+        position="bottom" tooltip="Manage files on the headset.">
         folder
       </i>
-      <i routerLink="packages" mz-tooltip class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Currently Installed Apps">
+      <i routerLink="packages" mz-tooltip class="material-icons white-text no-outline top-menu-bar-icon"
+        position="bottom" tooltip="Currently installed apps">
         apps
       </i>
-      <i routerLink="tasks" mz-tooltip class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Running {{processService.left_length}} tasks.">
+      <i routerLink="tasks" mz-tooltip class="material-icons white-text no-outline top-menu-bar-icon" position="bottom"
+        tooltip="Running {{processService.left_length}} tasks.">
         playlist_add_check
-      </i><span routerLink="tasks" mz-tooltip *ngIf="processService.left_length" position="bottom" tooltip="Running {{processService.left_length}} tasks." class="process-badge pink-button">{{processService.left_length>100?'99+':processService.left_length}}</span>
-      <span routerLink="tasks" mz-tooltip *ngIf="!processService.left_length&&processService.failed_length" position="bottom" tooltip="{{processService.failed_length}} failed tasks." class="process-badge pink-button red">{{processService.failed_length>100?'99+':processService.failed_length}}</span>
-      <i id="device-settings" routerLink="tools" mz-tooltip class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Device Settings & Tools">
+      </i><span routerLink="tasks" mz-tooltip *ngIf="processService.left_length" position="bottom"
+        tooltip="Running {{processService.left_length}} tasks."
+        class="process-badge pink-button">{{processService.left_length>100?'99+':processService.left_length}}</span>
+      <span routerLink="tasks" mz-tooltip *ngIf="!processService.left_length&&processService.failed_length"
+        position="bottom" tooltip="{{processService.failed_length}} failed tasks."
+        class="process-badge pink-button red">{{processService.failed_length>100?'99+':processService.failed_length}}</span>
+      <i id="device-settings" routerLink="tools" mz-tooltip
+        class="material-icons white-text no-outline top-menu-bar-icon" position="bottom"
+        tooltip="Device settings & tools">
         build
       </i>
-      <i mz-tooltip (click)="adbModal.openModal()" class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Run ADB commands">
+      <i mz-tooltip (click)="adbModal.openModal()" class="material-icons white-text no-outline top-menu-bar-icon"
+        position="bottom" tooltip="Run ADB commands">
         input
       </i>
-      <i (click)="openDebugger()" id="open-debugger" mz-tooltip class="material-icons white-text top-menu-bar-icon" position="bottom" tooltip="Open Debugger">
+      <i (click)="openDebugger()" id="open-debugger" mz-tooltip class="material-icons white-text top-menu-bar-icon"
+        position="bottom" tooltip="Open debugger">
         bug_report
       </i>
-      <i (click)="webService.loadUrl('http://tee.pub/lic/L295azlpJYk')" routerLink="webview" mz-tooltip class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="SideQuest Gift Shop">
+      <i (click)="webService.loadUrl('http://tee.pub/lic/L295azlpJYk')" routerLink="webview" mz-tooltip
+        class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="SideQuest gift shop">
         storefront
       </i>
       <!--<i *ngIf="appService.currentTheme === 'light'" (click)="appService.currentTheme = 'dark'" id="day-mode" mz-tooltip class="material-icons white-text no-outline" position="bottom" tooltip="Dark theme.">-->
@@ -133,31 +173,33 @@
       <!--<i *ngIf="appService.currentTheme === 'dark'" (click)="appService.currentTheme = 'light'"  id="night-mode" mz-tooltip class="material-icons white-text no-outline" position="bottom" tooltip="Light theme.">-->
       <!--brightness_5-->
       <!--</i>-->
-      <i (click)="minimizeApp()" mz-tooltip class="material-icons white-text no-outline" position="bottom" tooltip="Minimize the app to the taskbar.">
+      <i (click)="minimizeApp()" mz-tooltip class="material-icons white-text no-outline" position="bottom"
+        tooltip="Minimize SideQuest.">
         minimize
       </i>
-      <i (click)="maximizeApp()" mz-tooltip class="material-icons white-text no-outline" position="bottom" tooltip="Maximize the app to fill your screen.">
+      <i (click)="maximizeApp()" mz-tooltip class="material-icons white-text no-outline" position="bottom"
+        tooltip="Maximize SideQuest.">
         aspect_ratio
       </i>
-      <i (click)="closeAppModal.openModal()" mz-tooltip class="material-icons white-text no-outline" position="bottom" tooltip="Close the app.">
+      <i (click)="closeAppModal.openModal()" mz-tooltip class="material-icons white-text no-outline" position="bottom"
+        tooltip="Close SideQuest.">
         close
       </i>
     </div>
-    <div
-      id="connection-status"
-      class="connection-status-unauthorized"
-      [ngClass]="getConnectionCssClass()"
-      mz-tooltip
-      position="bottom"
-      tooltip="{{ isConnected() ? 'Battery: ' + adbService.batteryLevel + '%' : 'No device is currently connected'}}">
-      <div id="connection-status-message">v{{appService.versionName}}&nbsp;&nbsp;{{adbService.deviceStatusMessage}}</div>
+    <div id="connection-status" class="connection-status-unauthorized" [ngClass]="getConnectionCssClass()" mz-tooltip
+      position="bottom" [tooltip]="connectionStatusTooltip()">
+      <div id="connection-status-message">v{{appService.versionName}}&nbsp;&nbsp;{{adbService.deviceStatusMessage}}
+      </div>
     </div>
-    <div *ngIf="appService.showRepo" (click)="addRepoModal.openModal()" class="waves-effect waves-light btn-flat add-repo small-button white-text">
+    <div *ngIf="appService.showRepo" (click)="addRepoModal.openModal()"
+      class="waves-effect waves-light btn-flat add-repo small-button white-text" mz-tooltip
+      tooltip="Add app repository.">
       Add Repo
     </div>
     <div *ngIf="appService.showBrowserBar" class="beast-saber-buttons">
-      <a class="waves-effect waves-light synthrideerz" (click)="webService.loadUrl('https://synthriderz.com/beatmaps/recent')">
-        <img src="assets/images/Synth.png" class="responsive-img"/></a>&nbsp;&nbsp;&nbsp;
+      <a class="waves-effect waves-light synthrideerz"
+        (click)="webService.loadUrl('https://synthriderz.com/beatmaps/recent')">
+        <img src="assets/images/Synth.png" class="responsive-img" /></a>&nbsp;&nbsp;&nbsp;
       <!--<a class="waves-effect waves-light btn-flat no-outline small-button white-text" (click)="webService.loadUrl('https://sidequestvr.com/#/account')">-->
       <!--Dashboard</a>&nbsp;&nbsp;&nbsp;-->
       <!--<a *ngIf="beatonService.beatOnEnabled&&adbService.deviceIp" class="waves-effect waves-light btn-flat no-outline small-button white-text" (click)="webService.loadUrl('http://'+adbService.deviceIp+':50000')">-->
@@ -170,38 +212,32 @@
       <!--<i class="material-icons left">queue_music</i>My Downloads</a>-->
     </div>
     <div *ngIf="appService.isFilesOpen" class="beast-saber-buttons">
-      <a class="waves-effect waves-light synthrideerz" (click)="appService.filesComponent.open('/sdcard/Android/data/com.kluge.SynthRiders/files/CustomSongs/')"
-      mz-tooltip tooltip="SynthRiders">
-        <img src="assets/images/Synth.png" class="responsive-img"/></a>&nbsp;&nbsp;&nbsp;
-      <a class="waves-effect waves-light synthrideerz" (click)="appService.filesComponent.open('/sdcard/Android/data/com.playito.songbeater/CustomSongs/')"
-      mz-tooltip tooltip="Song Beater">
-        <img src="assets/images/song-beater.png" class="responsive-img"/></a>&nbsp;&nbsp;&nbsp;
-      <a class="waves-effect waves-light synthrideerz" (click)="appService.filesComponent.open('/sdcard/Android/data/com.PavelMarceluch.VRtuos/files/Midis/')"
-         mz-tooltip tooltip="VRtuos">
-        <img src="assets/images/VRtous.png" class="responsive-img"/></a>&nbsp;&nbsp;&nbsp;
+      <a class="waves-effect waves-light synthrideerz"
+        (click)="appService.filesComponent.open('/sdcard/Android/data/com.kluge.SynthRiders/files/CustomSongs/')"
+        mz-tooltip tooltip="SynthRiders">
+        <img src="assets/images/Synth.png" class="responsive-img" /></a>&nbsp;&nbsp;&nbsp;
+      <a class="waves-effect waves-light synthrideerz"
+        (click)="appService.filesComponent.open('/sdcard/Android/data/com.playito.songbeater/CustomSongs/')" mz-tooltip
+        tooltip="Song Beater">
+        <img src="assets/images/song-beater.png" class="responsive-img" /></a>&nbsp;&nbsp;&nbsp;
+      <a class="waves-effect waves-light synthrideerz"
+        (click)="appService.filesComponent.open('/sdcard/Android/data/com.PavelMarceluch.VRtuos/files/Midis/')"
+        mz-tooltip tooltip="VRtuos">
+        <img src="assets/images/VRtous.png" class="responsive-img" /></a>&nbsp;&nbsp;&nbsp;
     </div>
     <div class="sync-songs" *ngIf="appService.showTaskActions">
-      <div
-        class="waves-effect waves-light btn small-button pink-button"
-        mz-tooltip
-        position="bottom"
-        tooltip="Clear out the finished items." (click)="processService.clearDone()">
+      <div class="waves-effect waves-light btn small-button pink-button" mz-tooltip position="bottom"
+        tooltip="Clear out the finished tasks." (click)="processService.clearDone()">
         Clear Done
       </div>
       &nbsp;&nbsp;
-      <div
-        class="waves-effect waves-light btn small-button pink-button"
-        mz-tooltip
-        position="bottom"
-        tooltip="Restart the failed items." (click)="processService.retryFailed()">
+      <div class="waves-effect waves-light btn small-button pink-button" mz-tooltip position="bottom"
+        tooltip="Restart the failed tasks." (click)="processService.retryFailed()">
         Retry Failed
       </div>
       &nbsp;&nbsp;
-      <div
-        class="waves-effect waves-light btn small-button pink-button"
-        mz-tooltip
-        position="bottom"
-        tooltip="Clear out the failed items." (click)="processService.clearFailed()">
+      <div class="waves-effect waves-light btn small-button pink-button" mz-tooltip position="bottom"
+        tooltip="Clear out the failed tasks." (click)="processService.clearFailed()">
         Clear Failed
       </div>
       &nbsp;&nbsp;
@@ -209,35 +245,24 @@
     </div>
     <div class="sync-songs" *ngIf="appService.showCustomActions">
       <span class="beat-saber-version"></span>&nbsp;&nbsp;
-      <div
-        class="waves-effect waves-light btn small-button pink-button"
-        mz-tooltip
-        position="bottom"
+      <div class="waves-effect waves-light btn small-button pink-button" mz-tooltip position="bottom"
         tooltip="Open your custom levels folder." (click)="appService.openFolder(folder.BSABER)">
         Open Songs Folder
       </div>
       &nbsp;&nbsp;
-      <div
-        class="waves-effect waves-light btn small-button pink-button"
-        mz-tooltip
-        position="bottom"
-        tooltip="Manage your APK and Data backups." routerLink="packages/com.beatgames.beatsaber">
+      <div class="waves-effect waves-light btn small-button pink-button" mz-tooltip position="bottom"
+        tooltip="Manage your APK and data backups." routerLink="packages/com.beatgames.beatsaber">
         Backups
       </div>
       &nbsp;&nbsp;
-      <div
-        class="waves-effect waves-light btn small-button pink-button"
-        mz-tooltip
-        position="bottom"
-        tooltip="Sync your songs to beat saber." (click)="beatonService.setupBeatOnSocket(this.adbService);beatonService.syncSongs(adbService)">
+      <div class="waves-effect waves-light btn small-button pink-button" mz-tooltip position="bottom"
+        tooltip="Sync your songs to Beat Saber on the headset."
+        (click)="beatonService.setupBeatOnSocket(this.adbService);beatonService.syncSongs(adbService)">
         Sync to Beat On
       </div>
       &nbsp;&nbsp;
-      <div
-        class="waves-effect waves-light btn small-button pink-button"
-        mz-tooltip
-        position="bottom"
-        tooltip="Build a new beat saber APK and install these songs." (click)="openSyncSongs()">
+      <div class="waves-effect waves-light btn small-button pink-button" mz-tooltip position="bottom"
+        tooltip="Build a new Beat Saber APK and install these songs." (click)="openSyncSongs()">
         Sync Songs
       </div>
     </div>
@@ -268,7 +293,8 @@
           </label>
         </div>
         <a class="waves-effect waves-dark btn search-button-margin white black-text">search</a>
-        <a class="waves-effect waves-dark btn search-button-margin white black-text" (click)="selectAppToInstall()">Pick APK/OBB</a>
+        <a class="waves-effect waves-dark btn search-button-margin white black-text" (click)="selectAppToInstall()">Pick
+          APK/OBB</a>
       </div>
       <div class="filters" style="display: none">
         <div class="input-field inline filter ">
@@ -291,7 +317,7 @@
     <div class="chip">https://example.com/fdroid/repo/</div>
     <br />
     <div class="input-field repo-url">
-      <input id="repoUrl" type="text" [(ngModel)]="addrepoUrl"/>
+      <input id="repoUrl" type="text" [(ngModel)]="addrepoUrl" />
       <label for="repoUrl">Repo Url</label>
     </div>
 
@@ -312,34 +338,35 @@
     <div class="center-align">
       <h5>Custom Url</h5>
       <div class="input-field inline browser-input">
-        <input id="web_address" type="text" [(ngModel)]="webService.currentAddress" (keyup)="gogo($event)" placeholder="Address" />
+        <input id="web_address" type="text" [(ngModel)]="webService.currentAddress" (keyup)="gogo($event)"
+          placeholder="Address" />
         <label class="active label-dark-theme" for="web_address">
           Address
         </label>
       </div>
       <a class="waves-effect waves-dark btn search-button-margin white black-text" routerLink="/webview"
-         (click)="webService.loadUrl(webService.currentAddress);" mz-modal-close>Open</a>
+        (click)="webService.loadUrl(webService.currentAddress);" mz-modal-close>Open</a>
 
       <br><br>
 
       <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-         (click)="webService.loadUrl('https://sidequestvr.com');" mz-modal-close>SideQuest Home</a>
+        (click)="webService.loadUrl('https://sidequestvr.com');" mz-modal-close>SideQuest Home</a>
       <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-         (click)="webService.loadUrl('https://synthriderz.com');" mz-modal-close>SynthRiderz</a>
+        (click)="webService.loadUrl('https://synthriderz.com');" mz-modal-close>SynthRiderz</a>
       <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-         (click)="webService.loadUrl('http://songbeater.com/');" mz-modal-close>Song Beater</a>
+        (click)="webService.loadUrl('http://songbeater.com/');" mz-modal-close>Song Beater</a>
       <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-         (click)="webService.loadUrl('https://bsaber.com');" mz-modal-close>BeastSaber</a>
+        (click)="webService.loadUrl('https://bsaber.com');" mz-modal-close>BeastSaber</a>
       <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-         (click)="webService.loadUrl('https://beatsaver.com');" mz-modal-close>BeatSaver</a>
+        (click)="webService.loadUrl('https://beatsaver.com');" mz-modal-close>BeatSaver</a>
       <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-         (click)="webService.loadUrl('https://github.com');" mz-modal-close>Github</a>
+        (click)="webService.loadUrl('https://github.com');" mz-modal-close>Github</a>
       <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-         (click)="webService.loadUrl('https://discordapp.com/');" mz-modal-close>Discord</a>
+        (click)="webService.loadUrl('https://discordapp.com/');" mz-modal-close>Discord</a>
       <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-         (click)="webService.loadUrl('https://itch.io');" mz-modal-close>Itch.io</a>
+        (click)="webService.loadUrl('https://itch.io');" mz-modal-close>Itch.io</a>
       <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-         (click)="webService.loadUrl('https://google.com');" mz-modal-close>Google</a>
+        (click)="webService.loadUrl('https://google.com');" mz-modal-close>Google</a>
 
     </div>
 
@@ -359,7 +386,9 @@
       Enable wifi mode to install apps wirelessly.<br>
       <div class="chip">Experimental</div>
       <br><br><br>
-      <i mz-tooltip class="material-icons large cursor" [ngClass]="{'green-text':adbService.wifiEnabled}" (click)="adbService.wifiEnabled=!adbService.wifiEnabled;adbService.toggleWifiMode()" position="bottom" tooltip="Enable Wireless mode. ( Experimental ) ">
+      <i mz-tooltip class="material-icons large cursor" [ngClass]="{'green-text':adbService.wifiEnabled}"
+        (click)="adbService.wifiEnabled=!adbService.wifiEnabled;adbService.toggleWifiMode()" position="bottom"
+        tooltip="Enable wireless mode. (Experimental)">
         wifi
       </i>
       <br>
@@ -367,9 +396,11 @@
       <div>
         <h5>Device IP:</h5>
         {{adbService.deviceIp}}<br>
-        <a class="waves-effect waves-dark btn search-button-margin white black-text" mz-modal-close (click)="connectWifi()">Connect</a>
+        <a class="waves-effect waves-dark btn search-button-margin white black-text" mz-modal-close
+          (click)="connectWifi()">Connect</a>
         <br><br>
-        <a class="waves-effect waves-dark btn search-button-margin white black-text" mz-modal-close (click)="adbCommandToRun = 'adb disconnect';runAdbCommand()">Reset</a>
+        <a class="waves-effect waves-dark btn search-button-margin white black-text" mz-modal-close
+          (click)="adbCommandToRun = 'adb disconnect';runAdbCommand()">Reset</a>
       </div>
     </div>
   </mz-modal-content>
@@ -383,35 +414,31 @@
     <h4>Run ADB Command</h4>
   </mz-modal-header>
   <mz-modal-content>
-    Run an ADB command from here to be able to see the output. Use this to troubleshoot issues or perform advanced operations. Please note wireless ADB is not supported but we provide the following example commands for you to experiment with.
+    Run an ADB command from here to be able to see the output. Use this to troubleshoot issues or perform advanced
+    operations. Please note wireless ADB is not supported but we provide the following example commands for you to
+    experiment with.
     <br><br>
     To enable wifi click "Enable Wifi ADB" then "Connect to Wifi ADB" and finally disconnect your usb cable.
     <br><br>
-    <div class="chip pointer purple white-text"
-         mzTooltip tooltip="adb tcpip 5555" position="bottom"
-         (click)="adbCommandToRun = 'adb tcpip 5555';runAdbCommand()">Enable Wifi ADB</div>
-    <div *ngIf="adbService.deviceIp"
-         mzTooltip tooltip="adb connect {{adbService.deviceIp}}:5555" position="bottom"
-         class="chip pointer purple white-text"
-         (click)="adbCommandToRun = 'adb connect '+adbService.deviceIp+':5555';runAdbCommand()">Connect to Wifi ADB</div><br><br>
-    <div class="chip pointer green white-text"
-         mzTooltip tooltip="adb devices" position="bottom"
-         (click)="adbCommandToRun = 'adb devices';runAdbCommand()">List Devices</div>
-    <div class="chip pointer blue white-text"
-         mzTooltip tooltip="adb usb" position="bottom"
-         (click)="adbCommandToRun = 'adb usb';runAdbCommand()">Enable USB ADB</div>
-    <div class="chip pointer orange white-text"
-         mzTooltip tooltip="adb disconnect" position="bottom"
-         (click)="adbCommandToRun = 'adb disconnect';runAdbCommand()">Disconnect Everything</div>
-    <div class="chip pointer orange white-text"
-         mzTooltip tooltip="adb kill-server" position="bottom"
-         (click)="adbCommandToRun = 'adb kill-server';runAdbCommand()">Reset ADB</div>
-    <div class="chip pointer red white-text"
-         mzTooltip tooltip="adb reboot" position="bottom"
-         (click)="adbCommandToRun = 'adb reboot';runAdbCommand()">Reboot Headset</div>
+    <div class="chip pointer purple white-text" mzTooltip tooltip="adb tcpip 5555" position="bottom"
+      (click)="adbCommandToRun = 'adb tcpip 5555';runAdbCommand()">Enable Wifi ADB</div>
+    <div *ngIf="adbService.deviceIp" mzTooltip tooltip="adb connect {{adbService.deviceIp}}:5555" position="bottom"
+      class="chip pointer purple white-text"
+      (click)="adbCommandToRun = 'adb connect '+adbService.deviceIp+':5555';runAdbCommand()">Connect to Wifi ADB</div>
+    <br><br>
+    <div class="chip pointer green white-text" mzTooltip tooltip="adb devices" position="bottom"
+      (click)="adbCommandToRun = 'adb devices';runAdbCommand()">List Devices</div>
+    <div class="chip pointer blue white-text" mzTooltip tooltip="adb usb" position="bottom"
+      (click)="adbCommandToRun = 'adb usb';runAdbCommand()">Enable USB ADB</div>
+    <div class="chip pointer orange white-text" mzTooltip tooltip="adb disconnect" position="bottom"
+      (click)="adbCommandToRun = 'adb disconnect';runAdbCommand()">Disconnect Everything</div>
+    <div class="chip pointer orange white-text" mzTooltip tooltip="adb kill-server" position="bottom"
+      (click)="adbCommandToRun = 'adb kill-server';runAdbCommand()">Reset ADB</div>
+    <div class="chip pointer red white-text" mzTooltip tooltip="adb reboot" position="bottom"
+      (click)="adbCommandToRun = 'adb reboot';runAdbCommand()">Reboot Headset</div>
     <div class="button-section">
       <div class="input-field">
-        <input id="adbCommand"  type="text" [(ngModel)]="adbCommandToRun" placeholder="Command To Run..."/>
+        <input id="adbCommand" type="text" [(ngModel)]="adbCommandToRun" placeholder="Command To Run..." />
       </div>
       <code>
         <pre *ngIf="adbService.adbResponse">
@@ -462,12 +489,16 @@
     <h4>Patch Completed - Now Install the Custom Song APK</h4>
   </mz-modal-header>
   <mz-modal-content>
-    Below is the results of the patch process. If it shows that some songs were skipped you may need to investigate why. In some cases we have seen `.ogg` files renamed to `.egg` files and these need to be fixed in the songs to get them to patch.
+    Below is the results of the patch process. If it shows that some songs were skipped you may need to investigate why.
+    In some cases we have seen `.ogg` files renamed to `.egg` files and these need to be fixed in the songs to get them
+    to patch.
     <br><br>
     Patch Results:
     <div *ngIf="qspResponse">
-      <div *ngIf="qspResponse.presentLevels&&qspResponse.presentLevels.length"> <b>Current Levels:</b><br>{{(qspResponse.presentLevels||[]).join(', ')}}<br></div>
-      <div *ngIf="qspResponse.installedLevels&&qspResponse.installedLevels.length"> <b>New Levels:</b><br>{{(qspResponse.installedLevels||[]).join(', ')}}<br></div>
+      <div *ngIf="qspResponse.presentLevels&&qspResponse.presentLevels.length"> <b>Current
+          Levels:</b><br>{{(qspResponse.presentLevels||[]).join(', ')}}<br></div>
+      <div *ngIf="qspResponse.installedLevels&&qspResponse.installedLevels.length"> <b>New
+          Levels:</b><br>{{(qspResponse.installedLevels||[]).join(', ')}}<br></div>
       <div *ngIf="installSkippedLength()"> <b>Skipped Levels:</b><br>{{getInstallSkipped()}}<br></div>
     </div>
 
@@ -495,7 +526,7 @@
         <div class="switch">
           <label>
             Off
-            <input type="checkbox" [(ngModel)]="scrcpy_options.always_on_top"/>
+            <input type="checkbox" [(ngModel)]="scrcpy_options.always_on_top" />
             <span class="lever"></span>
             On
           </label>
@@ -504,21 +535,23 @@
       <div class="col s6 fixed-height">
         Bit Rate
         <div class="grey-text small">
-          Encode the video at the given bit-rate, expressed in bits/s. Unit suffixes are supported: 'K' (x1000) and 'M' (x1000000).
+          Encode the video at the given bit-rate, expressed in bits/s. Unit suffixes are supported: 'K' (x1000) and 'M'
+          (x1000000).
         </div>
       </div>
       <div class="col s6 input-field fixed-height">
-        <input id="bit_rate_" [(ngModel)]="scrcpy_options.bit_rate" type="text"/>
+        <input id="bit_rate_" [(ngModel)]="scrcpy_options.bit_rate" type="text" />
         <label for="bit_rate_" class="active">Bit Rate</label>
       </div>
       <div class="col s6 fixed-height">
         Crop
         <div class="grey-text small">
-          Crop the device screen on the server. The values are expressed in the device natural orientation (typically, portrait for a phone, landscape for a tablet). Any MaxSize value is computed on the cropped size.
+          Crop the device screen on the server. The values are expressed in the device natural orientation (typically,
+          portrait for a phone, landscape for a tablet). Any MaxSize value is computed on the cropped size.
         </div>
       </div>
       <div class="col s6 input-field fixed-height">
-        <input id="crop_" [(ngModel)]="scrcpy_options.crop" type="text"/>
+        <input id="crop_" [(ngModel)]="scrcpy_options.crop" type="text" />
         <label for="crop_" class="active">Crop</label>
       </div>
       <div class="col s6 fixed-height">
@@ -531,7 +564,7 @@
         <div class="switch">
           <label>
             Off
-            <input type="checkbox" [(ngModel)]="scrcpy_options.fullscreen"/>
+            <input type="checkbox" [(ngModel)]="scrcpy_options.fullscreen" />
             <span class="lever"></span>
             On
           </label>
@@ -547,7 +580,7 @@
         <div class="switch">
           <label>
             Off
-            <input type="checkbox" [(ngModel)]="scrcpy_options.no_control"/>
+            <input type="checkbox" [(ngModel)]="scrcpy_options.no_control" />
             <span class="lever"></span>
             On
           </label>
@@ -560,17 +593,18 @@
         </div>
       </div>
       <div class="col s6 input-field fixed-height">
-        <input id="max_fps_" [(ngModel)]="scrcpy_options.max_fps" type="text"/>
+        <input id="max_fps_" [(ngModel)]="scrcpy_options.max_fps" type="text" />
         <label for="max_fps_" class="active">Max FPS</label>
       </div>
       <div class="col s6 fixed-height">
         Max Size
         <div class="grey-text small">
-          Limit both the width and height of the video to value. The other dimension is computed so that the device aspect-ratio is preserved. 0 is unlimited.
+          Limit both the width and height of the video to value. The other dimension is computed so that the device
+          aspect-ratio is preserved. 0 is unlimited.
         </div>
       </div>
       <div class="col s6 input-field fixed-height">
-        <input id="max_size_" [(ngModel)]="scrcpy_options.max_size" type="text"/>
+        <input id="max_size_" [(ngModel)]="scrcpy_options.max_size" type="text" />
         <label for="max_size_" class="active">Max Size</label>
       </div>
     </div>
@@ -587,9 +621,12 @@
     <h4>Patch Error - Let's get you fixed!</h4>
   </mz-modal-header>
   <mz-modal-content>
-    It looks like there was an error patching your Beat Saber APK file. This can be frustrating but there are some options to get you going again.
-    We have added a troubleshooting section to the tools screen with information and guided solutions to fix the most common issues.
-    These are quick solutions and only take a few minutes. Feel free to connect with us on <app-link url="https://discord.gg/r38T5rR" [isDark]="true" text="Discord"></app-link> to say hello and get support.
+    It looks like there was an error patching your Beat Saber APK file. This can be frustrating but there are some
+    options to get you going again.
+    We have added a troubleshooting section to the tools screen with information and guided solutions to fix the most
+    common issues.
+    These are quick solutions and only take a few minutes. Feel free to connect with us on <app-link
+      url="https://discord.gg/r38T5rR" [isDark]="true" text="Discord"></app-link> to say hello and get support.
     <br><br>Thank you!
   </mz-modal-content>
   <mz-modal-footer>
@@ -602,7 +639,7 @@
   <mz-modal-header>
     <h4>
       <a class="small-button waves-effect waves-light btn search-button-margin pink-button right"
-         (click)="appService.opn('https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CRKPPSJ4MUS3J&source=url')">
+        (click)="appService.opn('https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CRKPPSJ4MUS3J&source=url')">
         Support BeatOn on Paypal
       </a>
       BeatOn
@@ -626,23 +663,27 @@
     <!--<a class="waves-effect waves-light btn search-button-margin pink-button small-button no-wrap"-->
     <!--(click)="pingHeadset()">Try Again</a>-->
     <!--</div>-->
-    <div class="center-align" >
+    <div class="center-align">
       <!--*ngIf="isAlive&&!isAliveChecking"-->
       WARNING: BeatOn is no longer supported and may be removed from SideQuest soon.
       <br>
       <br>
       <br>
-      <img class="cursor" src="{{beatonService.beatOnEnabled?'assets/images/beaton.png':'assets/images/beatoff.png'}}" (click)="beatonService.beatOnEnabled = !beatonService.beatOnEnabled;toggleBeatOn()"/>
-      <br><app-loading-spinner-small *ngIf="beatOnLoading"></app-loading-spinner-small>
+      <img class="cursor" src="{{beatonService.beatOnEnabled?'assets/images/beaton.png':'assets/images/beatoff.png'}}"
+        (click)="beatonService.beatOnEnabled = !beatonService.beatOnEnabled;toggleBeatOn()" />
+      <br>
+      <app-loading-spinner-small *ngIf="beatOnLoading"></app-loading-spinner-small>
       <div>
         <div class="row">
           <div class="col s4 left-align padding-top">
             <div *ngIf="beatonService.beatOnEnabled">
               BeatOn PID: {{beatonService.beatOnPID}}<br>
               <div *ngIf="beatonService.beatOnStatus">
-                BeatOn Status: {{beatonService.beatOnStatus.CurrentStatus === 'ModInstalled' ? 'Installed' : 'Not Installed'}}<br>
+                BeatOn Status:
+                {{beatonService.beatOnStatus.CurrentStatus === 'ModInstalled' ? 'Installed' : 'Not Installed'}}<br>
                 Beat Saber Installed: {{beatonService.beatOnStatus.IsBeatSaberInstalled? 'Yes' : 'No'}}
-                <div *ngIf="beatonService.UpgradeRestoreAvailable"><br>BeatOn Restore Available!! Click Restore BeatOn!!</div>
+                <div *ngIf="beatonService.UpgradeRestoreAvailable"><br>BeatOn Restore Available!! Click Restore BeatOn!!
+                </div>
               </div>
             </div>
           </div>
@@ -658,35 +699,36 @@
           </div>
           <div class="col s4 right-align padding-top">
             <div *ngIf="beatonService.beatOnEnabled">
-              <h5 *ngIf="!bsaberService.hasBackup && !beatonService.beatOnStatus.IsBeatSaberInstalled"> Please Install beat saber from the Oculus Store on your headset!</h5>
+              <h5 *ngIf="!bsaberService.hasBackup && !beatonService.beatOnStatus.IsBeatSaberInstalled"> Please Install
+                beat saber from the Oculus Store on your headset!</h5>
               <div *ngIf="beatonService.beatOnStatus.CurrentStatus === 'ModInstalled'">
                 <a class="waves-effect waves-light btn search-button-margin pink-button small-button no-wrap"
-                   (click)="beatOnModal.closeModal();router.navigateByUrl('webview');webService.loadUrl('http://'+adbService.deviceIp+':50000');">
+                  (click)="beatOnModal.closeModal();router.navigateByUrl('webview');webService.loadUrl('http://'+adbService.deviceIp+':50000');">
                   Open BeatOn
                 </a><br><br>
               </div>
-              <div *ngIf="beatonService.beatOnStatus.CurrentStatus !== 'ModInstalled' && beatonService.beatOnStatus.IsBeatSaberInstalled">
+              <div
+                *ngIf="beatonService.beatOnStatus.CurrentStatus !== 'ModInstalled' && beatonService.beatOnStatus.IsBeatSaberInstalled">
                 <a class="waves-effect waves-light btn search-button-margin pink-button small-button no-wrap"
-                   (click)="beatonService.setupBeatOn(adbService);beatOnModal.closeModal();">
+                  (click)="beatonService.setupBeatOn(adbService);beatOnModal.closeModal();">
                   Install BeatOn
                 </a><br><br>
               </div>
               <div *ngIf="bsaberService.hasBackup">
                 <a class="waves-effect waves-light btn search-button-margin pink-button small-button no-wrap"
-                   (click)="beatOnModal.closeModal();installBaseAPK()">
+                  (click)="beatOnModal.closeModal();installBaseAPK()">
                   Reset BeatSaber
                 </a><br><br>
               </div>
               <div *ngIf="!bsaberService.hasBackup && beatonService.beatOnStatus.IsBeatSaberInstalled">
                 <a class="waves-effect waves-light btn search-button-margin pink-button small-button no-wrap"
-                   (click)="beatOnModal.closeModal()"
-                   routerLink="packages/com.beatgames.beatsaber">
+                  (click)="beatOnModal.closeModal()" routerLink="packages/com.beatgames.beatsaber">
                   Backup BeatSaber
                 </a>
               </div>
               <div *ngIf="beatonService.UpgradeRestoreAvailable">
                 <a class="waves-effect waves-light btn search-button-margin pink-button small-button no-wrap"
-                   (click)="confirmRestore();beatOnModal.closeModal();">
+                  (click)="confirmRestore();beatOnModal.closeModal();">
                   Restore BeatOn
                 </a><br><br>
               </div>
