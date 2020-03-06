@@ -113,6 +113,12 @@ To reset things
 yarn reset
 ```
 
+## Windows Silent Install
+
+```
+"/S" for silent install and "/D=<path>"
+```
+
 ## Contribution Guidelines
 
 We are pretty relaxed at this point, in that we will accept arbitrary PRs, but all collaborators must agree on a way forward. We live by the [Contributor Covenant](https://www.contributor-covenant.org/)
