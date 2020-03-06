@@ -113,7 +113,7 @@ To reset things
 yarn reset
 ```
 
-## Windows SIlent Install
+## Windows Silent Install
 
 ```
 "/S" for silent install and "/D=<path>"
