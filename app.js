@@ -21,7 +21,7 @@ function createWindow() {
     mainWindow.maximize();
     if (process.env.NODE_ENV === 'dev') {
         mainWindow.loadURL('http://localhost:4205');
-        //mainWindow.webContents.openDevTools();
+        mainWindow.webContents.openDevTools();
     } else {
         mainWindow.loadFile('build/app/index.html');
     }

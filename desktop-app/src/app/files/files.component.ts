@@ -296,8 +296,8 @@ export class FilesComponent implements OnInit {
         this.breadcrumbs.push({ path, name });
     }
     open(path: string) {
-        this.spinnerService.showLoader();
-        this.spinnerService.setMessage('Loading files...');
+        //this.spinnerService.showLoader();
+        //this.spinnerService.setMessage('Loading files...');
         this.currentPath = path;
         this.breadcrumbs = [];
         this.selectedFiles.length = 0;
@@ -318,7 +318,7 @@ export class FilesComponent implements OnInit {
                 return textA < textB ? -1 : textA > textB ? 1 : 0;
             });
             this.files = this.files.filter(d => d.icon === 'folder').concat(this.files.filter(d => d.icon !== 'folder'));
-            this.spinnerService.hideLoader();
+            //this.spinnerService.hideLoader();
         });
     }
     openSaveLocation() {

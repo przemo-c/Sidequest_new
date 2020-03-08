@@ -55,7 +55,7 @@ export class AppService {
     titleEle: HTMLElement;
     webService: WebviewService;
     currentTheme: string = 'dark';
-    versionName: string = '0.9.0';
+    versionName: string;
     showBack: boolean = false;
     backupPath: string;
     scrcpyBinaryPath: string;
@@ -94,6 +94,7 @@ export class AppService {
             this.backupPath = this.path.join(this.appData, 'backups');
             localStorage.setItem('backup-path', this.backupPath);
         }
+        this.versionName = 'v' + this.remote.app.getVersion();
     }
     getBase64Image(imagePath: string) {
         try {

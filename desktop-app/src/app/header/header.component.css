@@ -172,14 +172,20 @@
   margin-top: -2px;
   color: white;
 }
-#connection-status {
-  width: 20px;
-  height: 20px;
-  border-radius: 10px;
+#connection-status-container{
   position: absolute;
   left: 10px;
   top: 8px;
   -webkit-app-region: no-drag;
+}
+.connection-device-select{
+  vertical-align: top;
+}
+#connection-status {
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  display: inline-block;
 }
 .connection-status-connected {
   background-color: #4caf50;
@@ -192,6 +198,9 @@
 }
 .connection-status-too-many {
   background-color: #9c27b0;
+}
+.beast-saber-buttons{
+  width: calc(100% - 500px);
 }
 .add-repo,
 .sync-songs,
@@ -217,6 +226,7 @@
 .sync-songs-now,.beast-saber-buttons {
   top: 83px;
   right: 73px;
+  text-align: right;
 }
 .beaton-icon{
   height: 22px;
@@ -275,20 +285,37 @@
   top: 0;
   left: 0;
   position: absolute;
-  z-index: 3;
+  z-index: 998;
   display:none;
 }
 .user-menu{
   position: absolute;
   top: 25px;
   right: 25px;
-  width: 200px;
-  z-index: 9999;
-  height: 0;
+  width: 220px;
+  z-index: 999;
   overflow: hidden;
   transition: height 250ms;
   background: #4e555b;
   text-align: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 3px;
+  display: none;
+}
+.browser-menu{
+  right: 400px;
+}
+.device-menu{
+  right: initial;
+  left: 16px;
+  width: 300px;
+}
+.code{
+
+}
+.command-menu{
+  width: 240px;
 }
 .smaller-menu{
   top: 44px;
@@ -328,9 +355,39 @@
   z-index: 2;
 }
 
+.fav-manage-icon{
+  font-size: 2.5rem;
+}
+
+.drag-indicator, .delete-button{
+  position: absolute;
+  left: -20px;
+  top: 5px;
+  font-size: 2rem;
+  cursor: pointer;
+}
+.delete-button{
+  left: initial;
+  right: -20px;
+}
+.fav-padding{
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-bottom: 0;
+}
+.browser-menu-image{
+  width: 22px;
+  height: 22px;
+  vertical-align: text-top;
+  margin-right: 15px;
+  margin-top: 8px;
+}
 @media only screen and (max-width: 1350px){
   .top-menu-bar-icon {
     display: none;
+  }
+  .browser-menu {
+    right: 25px;
   }
   .top-menu-bar-icon-down{
     display: inline-block;

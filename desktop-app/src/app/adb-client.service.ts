@@ -15,7 +15,12 @@ export enum ConnectionStatus {
     OFFLINE,
     UNAUTHORIZED,
     DISCONNECTED,
-    TOOMANY, //TODO: HAndle multiple devices
+    LINUX_PERMS,
+}
+interface ADBDevice {
+    id: string;
+    type: string;
+    deviceName: string;
 }
 @Injectable({
     providedIn: 'root',
@@ -42,7 +47,10 @@ export class AdbClientService {
     batteryLevel: number;
     deviceModel: string;
     adbResponse: string;
-
+    devices: ADBDevice[];
+    displayDevices: ADBDevice[];
+    deviceName: string;
+    connectionCss: any;
     constructor(
         public appService: AppService,
         private spinnerService: LoadingSpinnerService,
@@ -59,8 +67,16 @@ export class AdbClientService {
         this.setSavePath();
         this.webService.isLoaded = this.sendPackages.bind(this);
         this.deviceIp = localStorage.getItem('deviceIp');
+        this.setConnectionCssClass();
     }
-
+    setConnectionCssClass() {
+        this.connectionCss = {
+            'connection-status-connected': this.deviceStatus === ConnectionStatus.CONNECTED,
+            'connection-status-unauthorized': this.deviceStatus === ConnectionStatus.UNAUTHORIZED,
+            'connection-status-disconnected': this.deviceStatus === ConnectionStatus.DISCONNECTED,
+            'connection-status-too-many': this.deviceStatus === ConnectionStatus.LINUX_PERMS,
+        };
+    }
     runAdbCommand(adbCommandToRun) {
         this.adbResponse = 'Loading...';
         let command = adbCommandToRun.trim();
@@ -81,7 +97,7 @@ export class AdbClientService {
             });
         })
             .then((resp: string) => {
-                this.adbResponse = resp.trim();
+                this.adbResponse = resp.trim() || 'Command Completed.';
             })
             .catch(e => {
                 this.statusService.showStatus(e, true);
@@ -197,12 +213,37 @@ export class AdbClientService {
     makeDirectory(dir) {
         return this.adbCommand('shell', { serial: this.deviceSerial, command: 'mkdir "' + dir + '"' });
     }
-    async updateConnectedStatus(status: ConnectionStatus) {
-        this.deviceStatus = status;
+    getConnectedStatus() {
+        if (!this.devices.length) {
+            return ConnectionStatus.DISCONNECTED;
+        } else {
+            if (!this.deviceSerial) {
+                let readyDevice = this.devices.filter(d => d.type === 'device');
+                if (readyDevice.length) {
+                    this.deviceSerial = readyDevice[0].id;
+                }
+            }
+            let readyDevice = this.devices.filter(d => d.id === this.deviceSerial);
+            if (readyDevice.length && readyDevice[0].type === 'device') {
+                return ConnectionStatus.CONNECTED;
+            } else {
+                if (!!~readyDevice[0].type.indexOf('no permissions')) {
+                    return ConnectionStatus.LINUX_PERMS;
+                } else if (readyDevice[0].type === 'unauthorized') {
+                    return ConnectionStatus.UNAUTHORIZED;
+                }
+            }
+        }
+    }
+
+    async updateConnectedStatus() {
+        this.deviceStatus = this.getConnectedStatus();
+
+        this.setConnectionCssClass();
         document.getElementById('connection-status').className = 'connection-status-' + status;
-        switch (status) {
-            case ConnectionStatus.TOOMANY:
-                this.deviceStatusMessage = 'Warning: Please connect only one android device to your PC';
+        switch (this.deviceStatus) {
+            case ConnectionStatus.LINUX_PERMS:
+                this.deviceStatusMessage = 'Warning: no permissions (user in plugdev group; are your udev rules wrong?)';
                 break;
             case ConnectionStatus.CONNECTED:
                 try {
@@ -210,8 +251,14 @@ export class AdbClientService {
                     await this.getBatteryLevel();
                     await this.getIpAddress();
                     await this.getDeviceModel();
+                    for (let i = 0; i < this.devices.length; i++) {
+                        await this.getDeviceName(this.devices[i]);
+                    }
+                    this.deviceName = this.devices.filter(d => d.id === this.deviceSerial)[0].deviceName;
+                    this.displayDevices = this.devices;
                     this.deviceStatusMessage =
-                        'Connected -  Wifi IP: ' +
+                        this.deviceName +
+                        ' -  Wifi IP: ' +
                         (this.deviceIp || 'Not found...') +
                         ', Battery: ' +
                         this.batteryLevel +
@@ -241,6 +288,17 @@ export class AdbClientService {
                 break;
         }
     }
+
+    async getDeviceName(device) {
+        if (device.type === 'device') {
+            let manufacturer = await this.adbCommand('shell', { serial: device.id, command: 'getprop ro.product.manufacturer' });
+            let model = await this.adbCommand('shell', { serial: device.id, command: 'getprop ro.product.model' });
+            device.deviceName = manufacturer + ' ' + model;
+        } else {
+            device.deviceName = device.type;
+        }
+    }
+
     async connectedStatus() {
         let now = performance.now();
         if (now - this.lastConnectionCheck < this.pollInterval || this.isTransferring)
@@ -248,24 +306,11 @@ export class AdbClientService {
         this.lastConnectionCheck = now;
         return this.adbCommand('listDevices')
             .then((devices: any) => devices.filter(device => device.type !== 'offline'))
-            .then(devices => {
-                if (devices.length === 1) {
-                    this.deviceSerial = devices[0].id;
-                    if (devices[0].type === 'device') {
-                        return ConnectionStatus.CONNECTED;
-                    } else {
-                        return ConnectionStatus.UNAUTHORIZED;
-                    }
-                } else {
-                    if (devices.length > 1) {
-                        return ConnectionStatus.TOOMANY;
-                    } else {
-                        return ConnectionStatus.DISCONNECTED;
-                    }
-                }
+            .then(async devices => {
+                this.devices = devices;
             })
             .then(status => {
-                this.updateConnectedStatus(status);
+                this.updateConnectedStatus();
                 requestAnimationFrame(this.connectedStatus.bind(this));
             })
             .catch(err => {
