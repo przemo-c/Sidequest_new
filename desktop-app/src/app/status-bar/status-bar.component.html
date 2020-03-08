@@ -5,7 +5,7 @@
 <!--    position="top" tooltip="Copy status to clipboard.">file_copy</i>-->
 <!--  <app-link class="right" *ngIf="showDiscord" [url]="'https://discord.gg/r38T5rR'"-->
 <!--    [text]="'https://discord.gg/r38T5rR'"></app-link>-->
-  <div *ngIf="isWarning" class="right btn small-button pink-button" (click)="getHelp.emit(statusMessage)">Get Help</div>
+  <div *ngIf="isWarning" class="right btn small-button green" (click)="getHelp.emit(statusMessage)">Get Help</div>
   <span class="status-message truncate" [innerHTML]="statusMessage | sanitizeHtml">
 
   </span>
