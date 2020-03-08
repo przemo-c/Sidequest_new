@@ -3,14 +3,17 @@ const fs = require('fs');
 const request = require('request');
 const progress = require('request-progress');
 const Readable = require('stream').Readable;
-const SetPropertiesCommand = require('./setproperties');
+import { SetPropertiesCommand } from './setproperties';
 
-module.exports = class ADB {
-    setupAdb(adbPath) {
+export class ADB {
+    client;
+
+    setupAdb(adbPath, cb, ecb) {
         if (this.client) return;
         this.client = adb.createClient({
             bin: adbPath,
         });
+        cb();
     }
     installRemote(serial, path, cb, ecb) {
         if (!this.client) return ecb('Not connected.');
@@ -206,4 +209,4 @@ module.exports = class ADB {
             .then(res => cb(res))
             .catch(e => ecb(e));
     }
-};
+}
