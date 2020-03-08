@@ -223,7 +223,11 @@ export class AdbClientService {
                 }
             }
             let readyDevice = this.devices.filter(d => d.id === this.deviceSerial);
-            if (readyDevice.length && readyDevice[0].type === 'device') {
+            if (!readyDevice.length && this.devices.length) {
+                this.deviceSerial = this.devices[0].id;
+                readyDevice = this.devices.filter(d => d.id === this.deviceSerial);
+            }
+            if (readyDevice[0].type === 'device') {
                 return ConnectionStatus.CONNECTED;
             } else {
                 if (!!~readyDevice[0].type.indexOf('no permissions')) {
@@ -237,8 +241,11 @@ export class AdbClientService {
 
     async updateConnectedStatus() {
         this.deviceStatus = this.getConnectedStatus();
-
         this.setConnectionCssClass();
+        for (let i = 0; i < this.devices.length; i++) {
+            this.getDeviceName(this.devices[i]);
+        }
+        this.displayDevices = this.devices;
         document.getElementById('connection-status').className = 'connection-status-' + status;
         switch (this.deviceStatus) {
             case ConnectionStatus.LINUX_PERMS:
@@ -250,11 +257,7 @@ export class AdbClientService {
                     await this.getBatteryLevel();
                     await this.getIpAddress();
                     await this.getDeviceModel();
-                    for (let i = 0; i < this.devices.length; i++) {
-                        await this.getDeviceName(this.devices[i]);
-                    }
                     this.deviceName = this.devices.filter(d => d.id === this.deviceSerial)[0].deviceName;
-                    this.displayDevices = this.devices;
                     this.deviceStatusMessage =
                         this.deviceName +
                         ' -  Wifi IP: ' +
