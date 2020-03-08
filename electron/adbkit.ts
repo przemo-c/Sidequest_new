@@ -25,10 +25,10 @@ export class ADB {
         if (!this.client) return ecb('Not connected.');
         if (!this._logcat) this.endLogcat();
         this.client
-            .openLogcat(serial)
+            .openLogcat(serial, { clear: true })
             .then(logcat => {
                 this._logcat = logcat;
-                logcat.include(tag || '*', priority).on('entry', entry => scb(entry));
+                logcat.include(tag, priority).on('entry', entry => scb(entry));
             })
             .catch(e => ecb(e));
     }

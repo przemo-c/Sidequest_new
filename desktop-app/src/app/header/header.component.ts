@@ -22,6 +22,14 @@ interface FavouriteItem {
     uri: string;
     icon?: string;
 }
+interface LogCatEntry {
+    date: string;
+    message: string;
+    pid: number;
+    tid: number;
+    tag: string;
+    priority: number;
+}
 @Component({
     selector: 'app-header',
     templateUrl: './header.component.html',
@@ -76,6 +84,22 @@ export class HeaderComponent implements OnInit {
     };
     // BAG = 'FAVS';
     subs = new Subscription();
+    logcatTag: string = '';
+    logcatSearch: string = '';
+    logcatPriority: string = 'debug';
+    priorities = {
+        0: 'unknown',
+        1: 'default',
+        2: 'verbose',
+        3: 'debug',
+        4: 'info',
+        5: 'warn',
+        6: 'error',
+        7: 'fatal',
+        8: 'silent',
+    };
+    currentLogCat: LogCatEntry[] = [];
+    isStarted: boolean;
     constructor(
         public adbService: AdbClientService,
         public appService: AppService,
@@ -168,6 +192,35 @@ export class HeaderComponent implements OnInit {
         }
     }
 
+    startLogcat() {
+        this.currentLogCat.length = 0;
+        this.adbService.adbCommand(
+            'logcat',
+            { serial: this.adbService.deviceSerial, tag: '*', priority: this.logcatPriority },
+            stats => {
+                stats.message = stats.message
+                    .split('\n')
+                    .join('<br>')
+                    .split('\t')
+                    .join('&nbsp;&nbsp;');
+                if (this.logcatSearch) {
+                    if (!!~stats.message.indexOf(this.logcatSearch) || !!~stats.tag.indexOf(this.logcatSearch)) {
+                        this.currentLogCat.unshift(stats);
+                    }
+                } else {
+                    this.currentLogCat.unshift(stats);
+                }
+                if (this.currentLogCat.length > 200) {
+                    this.currentLogCat.length = 200;
+                }
+            }
+        );
+    }
+
+    stopLogcat() {
+        this.adbService.adbCommand('endLogcat');
+    }
+
     runscrcpy() {
         this.appService
             .runScrCpy(this.scrcpy_options)
@@ -191,12 +244,6 @@ export class HeaderComponent implements OnInit {
     }
     pingHeadset() {
         this.isAlive = true;
-        // this.isAliveChecking = true;
-        // this.appService.ping.sys.probe(this.adbService.deviceIp, isAlive => {
-        //     console.log(isAlive);
-        //     this.isAlive = isAlive;
-        //     this.isAliveChecking = false;
-        // });
     }
     minimizeApp() {
         this.appService.remote.getCurrentWindow().minimize();

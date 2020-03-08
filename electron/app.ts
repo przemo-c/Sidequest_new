@@ -260,6 +260,10 @@ ipcMain.on('adb-command', (event, arg) => {
         case 'setupAdb':
             adb.setupAdb(arg.settings.adbPath, success, reject);
             break;
+        case 'endLogcat':
+            adb.endLogcat();
+            success('Done.');
+            break;
         case 'logcat':
             adb.logcat(arg.settings.serial, arg.settings.tag, arg.settings.priority, success, status, reject);
             break;

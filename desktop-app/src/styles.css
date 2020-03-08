@@ -200,10 +200,13 @@ body {
   margin-top: 20px;
   margin-left: -10px;
 }
-code > pre{
+code > pre, .code{
   background:#0c0c0c;
   color: white;
   border-radius: 4px;
   padding: 5px;
   display: block;
+}
+.modal-fixed-footer{
+  overflow: hidden!important;
 }

@@ -64,10 +64,13 @@
       <div class="user-menu command-menu" #commandMenu>
         <div class="btn-flat waves-light waves-light full-width center-align white-text truncate"
              (click)="commandMenu.style.display = 'none';commandMenuBack.style.display = 'none';adbModal.openModal()"
-             routerLink="/webview"><i class="material-icons left">public</i>Custom Command</div><br>
+             routerLink="/webview"><i class="material-icons left">input</i>Custom Command</div><br>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
              (click)="commandMenu.style.display = 'none';commandMenuBack.style.display = 'none';favoriteType = 'commandFavourites';favouriteMax = 20;favoritePathType = 'Command';manageFavs.openModal()"
              routerLink="/webview"><i class="material-icons left">edit</i>Manage</div><br>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text truncate"
+             (click)="commandMenu.style.display = 'none';commandMenuBack.style.display = 'none';logcatModal.openModal()"
+             routerLink="/webview"><i class="material-icons left">toc</i>Logcat</div><br>
         <ng-container *ngFor="let favourite of favourites.commandFavourites">
           <div class="btn-flat waves-light waves-light full-width center-align white-text truncate"
                (click)="commandMenu.style.display = 'none';commandMenuBack.style.display = 'none';adbService.runAdbCommand(favourite.uri); adbModal.openModal()"
@@ -389,6 +392,58 @@
   </mz-modal-footer>
 </mz-modal>
 
+
+<mz-modal #logcatModal [fixedFooter]="true" [options]="{dismissible: false}">
+  <mz-modal-header>
+    <button mz-button class="right" [flat]="true" mz-modal-close (click)="stopLogcat(); currentLogCat.length = 0; isStarted = false;">Stop & Close</button>
+    <h4>ADB Logcat</h4>
+  </mz-modal-header>
+  <mz-modal-content>
+    Select your options and click start to begin receiving logcat messages.
+    <br><br>
+    <div class="button-section">
+      <div class="code logcat-block">
+        <div *ngIf="!currentLogCat.length">
+          {{isStarted ? 'Waiting for messages...' : 'Click start to begin streaming logcat messages.'}}
+        </div>
+        <div *ngFor="let logcat of currentLogCat">
+          <div class="row no-margin">
+            <div class="col s2 logcat-smaller green-text no-padding">{{logcat.date}}: {{priorities[logcat.priority]}}</div>
+            <div class="col s2 logcat-smaller purple-text no-padding">{{logcat.tid}}/{{logcat.pid}} {{logcat.tag}} </div>
+            <div class="col s8 logcat-small no-padding"
+                 [ngClass]="{'red-text': logcat.priority === 6, 'orange-text': logcat.priority === 5}" [innerHTML]="logcat.message">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </mz-modal-content>
+  <mz-modal-footer>
+    <div class="row">
+      <div class="col s6">
+        <input id="logcatSearch" type="text" [(ngModel)]="logcatSearch" placeholder="Search/Tag Filter" />
+      </div>
+      <div class="col s3">
+        <select class="browser-default" [(ngModel)]="logcatPriority">
+          <option disabled>Priority</option>
+          <option value="unknown">unknown</option>
+          <option value="default">default</option>
+          <option value="verbose">verbose</option>
+          <option value="debug">debug</option>
+          <option value="info">info</option>
+          <option value="warn">warn</option>
+          <option value="error">error</option>
+          <option value="fatal">fatal</option>
+          <option value="silent">silent</option>
+        </select>
+      </div>
+      <div class="col s3"><button mz-button class="green" (click)="startLogcat(); isStarted = true;">{{isStarted?'Restart':'Start'}}</button></div>
+    </div>
+  </mz-modal-footer>
+</mz-modal>
+
+
+
 <mz-modal #adbModal [fixedFooter]="true">
   <mz-modal-header>
     <h4>Run ADB Command</h4>
@@ -402,7 +457,7 @@
       <div class="input-field">
         <input id="adbCommand" type="text" [(ngModel)]="adbCommandToRun" placeholder="Command To Run..." />
       </div>
-      <code class="code">
+      <code>
         <pre *ngIf="adbService.adbResponse">{{adbService.adbResponse}}</pre>
       </code>
     </div>

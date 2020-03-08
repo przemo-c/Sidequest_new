@@ -375,6 +375,16 @@
   margin-right: 20px;
   margin-bottom: 0;
 }
+.logcat-block{
+  height: 520px;
+  overflow: auto;
+}
+.logcat-small{
+  font-size: 0.9rem;
+}
+.logcat-smaller{
+  font-size: 0.7rem;
+}
 .browser-menu-image{
   width: 22px;
   height: 22px;
