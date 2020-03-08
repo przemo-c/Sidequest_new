@@ -120,9 +120,6 @@ export class ToolsComponent implements OnInit {
         });
     }
     setGPU(gpu: GPU) {
-        // this.adbService.adbCommand('logcat', {serial: this.adbService.deviceSerial, tag: '*', priority: 'debug'}, stats => {
-        //   console.log(stats);
-        // });
         let value = gpu === GPU._2 ? 2 : 4;
         this.adbService
             .runAdbCommand('adb shell setprop debug.oculus.cpuLevel ' + value)

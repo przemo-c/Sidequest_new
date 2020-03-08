@@ -8,10 +8,11 @@
         ],
         "module": "commonjs",
         "moduleResolution": "node",
-        "outDir": "build-electron",
+        "outDir": "./",
         "allowJs": true
     },
     "include": [
         "./electron/**/*"
-    ]
+    ],
+    "exclude" : []
 }

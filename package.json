@@ -5,7 +5,7 @@
     "repository": "https://github.com/the-expanse/SideQuest.git",
     "license": "MIT",
     "author": "Shane Harris",
-    "main": "build-electron/app.js",
+    "main": "app.js",
     "scripts": {
         "concurrently": "concurrently",
         "start": "concurrently \"yarn electron-build && wait-on http-get://localhost:4205/ && cross-env NODE_ENV=dev electron .\" \"cd desktop-app && ng serve --port 4205\"",
@@ -51,8 +51,7 @@
         "files": [
             "build/**/*",
             "node_modules/**/*",
-            "package.json",
-            "build-electron/**/*"
+            "package.json"
         ],
         "asarUnpack": [
             "build/**/*"
