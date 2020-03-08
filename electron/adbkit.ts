@@ -7,13 +7,30 @@ import { SetPropertiesCommand } from './setproperties';
 
 export class ADB {
     client;
-
+    _logcat;
     setupAdb(adbPath, cb, ecb) {
         if (this.client) return;
         this.client = adb.createClient({
             bin: adbPath,
         });
         cb();
+    }
+    endLogcat() {
+        if (this._logcat) {
+            this._logcat.end();
+            this._logcat = null;
+        }
+    }
+    logcat(serial, tag, priority, cb, scb, ecb) {
+        if (!this.client) return ecb('Not connected.');
+        if (!this._logcat) this.endLogcat();
+        this.client
+            .openLogcat(serial)
+            .then(logcat => {
+                this._logcat = logcat;
+                logcat.include(tag || '*', priority).on('entry', entry => scb(entry));
+            })
+            .catch(e => ecb(e));
     }
     installRemote(serial, path, cb, ecb) {
         if (!this.client) return ecb('Not connected.');
