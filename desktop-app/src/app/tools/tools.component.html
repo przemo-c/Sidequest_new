@@ -1,7 +1,7 @@
 <div class="container"
   [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">
   <div class="side-quest-version">
-    SideQuest Version: v{{appService.versionName}}
+    SideQuest Version: {{appService.versionName}}
   </div>
   <div class="row">
     <div class="col s12">
