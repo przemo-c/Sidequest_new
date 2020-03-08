@@ -25,7 +25,7 @@ function createWindow() {
         mainWindow.loadURL('http://localhost:4205');
         mainWindow.webContents.openDevTools();
     } else {
-        mainWindow.loadFile('../build/app/index.html');
+        mainWindow.loadFile('build/app/index.html');
     }
     mainWindow.on('closed', function() {
         mainWindow = null;

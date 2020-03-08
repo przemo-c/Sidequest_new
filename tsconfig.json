@@ -8,7 +8,7 @@
         ],
         "module": "commonjs",
         "moduleResolution": "node",
-        "outDir": "./",
+        "outDir": "build-electron",
         "allowJs": true
     },
     "include": [
