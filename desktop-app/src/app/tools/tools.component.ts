@@ -256,16 +256,11 @@ export class ToolsComponent implements OnInit {
     }
     inputCharacters() {
         let character = this._textToSend.shift();
-        return this.adbService
-            .adbCommand('shell', {
-                serial: this.adbService.deviceSerial,
-                command: 'input text "' + character + '"',
-            })
-            .then(res => {
-                if (this._textToSend.length) {
-                    return this.inputCharacters();
-                }
-            });
+        return this.adbService.runAdbCommand('adb shell input text "' + character + '"').then(() => {
+            if (this._textToSend.length) {
+                return this.inputCharacters();
+            }
+        });
     }
     setHideNSFW() {
         if (this.appService.hideNSFW) {
