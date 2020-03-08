@@ -1,7 +1,9 @@
+import { MenuItemConstructorOptions } from 'electron';
+
 const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
 let mainWindow, open_url, is_loaded;
-const ADB = require('./adbkit');
+import { ADB } from './adbkit';
 const { autoUpdater } = require('electron-updater');
 let hasUpdate = false;
 const { download } = require('electron-dl');
@@ -23,7 +25,7 @@ function createWindow() {
         mainWindow.loadURL('http://localhost:4205');
         mainWindow.webContents.openDevTools();
     } else {
-        mainWindow.loadFile('build/app/index.html');
+        mainWindow.loadFile('../build/app/index.html');
     }
     mainWindow.on('closed', function() {
         mainWindow = null;
@@ -87,7 +89,7 @@ function createWindow() {
 }
 
 function setupMenu() {
-    const template = [
+    const template: MenuItemConstructorOptions[] = [
         {
             label: 'SideQuest',
             submenu: [
@@ -106,29 +108,33 @@ function setupMenu() {
                 {
                     label: 'Undo',
                     accelerator: 'CmdOrCtrl+Z',
-                    selector: 'undo:',
+                    // selector: 'undo:',
                 },
                 {
                     label: 'Redo',
                     accelerator: 'Shift+CmdOrCtrl+Z',
-                    selector: 'redo:',
+                    // selector: 'redo:',
                 },
                 { type: 'separator' },
-                { label: 'Cut', accelerator: 'CmdOrCtrl+X', selector: 'cut:' },
+                {
+                    label: 'Cut',
+                    accelerator: 'CmdOrCtrl+X',
+                    // selector: 'cut:'
+                },
                 {
                     label: 'Copy',
                     accelerator: 'CmdOrCtrl+C',
-                    selector: 'copy:',
+                    // selector: 'copy:',
                 },
                 {
                     label: 'Paste',
                     accelerator: 'CmdOrCtrl+V',
-                    selector: 'paste:',
+                    // selector: 'paste:',
                 },
                 {
                     label: 'Select All',
                     accelerator: 'CmdOrCtrl+A',
-                    selector: 'selectAll:',
+                    // selector: 'selectAll:',
                 },
             ],
         },
@@ -217,7 +223,7 @@ autoUpdater.on('update-downloaded', info => {
         mainWindow.webContents.send('update-status', { status: 'update-downloaded', info });
     }
 });
-global.receiveMessage = function(text) {
+(global as any).receiveMessage = function(text) {
     mainWindow.webContents.send('info', text);
 };
 const { ipcMain } = require('electron');
@@ -291,7 +297,7 @@ ipcMain.on('adb-command', (event, arg) => {
             adb.connect(arg.settings.deviceIp, success, reject);
             break;
         case 'disconnect':
-            adb.disconnect(arg.settings.host, success, reject);
+            adb.disconnect(success, reject);
             break;
         case 'usb':
             adb.usb(arg.settings.serial, success, reject);

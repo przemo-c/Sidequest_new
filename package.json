@@ -5,15 +5,16 @@
     "repository": "https://github.com/the-expanse/SideQuest.git",
     "license": "MIT",
     "author": "Shane Harris",
-    "main": "app.js",
+    "main": "build-electron/app.js",
     "scripts": {
         "concurrently": "concurrently",
-        "start": "concurrently \"wait-on http-get://localhost:4205/ && cross-env NODE_ENV=dev electron .\" \"cd desktop-app && ng serve --port 4205\"",
+        "start": "concurrently \"yarn electron-build && wait-on http-get://localhost:4205/ && cross-env NODE_ENV=dev electron .\" \"cd desktop-app && ng serve --port 4205\"",
         "postinstall": "electron-builder install-app-deps && cd desktop-app && yarn install",
-        "dist": "yarn app-build && electron-builder",
+        "dist": "yarn app-build && yarn electron-build && electron-builder",
         "angular": "cd desktop-app && ng serve --port 4205",
         "electron": "cross-env NODE_ENV=dev electron .",
         "app-build": "cd desktop-app && ng build --prod --aot && cd ..",
+        "electron-build": "tsc",
         "reset": "rm -rf node_modules && rm -rf desktop-app/node_modules && yarn install && cd desktop-app && yarn install"
     },
     "build": {
@@ -50,9 +51,7 @@
             "build/**/*",
             "node_modules/**/*",
             "package.json",
-            "app.js",
-            "adbkit.js",
-            "setproperties.js"
+            "build-electron/**/*"
         ],
         "asarUnpack": [
             "build/**/*"
@@ -99,6 +98,8 @@
         "electron-notarize": "^0.1.1",
         "husky": "^2.3.0",
         "prettier": "1.17.1",
-        "pretty-quick": "^1.11.0"
+        "pretty-quick": "^1.11.0",
+        "ts-loader": "^6.2.1",
+        "typescript": "^3.8.3"
     }
 }
