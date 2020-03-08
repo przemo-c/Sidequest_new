@@ -22,7 +22,7 @@ export class AppComponent {
         private spinnerService: LoadingSpinnerService,
         public statusService: StatusBarService,
         private adbService: AdbClientService,
-        private appService: AppService,
+        public appService: AppService,
         public webService: WebviewService,
         public dragService: DragAndDropService,
         electronService: ElectronService,
