@@ -6,7 +6,7 @@ let mainWindow, open_url, is_loaded;
 import { ADB } from './adbkit';
 const { autoUpdater } = require('electron-updater');
 let hasUpdate = false;
-const { download } = require('electron-dl');
+const download = require('./download');
 function createWindow() {
     // Create the browser window.
     mainWindow = new BrowserWindow({
@@ -230,7 +230,9 @@ const { ipcMain } = require('electron');
 const adb = new ADB();
 
 ipcMain.on('download-url', async (event, { url, token, directory, filename }) => {
-    await download(mainWindow, url, { directory, filename });
+    await download(url, path.join(directory, filename), stats => {
+        return event.sender.send('download-progress', { stats, token });
+    });
     event.sender.send('download-url', { token });
 });
 ipcMain.on('automatic-update', (event, arg) => {

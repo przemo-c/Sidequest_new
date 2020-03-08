@@ -43,6 +43,8 @@ export class HeaderComponent implements OnInit {
     @ViewChild('autoFixModal', { static: false }) autoFixModal;
     @ViewChild('beatOnModal', { static: false }) beatOnModal;
     @ViewChild('mainLogo', { static: false }) mainLogo;
+    @ViewChild('safeModal', { static: false }) safeModal;
+    safeResolve: any = val => val;
     folder = FolderType;
     isMaximized: boolean = true;
     addrepoUrl: string = '';
@@ -118,6 +120,7 @@ export class HeaderComponent implements OnInit {
         this.resetFavourites('browserFavourites');
         this.resetFavourites('fileFavourites');
         this.resetFavourites('commandFavourites');
+        this.appService.headerComponent = this;
     }
     resetFavourites(type: string) {
         let defaultFavs;

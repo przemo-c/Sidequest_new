@@ -84,17 +84,16 @@ export class AdbClientService {
             command = command.substr(3);
         }
         return new Promise((resolve, reject) => {
-            this.appService.exec('"' + this.appService.path.join(this.adbPath, this.getAdbBinary()) + '" ' + command, function(
-                err,
-                stdout,
-                stderr
-            ) {
-                if (err) {
-                    return reject(err);
+            this.appService.exec(
+                '"' + this.appService.path.join(this.adbPath, this.getAdbBinary()) + '" -s ' + this.deviceSerial + ' ' + command,
+                function(err, stdout, stderr) {
+                    if (err) {
+                        return reject(err);
+                    }
+                    if (stderr) return reject(stderr);
+                    return resolve(stdout);
                 }
-                if (stderr) return reject(stderr);
-                return resolve(stdout);
-            });
+            );
         })
             .then((resp: string) => {
                 this.adbResponse = resp.trim() || 'Command Completed.';
@@ -363,7 +362,6 @@ export class AdbClientService {
             serial: this.deviceSerial,
             command: 'pm ' + (isRevoke ? 'revoke' : 'grant') + ' ' + packageName + ' ' + permission,
         }).then(r => {
-            console.log(r);
             this.statusService.showStatus('Permission set OK!!');
         });
     }
@@ -562,14 +560,10 @@ export class AdbClientService {
         }
         if (isReported) {
             updateStatus('Confirming you want to install APK...');
-            const buttonIndex = await this.appService.remote.dialog.showMessageBox({
-                type: 'question',
-                buttons: ["Don't Install", 'Install Anyway'],
-                title: 'This APK may be dangerous or illegal to install',
-                message:
-                    'This APK has been reported as potentially dangerous or illegal. You assume all risk associated with installing malicious or illegal APKs to your device. If you would still like to install this APK on your device, please confirm.',
+            this.appService.headerComponent.safeModal.openModal();
+            return new Promise(resolve => {
+                this.appService.headerComponent.safeResolve = resolve;
             });
-            return buttonIndex === 1 ? 'DoInstall' : 'DontInstall';
         } else {
             return 'DoInstall';
         }
@@ -877,6 +871,7 @@ export class AdbClientService {
     }
     installObb(url, number?: number, total?: number) {
         return this.processService.addItem('file_install', async task => {
+            task.status = 'Downloading OBB file...';
             return this.appService
                 .downloadFile(
                     url,
@@ -894,7 +889,10 @@ export class AdbClientService {
                     },
                     task
                 )
-                .then((_path: string) => this.installLocalObb(_path, false, null, number, total, task));
+                .then((_path: string) => {
+                    task.status = 'Installing OBB file...';
+                    return this.installLocalObb(_path, false, null, number, total, task);
+                });
         });
     }
     installLocalObb(filepath: string, dontCatchError = false, cb = null, number?: number, total?: number, task?) {
@@ -902,7 +900,6 @@ export class AdbClientService {
         let packageId = filename.match(/main.[0-9]{1,}.([a-z]{1,}.[A-z]{1,}.[A-z]{1,}).obb/)[1];
         const showTotal = number && total ? '(' + number + '/' + total + ') ' : '';
         if (!task) this.spinnerService.showLoader();
-
         let p = this.runAdbCommand('adb push "' + filepath + '" /sdcard/Android/obb/' + packageId + '/' + filename);
         if (cb) {
             cb();

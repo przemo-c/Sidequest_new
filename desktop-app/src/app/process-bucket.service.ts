@@ -10,6 +10,7 @@ export interface ProcessTask {
     percent?: string;
     failed?: boolean;
     succeeded?: boolean;
+    cancelled?: boolean;
     resolve: (task: ProcessTask) => Promise<void>;
 }
 @Injectable({
@@ -85,14 +86,18 @@ export class ProcessBucketService {
                 .resolve(task)
                 .then(() => {
                     task.succeeded = true;
-                    return timeout.then(() => this.processBucket());
+                    if (!task.cancelled) {
+                        return timeout.then(() => this.processBucket());
+                    }
                 })
                 .catch(e => {
                     task.running = false;
                     task.status = e.message ? e.message : e.code ? e.code : e.toString();
                     task.failed = true;
                     this.statusService.showStatus(task.status, true);
-                    return timeout.then(() => this.processBucket());
+                    if (!task.cancelled) {
+                        return timeout.then(() => this.processBucket());
+                    }
                 });
             this.tasks = this.tasks.filter(t => t !== task);
         } else {
@@ -110,6 +115,15 @@ export class ProcessBucketService {
                 );
             }
             this.is_running = false;
+            await timeout.then(() => this.processBucket());
+        }
+    }
+
+    async skipCurrent(task) {
+        if (!task.succeeded) {
+            task.cancelled = true;
+            this.tasks = this.tasks.filter(t => t !== task);
+            const timeout = new Promise(resolve => setTimeout(() => resolve(), 1000));
             await timeout.then(() => this.processBucket());
         }
     }
