@@ -56,6 +56,20 @@
           (click)="setCa(CA.OFF)">Off</div>
       </div>
       <div class="section-title"
+           [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">
+        Guardian</div>
+      This will enable/disable the guardian.
+      <div class="button-section">
+        <div class="waves-effect waves-light btn set-ca margin-bottom margin-right pink-button"
+             [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}"
+             (click)="setGuardian(GU.ON)">ON</div>
+        <div class="waves-effect waves-light btn set-ca margin-bottom margin-right pink-button"
+             [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}"
+             (click)="setGuardian(GU.OFF)">OFF</div>
+      </div>
+
+
+      <div class="section-title"
         [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">
         Paste Text to your device</div>
       If there is a text input field focussed on your headset you can paste / type text in here to have SideQuest type

@@ -9,7 +9,6 @@ import { BeatOnService } from '../beat-on.service';
 import { DragAndDropService } from '../drag-and-drop.service';
 import { Router } from '@angular/router';
 import { ProcessBucketService } from '../process-bucket.service';
-import { DragulaService } from 'ng2-dragula';
 import { Subscription } from 'rxjs/Subscription';
 interface ReplaceText {
     key: string;

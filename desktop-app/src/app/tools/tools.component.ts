@@ -15,6 +15,10 @@ enum GPU {
     _2,
     _4,
 }
+enum GU {
+    ON,
+    OFF,
+}
 enum CA {
     APP,
     OFF,
@@ -58,6 +62,7 @@ export class ToolsComponent implements OnInit {
     SVR = SVR;
     SVB = SVB;
     SSO = SSO;
+    GU = GU;
     CA = CA;
     CR = CR;
     GPU = GPU;
@@ -105,6 +110,11 @@ export class ToolsComponent implements OnInit {
             .then(() => {
                 this.statusService.showStatus('CPU/GPU level set OK!!');
             });
+    }
+    setGuardian(guardian: GU) {
+        this.adbService.runAdbCommand('adb shell setprop debug.oculus.guardian_pause ' + (guardian === GU.ON ? 1 : 0)).then(() => {
+            this.statusService.showStatus('Guardian pause set OK!!');
+        });
     }
     setCa(ca: CA) {
         this.adbService
