@@ -650,11 +650,25 @@
 
 <mz-modal #manageFavs [fixedFooter]="true">
   <mz-modal-header>
+    <button mz-button class="right pink-button" (click)="showAddFavourite = !showAddFavourite">{{showAddFavourite? 'Hide' : 'Add New'}}</button>
     <h4>Manage Favourites</h4>
   </mz-modal-header>
   <mz-modal-content>
     Manage your favourites here. If you need to undo click RESET at the bottom. When you are done click SAVE.<br><br>
     <ng-container *ngIf="!favouriteImportExport">
+     <ng-container *ngIf="showAddFavourite"> <h5>Add New</h5>
+      <hr>
+      <div class="no-margin" *ngIf="this.favourites[favoriteType].length >= favouriteMax">
+        You cannot add any more. Please remove some first.
+      </div>
+      <div class="row no-margin" *ngIf="this.favourites[favoriteType].length < favouriteMax">
+        <div class="col s3"><input type="text" placeholder="Name" [(ngModel)]="favoriteName"/></div>
+        <div class="col s4"><input type="text" placeholder="{{favoritePathType}}" [(ngModel)]="favoriteUri"/></div>
+        <div class="col s4"><input type="text" placeholder="Icon Url" [(ngModel)]="favoriteIcon"/></div>
+        <div class="col s1"><i class="material-icons green-text fav-manage-icon pointer"
+                               (click)="addToFavorites(favoriteType, favoriteName, favoriteUri, favoriteIcon)">add</i></div>
+      </div>
+     </ng-container>
       <div class="row fav-padding">
         <div class="col s4">Name</div>
         <div class="col s4">{{favoritePathType}}</div>
@@ -674,22 +688,11 @@
           <i class="material-icons delete-button orange-text" (click)="removeFromFavourites(favoriteType, i)">close</i>
         </div>
       </div>
-        <h5>Add New</h5>
-        <hr>
-        <div class="no-margin" *ngIf="this.favourites[favoriteType].length >= favouriteMax">
-          You cannot add any more. Please remove some first.
-        </div>
-        <div class="row no-margin" *ngIf="this.favourites[favoriteType].length < favouriteMax">
-          <div class="col s3"><input type="text" [(ngModel)]="favoriteName"/></div>
-          <div class="col s4"><input type="text" [(ngModel)]="favoriteUri"/></div>
-          <div class="col s4"><input type="text" [(ngModel)]="favoriteIcon"/></div>
-          <div class="col s1"><i class="material-icons green-text fav-manage-icon pointer"
-              (click)="addToFavorites(favoriteType, favoriteName, favoriteUri, favoriteIcon)">add</i></div>
-        </div>
+
     </ng-container>
   </mz-modal-content>
   <mz-modal-footer>
-    <button mz-button [flat]="true" mz-modal-close (click)="resetFavourites(favoriteType)">Cancel</button>
-    <button mz-button [flat]="true" mz-modal-close (click)="saveFavourites(favoriteType)">Save</button>
+    <button mz-button [flat]="true" mz-modal-close (click)="resetFavourites(favoriteType); showAddFavourite = false;">Cancel</button>
+    <button mz-button class="pink-button" mz-modal-close (click)="saveFavourites(favoriteType); showAddFavourite = false;">Save</button>
   </mz-modal-footer>
 </mz-modal>
