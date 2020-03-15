@@ -74,6 +74,9 @@ export class WebviewService {
         this.webView.loadURL(this.currentAddress);
     }
     loadUrl(url: string) {
+        if (!/^(?:f|ht)tps?\:\/\//.test(url)) {
+            url = 'https://' + url;
+        }
         this.currentAddress = url;
         this.webView.loadURL(url);
     }

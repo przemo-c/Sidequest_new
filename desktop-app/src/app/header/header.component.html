@@ -86,7 +86,7 @@
              (click)="browserMenu.style.display = 'none';browserMenuBack.style.display = 'none';bookmarksModal.openModal()"
              routerLink="/webview"><i class="material-icons left">public</i>Go to url</div><br>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-             (click)="browserMenu.style.display = 'none';browserMenuBack.style.display = 'none';favoriteType = 'browserFavourites';favouriteMax = 20;favoritePathType = 'Path';manageFavs.openModal()"
+             (click)="browserMenu.style.display = 'none';browserMenuBack.style.display = 'none';favoriteType = 'browserFavourites';favouriteMax = 20;favoritePathType = 'Url';manageFavs.openModal()"
              ><i class="material-icons left">edit</i>Manage</div><br>
         <ng-container *ngFor="let favourite of favourites.browserFavourites">
           <div class="btn-flat waves-light waves-light full-width center-align white-text truncate"
