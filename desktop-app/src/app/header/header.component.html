@@ -309,29 +309,6 @@
   </div>
 </div>
 
-
-<mz-modal #addRepoModal [fixedFooter]="true">
-  <mz-modal-header>
-    <h4>Add F-Droid Repo</h4>
-  </mz-modal-header>
-  <mz-modal-content>
-    A repo url usually looks something like this -
-    <div class="chip">https://example.com/fdroid/repo/</div>
-    <br />
-    <div class="input-field repo-url">
-      <input id="repoUrl" type="text" [(ngModel)]="addrepoUrl" />
-      <label for="repoUrl">Repo Url</label>
-    </div>
-
-
-  </mz-modal-content>
-  <mz-modal-footer>
-    <button mz-button [flat]="true" mz-modal-close>Close</button>
-    <button mz-button class="pink-button" mz-modal-close (click)="addRepo()">Add Repo</button>
-  </mz-modal-footer>
-</mz-modal>
-
-
 <mz-modal #bookmarksModal [fixedFooter]="true">
   <mz-modal-header>
     <h4>Web Browser</h4>
@@ -511,32 +488,6 @@
   <mz-modal-footer>
     <button mz-button [flat]="true" mz-modal-close>Cancel</button>
     <button mz-button class="pink-button" mz-modal-close (click)="closeApp()">Exit SideQuest Now</button>
-  </mz-modal-footer>
-</mz-modal>
-
-
-<mz-modal #installAPKModal [fixedFooter]="true">
-  <mz-modal-header>
-    <h4>Patch Completed - Now Install the Custom Song APK</h4>
-  </mz-modal-header>
-  <mz-modal-content>
-    Below is the results of the patch process. If it shows that some songs were skipped you may need to investigate why.
-    In some cases we have seen `.ogg` files renamed to `.egg` files and these need to be fixed in the songs to get them
-    to patch.
-    <br><br>
-    Patch Results:
-    <div *ngIf="qspResponse">
-      <div *ngIf="qspResponse.presentLevels&&qspResponse.presentLevels.length"> <b>Current
-          Levels:</b><br>{{(qspResponse.presentLevels||[]).join(', ')}}<br></div>
-      <div *ngIf="qspResponse.installedLevels&&qspResponse.installedLevels.length"> <b>New
-          Levels:</b><br>{{(qspResponse.installedLevels||[]).join(', ')}}<br></div>
-      <div *ngIf="installSkippedLength()"> <b>Skipped Levels:</b><br>{{getInstallSkipped()}}<br></div>
-    </div>
-
-  </mz-modal-content>
-  <mz-modal-footer>
-    <button mz-button [flat]="true" mz-modal-close>Close</button>
-    <button mz-button class="pink-button" mz-modal-close (click)="installPatchedAPK()">Install APK</button>
   </mz-modal-footer>
 </mz-modal>
 

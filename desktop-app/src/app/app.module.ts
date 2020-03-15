@@ -1,7 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
-import { SideMenuComponent } from './side-menu/side-menu.component';
 import { ContentComponent } from './content/content.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -31,7 +30,6 @@ import { CurrentTaskItemComponent } from './current-task-item/current-task-item.
 @NgModule({
     declarations: [
         AppComponent,
-        SideMenuComponent,
         ContentComponent,
         HeaderComponent,
         StatusBarComponent,

@@ -36,10 +36,7 @@ interface LogCatEntry {
 })
 export class HeaderComponent implements OnInit {
     @ViewChild('header', { static: false }) header;
-    @ViewChild('syncSongsModal', { static: false }) syncSongsModal;
     @ViewChild('bookmarksModal', { static: false }) bookmarksModal;
-    @ViewChild('installAPKModal', { static: false }) installAPKModal;
-    @ViewChild('autoFixModal', { static: false }) autoFixModal;
     @ViewChild('beatOnModal', { static: false }) beatOnModal;
     @ViewChild('mainLogo', { static: false }) mainLogo;
     @ViewChild('safeModal', { static: false }) safeModal;
