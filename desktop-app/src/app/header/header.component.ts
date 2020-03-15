@@ -71,7 +71,7 @@ export class HeaderComponent implements OnInit {
     scrcpy_options: any = {
         always_on_top: false,
         bit_rate: '8000000',
-        crop: '1280:720:1500:550',
+        crop: '1280:720:1500:350',
         no_control: true,
         fullscreen: false,
         max_size: '0',
