@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { LoadingSpinnerService } from './loading-spinner.service';
 import { WebviewService } from './webview.service';
 import { FilesComponent } from './files/files.component';
+import { HeaderComponent } from './header/header.component';
 declare let __dirname, process;
 export enum FolderType {
     MAIN,
@@ -55,11 +56,12 @@ export class AppService {
     titleEle: HTMLElement;
     webService: WebviewService;
     currentTheme: string = 'dark';
-    versionName: string = '0.9.0';
+    versionName: string;
     showBack: boolean = false;
     backupPath: string;
     scrcpyBinaryPath: string;
     downloadResolves: any = {};
+    headerComponent: HeaderComponent;
     constructor(private spinnerService: LoadingSpinnerService) {
         this.path = (<any>window).require('path');
         this.fs = (<any>window).require('fs');
@@ -94,6 +96,18 @@ export class AppService {
             this.backupPath = this.path.join(this.appData, 'backups');
             localStorage.setItem('backup-path', this.backupPath);
         }
+        this.versionName = 'v' + this.remote.app.getVersion();
+        this.electron.ipcRenderer.on('download-url', (event, data) => {
+            if (!!this.downloadResolves[data.token]) {
+                this.downloadResolves[data.token].resolve();
+                delete this.downloadResolves[data.token];
+            }
+        });
+        this.electron.ipcRenderer.on('download-progress', (event, data) => {
+            if (!!this.downloadResolves[data.token]) {
+                this.downloadResolves[data.token].scb(data.stats);
+            }
+        });
     }
     getBase64Image(imagePath: string) {
         try {
@@ -228,62 +242,21 @@ export class AppService {
                 break;
         }
         let downloadPath = getPath(downloadUrl);
-        return this.downloadFileAPI(downloadUrl, this.path.dirname(downloadPath), this.path.basename(downloadPath)).then(
+        return this.downloadFileAPI(downloadUrl, this.path.dirname(downloadPath), this.path.basename(downloadPath), task).then(
             () => downloadPath
         );
     }
-    // async downloadFile(winUrl, linUrl, macUrl, getPath, task?) {
-    //     const requestOptions = {
-    //         timeout: 30000,
-    //         'User-Agent': this.getUserAgent(),
-    //     };
-    //     let downloadUrl = linUrl;
-    //     switch (this.os.platform()) {
-    //         case 'win32':
-    //             downloadUrl = winUrl;
-    //             break;
-    //         case 'darwin':
-    //             downloadUrl = macUrl;
-    //             break;
-    //         case 'linux':
-    //             downloadUrl = linUrl;
-    //             break;
-    //     }
-    //     if (!downloadUrl) return;
-    //     let downloadPath = getPath(downloadUrl);
-    //     return new Promise((resolve, reject) => {
-    //         this.progress(this.request(downloadUrl, requestOptions), { throttle: 300 })
-    //             .on('error', error => {
-    //                 console.log(`Request Error ${error}`);
-    //                 reject(error);
-    //             })
-    //             .on('progress', state => {
-    //                 if (task) {
-    //                     task.status = 'Downloading... ' + Math.round(state.percent * 100) + '%';
-    //                 } else {
-    //                     this.spinnerService.setMessage('Downloading... ' + Math.round(state.percent * 100) + '%');
-    //                     this.spinnerService.spinner.changes.detectChanges();
-    //                 }
-    //             })
-    //             .on('end', () => {
-    //                 if (task) {
-    //                     task.status = 'Processing file... This might take 30 - 60 seconds depending on size etc...';
-    //                 } else {
-    //                     this.spinnerService.setMessage(
-    //                         'Processing file... <br>This might take 30 - 60 seconds depending on size etc..'
-    //                     );
-    //                 }
-    //                 return resolve(downloadPath);
-    //             })
-    //             .pipe(this.fs.createWriteStream(downloadPath));
-    //     });
-    // }
 
-    downloadFileAPI(url, directory, filename) {
+    downloadFileAPI(url, directory, filename, task?) {
         // Send request to application thread to download a file. Store the callback for the response.
         return new Promise(resolve => {
             let token = this.uuidv4();
-            this.downloadResolves[token] = resolve;
+            this.downloadResolves[token] = {
+                scb: stats => {
+                    task.status = 'Downloading... ' + stats + '%';
+                },
+                resolve,
+            };
             this.electron.ipcRenderer.send('download-url', { token, url, directory, filename });
         });
     }

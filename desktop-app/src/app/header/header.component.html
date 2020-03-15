@@ -38,6 +38,22 @@
       <!--for beat saber efforts.-->
       <!--</div>-->
     </div>
+    <div class="user-menu-back" (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none'"
+         #userMenuBack></div>
+    <div class="user-menu-back" (click)="browserMenu.style.display = 'none';browserMenuBack.style.display = 'none'"
+         #browserMenuBack></div>
+    <div class="user-menu-back" (click)="commandMenu.style.display = 'none';commandMenuBack.style.display = 'none'"
+         #commandMenuBack></div>
+
+    <div class="user-menu-back" (click)="deviceMenu.style.display = 'none';deviceMenuBack.style.display = 'none'"
+         #deviceMenuBack></div>
+    <div class="user-menu device-menu" #deviceMenu>
+      <ng-container *ngFor="let device of adbService.displayDevices">
+        <div class="btn-flat waves-light waves-light full-width center-align white-text truncate"
+             (click)="deviceMenu.style.display = 'none';deviceMenuBack.style.display = 'none';adbService.deviceSerial = device.id;adbService.updateConnectedStatus()"
+        >[{{device.id}}] {{device.deviceName}}</div><br>
+      </ng-container>
+    </div>
     <div class="title-menu-container">
       <!--<img mz-tooltip-->
       <!--(click)="openBeatOn()"-->
@@ -45,58 +61,89 @@
       <!--src="{{beatonService.beatOnEnabled?'assets/images/beaton.png':'assets/images/beatoff.png'}}"-->
       <!--position="bottom" tooltip="BeatOn mods & custom songs on Beat Saber"/>-->
 
-      <div class="user-menu-back" (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none'"
-        #userMenuBack></div>
+      <div class="user-menu command-menu" #commandMenu>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text truncate"
+             (click)="commandMenu.style.display = 'none';commandMenuBack.style.display = 'none';adbModal.openModal()"
+             routerLink="/webview"><i class="material-icons left">input</i>Custom Command</div><br>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+             (click)="commandMenu.style.display = 'none';commandMenuBack.style.display = 'none';favoriteType = 'commandFavourites';favouriteMax = 20;favoritePathType = 'Command';manageFavs.openModal()"
+             routerLink="/webview"><i class="material-icons left">edit</i>Manage</div><br>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text truncate"
+             (click)="commandMenu.style.display = 'none';commandMenuBack.style.display = 'none';logcatModal.openModal()"
+             routerLink="/webview"><i class="material-icons left">toc</i>Logcat</div><br>
+        <ng-container *ngFor="let favourite of favourites.commandFavourites">
+          <div class="btn-flat waves-light waves-light full-width center-align white-text truncate"
+               (click)="commandMenu.style.display = 'none';commandMenuBack.style.display = 'none';adbService.runAdbCommand(favourite.uri); adbModal.openModal()"
+               ><img *ngIf="favourite.icon" class="left browser-menu-image" src="{{favourite.icon}}"/>{{favourite.name}}</div><br>
+        </ng-container>
+      </div>
+      <div class="user-menu browser-menu" #browserMenu>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text truncate"
+             (click)="browserMenu.style.display = 'none';browserMenuBack.style.display = 'none';webService.loadUrl('https://sidequestvr.com')"
+             routerLink="/webview"><i class="material-icons left">home</i>Home</div><br>
+
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+             (click)="browserMenu.style.display = 'none';browserMenuBack.style.display = 'none';bookmarksModal.openModal()"
+             routerLink="/webview"><i class="material-icons left">public</i>Go to url</div><br>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+             (click)="browserMenu.style.display = 'none';browserMenuBack.style.display = 'none';favoriteType = 'browserFavourites';favouriteMax = 20;favoritePathType = 'Path';manageFavs.openModal()"
+             routerLink="/webview"><i class="material-icons left">edit</i>Manage</div><br>
+        <ng-container *ngFor="let favourite of favourites.browserFavourites">
+          <div class="btn-flat waves-light waves-light full-width center-align white-text truncate"
+               (click)="browserMenu.style.display = 'none';browserMenuBack.style.display = 'none';webService.loadUrl(favourite.uri)"
+               routerLink="/webview"><img *ngIf="favourite.icon" class="left browser-menu-image" src="{{favourite.icon}}"/>{{favourite.name}}</div><br>
+        </ng-container>
+      </div>
       <div class="user-menu" #userMenu>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.loadUrl('https://sidequestvr.com')"
+          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';webService.loadUrl('https://sidequestvr.com')"
           routerLink="/webview"><i class="material-icons left">home</i>Home</div><br>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.back()"
+          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';webService.back()"
           routerLink="/webview"><i class="material-icons left">arrow_back</i>Back</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.forward()"
+          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';webService.forward()"
           routerLink="/webview"><i class="material-icons left">arrow_forward</i>Forward</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';bookmarksModal.openModal()">
+          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';bookmarksModal.openModal()">
           <i class="material-icons left">public</i>Bookmarks</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
           *ngIf="isConnected()&&osPlatform === 'win32'"
-          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';scrcpyModal.openModal();">
+          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';scrcpyModal.openModal();">
           <i class="material-icons left">live_tv</i>Streaming</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text" *ngIf="adbService.deviceIp"
-          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';wifiModal.openModal()"><i
+          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';wifiModal.openModal()"><i
             class="material-icons left">wifi</i>Wifi</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';selectAppToInstall()"><i
+          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';selectAppToInstall()"><i
             class="material-icons left">archive</i>Select APK</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="/device-files"><i
+          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';" routerLink="/device-files"><i
             class="material-icons left">folder</i>File Explorer</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="packages"><i
+          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';" routerLink="packages"><i
             class="material-icons left">apps</i>My Apps</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="tasks"><i
+          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';" routerLink="tasks"><i
             class="material-icons left">playlist_add_check</i>Tasks</div><br>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';" routerLink="tools"><i
+          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';" routerLink="tools"><i
             class="material-icons left">build</i>Tools</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';adbModal.openModal()"><i
+          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';adbModal.openModal()"><i
             class="material-icons left">input</i>ADB Commands</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';openDebugger()"><i
+          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';openDebugger()"><i
             class="material-icons left">bug_report</i>Debugger</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text" routerLink="webview"
-          (click)="userMenu.style.height = '0';userMenuBack.style.display = 'none';webService.loadUrl('http://tee.pub/lic/L295azlpJYk')">
+          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';webService.loadUrl('http://tee.pub/lic/L295azlpJYk')">
           <i class="material-icons left">storefront</i>GiftShop</div>
       </div>
       <app-link *ngIf="appService.updateAvailable"
         class="waves-effect waves-light btn-flat update-available link small-button " (click)="updateAvailable()"
         text="Update Available"></app-link>
       <i mz-tooltip class="material-icons white-text no-outline top-menu-bar-icon-down" position="bottom" tooltip="Menu"
-        (click)="userMenu.style.height = 'auto';userMenuBack.style.display = 'block'">
+        (click)="userMenu.style.display = 'block';userMenuBack.style.display = 'block'">
         arrow_drop_down
       </i>
       <i mz-tooltip routerLink="/webview" (click)="webService.loadUrl('https://sidequestvr.com')"
@@ -107,11 +154,11 @@
         class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Back">
         arrow_back
       </i>
-      <i mz-tooltip *ngIf="!webService.isWebviewLoading" (click)="bookmarksModal.openModal()"
-        class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Web Browser">
+      <i mz-tooltip *ngIf="!webService.isWebviewLoading" (click)="browserMenu.style.display = 'block';browserMenuBack.style.display = 'block'"
+        class="material-icons white-text no-outline" position="bottom" tooltip="Web Browser">
         public
       </i>
-      <div mz-tooltip *ngIf="webService.isWebviewLoading" class="loader-tiny top-menu-bar-icon" position="bottom"
+      <div mz-tooltip *ngIf="webService.isWebviewLoading" class="loader-tiny" position="bottom"
         tooltip="Web Browser Loading..."></div>
       <i mz-tooltip routerLink="/webview" (click)="webService.forward()"
         class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Forward">
@@ -155,7 +202,7 @@
         tooltip="Device settings & tools">
         build
       </i>
-      <i mz-tooltip (click)="adbModal.openModal()" class="material-icons white-text no-outline top-menu-bar-icon"
+      <i mz-tooltip (click)="commandMenu.style.display = 'block';commandMenuBack.style.display = 'block'" class="material-icons white-text no-outline top-menu-bar-icon"
         position="bottom" tooltip="Run ADB commands">
         input
       </i>
@@ -186,9 +233,16 @@
         close
       </i>
     </div>
-    <div id="connection-status" class="connection-status-unauthorized" [ngClass]="getConnectionCssClass()" mz-tooltip
-      position="bottom" [tooltip]="connectionStatusTooltip()">
-      <div id="connection-status-message">v{{appService.versionName}}&nbsp;&nbsp;{{adbService.deviceStatusMessage}}
+    <div id="connection-status-container">
+      <i mz-tooltip class="material-icons white-text no-outline connection-device-select pointer"
+         *ngIf="adbService.devices && adbService.devices.length > 1"
+         (click)="deviceMenu.style.display = 'block';deviceMenuBack.style.display = 'block'"
+         position="bottom" tooltip="Select Device">
+        arrow_drop_down
+      </i>
+      <div id="connection-status" class="connection-status-unauthorized"  mz-tooltip
+           position="bottom" [ngClass]="adbService.connectionCss" [tooltip]="'Device connection status.'">
+        <div id="connection-status-message">{{appService.versionName}}&nbsp;&nbsp;{{adbService.deviceStatusMessage}}</div>
       </div>
     </div>
     <div *ngIf="appService.showRepo" (click)="addRepoModal.openModal()"
@@ -200,30 +254,19 @@
       <a class="waves-effect waves-light synthrideerz"
         (click)="webService.loadUrl('https://synthriderz.com/beatmaps/recent')">
         <img src="assets/images/Synth.png" class="responsive-img" /></a>&nbsp;&nbsp;&nbsp;
-      <!--<a class="waves-effect waves-light btn-flat no-outline small-button white-text" (click)="webService.loadUrl('https://sidequestvr.com/#/account')">-->
-      <!--Dashboard</a>&nbsp;&nbsp;&nbsp;-->
-      <!--<a *ngIf="beatonService.beatOnEnabled&&adbService.deviceIp" class="waves-effect waves-light btn-flat no-outline small-button white-text" (click)="webService.loadUrl('http://'+adbService.deviceIp+':50000')">-->
-      <!--Beat On</a>&nbsp;&nbsp;&nbsp;-->
-      <!--<a class="waves-effect waves-light btn-flat no-outline small-button white-text" (click)="webService.loadUrl('https://bsaber.com')">-->
-      <!--Beast Saber</a>&nbsp;&nbsp;&nbsp;-->
-      <!--<a class="waves-effect waves-light btn-flat no-outline small-button white-text" (click)="webService.loadUrl('https://beatsaver.com/browse/latest')">-->
-      <!--Beat Saver</a>&nbsp;&nbsp;&nbsp;-->
-      <!--<a routerLink="custom-levels" class="waves-effect waves-light btn pink-button no-outline small-button">-->
-      <!--<i class="material-icons left">queue_music</i>My Downloads</a>-->
     </div>
     <div *ngIf="appService.isFilesOpen" class="beast-saber-buttons">
-      <a class="waves-effect waves-light synthrideerz"
-        (click)="appService.filesComponent.open('/sdcard/Android/data/com.kluge.SynthRiders/files/CustomSongs/')"
-        mz-tooltip tooltip="SynthRiders">
-        <img src="assets/images/Synth.png" class="responsive-img" /></a>&nbsp;&nbsp;&nbsp;
-      <a class="waves-effect waves-light synthrideerz"
-        (click)="appService.filesComponent.open('/sdcard/Android/data/com.playito.songbeater/CustomSongs/')" mz-tooltip
-        tooltip="Song Beater">
-        <img src="assets/images/song-beater.png" class="responsive-img" /></a>&nbsp;&nbsp;&nbsp;
-      <a class="waves-effect waves-light synthrideerz"
-        (click)="appService.filesComponent.open('/sdcard/Android/data/com.PavelMarceluch.VRtuos/files/Midis/')"
-        mz-tooltip tooltip="VRtuos">
-        <img src="assets/images/VRtous.png" class="responsive-img" /></a>&nbsp;&nbsp;&nbsp;
+      <ng-container *ngFor="let favourite of favourites.fileFavourites">
+        <a href="javascript:void(0)" class="waves-effect waves-light synthrideerz margin-right"
+           (click)="appService.filesComponent.open(favourite.uri)"
+           mz-tooltip tooltip="{{favourite.name}}">
+          <img *ngIf="favourite.icon" src="{{favourite.icon}}" class="responsive-img" /></a>
+      </ng-container>
+      <ng-container>
+        <a href="javascript:void(0)" class="btn-floating pink-button waves-effect waves-light" mz-tooltip tooltip="Manage"
+           (click)="manageFavs.openModal(); favouriteMax = 10; favoritePathType = 'Url';"><i class="material-icons">add</i></a>
+      </ng-container>
+
     </div>
     <div class="sync-songs" *ngIf="appService.showTaskActions">
       <div class="waves-effect waves-light btn small-button pink-button" mz-tooltip position="bottom"
@@ -242,47 +285,6 @@
       </div>
       &nbsp;&nbsp;
 
-    </div>
-    <div class="sync-songs" *ngIf="appService.showCustomActions">
-      <span class="beat-saber-version"></span>&nbsp;&nbsp;
-      <div class="waves-effect waves-light btn small-button pink-button" mz-tooltip position="bottom"
-        tooltip="Open your custom levels folder." (click)="appService.openFolder(folder.BSABER)">
-        Open Songs Folder
-      </div>
-      &nbsp;&nbsp;
-      <div class="waves-effect waves-light btn small-button pink-button" mz-tooltip position="bottom"
-        tooltip="Manage your APK and data backups." routerLink="packages/com.beatgames.beatsaber">
-        Backups
-      </div>
-      &nbsp;&nbsp;
-      <div class="waves-effect waves-light btn small-button pink-button" mz-tooltip position="bottom"
-        tooltip="Sync your songs to Beat Saber on the headset."
-        (click)="beatonService.setupBeatOnSocket(this.adbService);beatonService.syncSongs(adbService)">
-        Sync to Beat On
-      </div>
-      &nbsp;&nbsp;
-      <div class="waves-effect waves-light btn small-button pink-button" mz-tooltip position="bottom"
-        tooltip="Build a new Beat Saber APK and install these songs." (click)="openSyncSongs()">
-        Sync Songs
-      </div>
-    </div>
-    <div id="browser-bar" *ngIf="appService.showBrowserBar && false">
-      <!--<a class="btn-floating waves-effect waves-light browser-button browser-back-button pink-button" (click)="webService.back()">-->
-      <!--<i class="material-icons">keyboard_arrow_left</i>-->
-      <!--</a>&nbsp;&nbsp;-->
-      <!--<a class="btn-floating waves-effect waves-light browser-button browser-forward-button pink-button" (click)="webService.forward()">-->
-      <!--<i class="material-icons">keyboard_arrow_right</i>-->
-      <!--</a>-->
-      <!--<div class="input-field inline browser-input">-->
-      <!--<input id="web_address" class="input-dark-theme white-text" type="text" [(ngModel)]="webService.currentAddress" placeholder="Address" />-->
-      <!--<label class="active label-dark-theme" for="web_address">-->
-      <!--Address-->
-      <!--</label>-->
-      <!--</div>-->
-      <!--<a class="btn-floating waves-effect waves-light browser-button browser-send-button pink-button" (click)="webService.send()">-->
-      <!--<i class="material-icons">send</i>-->
-      <!--</a>-->
-      <!--<app-loading-spinner-small *ngIf="webService.isWebviewLoading" class="browser-loading"></app-loading-spinner-small>-->
     </div>
     <div id="searchFilterContainer" *ngIf="appService.showSearch">
       <div class="search" *ngIf="false">
@@ -348,30 +350,11 @@
         (click)="webService.loadUrl(webService.currentAddress);" mz-modal-close>Open</a>
 
       <br><br>
-
-      <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-        (click)="webService.loadUrl('https://sidequestvr.com');" mz-modal-close>SideQuest Home</a>
-      <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-        (click)="webService.loadUrl('https://synthriderz.com');" mz-modal-close>SynthRiderz</a>
-      <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-        (click)="webService.loadUrl('http://songbeater.com/');" mz-modal-close>Song Beater</a>
-      <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-        (click)="webService.loadUrl('https://bsaber.com');" mz-modal-close>BeastSaber</a>
-      <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-        (click)="webService.loadUrl('https://beatsaver.com');" mz-modal-close>BeatSaver</a>
-      <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-        (click)="webService.loadUrl('https://github.com');" mz-modal-close>Github</a>
-      <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-        (click)="webService.loadUrl('https://discordapp.com/');" mz-modal-close>Discord</a>
-      <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-        (click)="webService.loadUrl('https://itch.io');" mz-modal-close>Itch.io</a>
-      <a class="waves-effect waves-dark btn bookmark white black-text" routerLink="/webview"
-        (click)="webService.loadUrl('https://google.com');" mz-modal-close>Google</a>
-
     </div>
 
   </mz-modal-content>
   <mz-modal-footer>
+    <button mz-button [flat]="true" mz-modal-close routerLink="/webview" (click)="webService.loadUrl('https://sidequestvr.com');" >SideQuest Home</button>
     <button mz-button [flat]="true" mz-modal-close>Close</button>
   </mz-modal-footer>
 </mz-modal>
@@ -409,43 +392,107 @@
   </mz-modal-footer>
 </mz-modal>
 
+
+<mz-modal #logcatModal [fixedFooter]="true" [options]="{dismissible: false}">
+  <mz-modal-header>
+    <button mz-button class="right" [flat]="true" mz-modal-close (click)="stopLogcat(); currentLogCat.length = 0; isStarted = false;">Stop & Close</button>
+    <h4>ADB Logcat</h4>
+  </mz-modal-header>
+  <mz-modal-content>
+    Select your options and click start to begin receiving logcat messages.
+    <br><br>
+    <div class="button-section">
+      <div class="code logcat-block">
+        <div *ngIf="!currentLogCat.length">
+          {{isStarted ? 'Waiting for messages...' : 'Click start to begin streaming logcat messages.'}}
+        </div>
+        <div *ngFor="let logcat of currentLogCat">
+          <div class="row no-margin">
+            <div class="col s2 logcat-smaller green-text no-padding">{{logcat.date}}: {{priorities[logcat.priority]}}</div>
+            <div class="col s2 logcat-smaller purple-text no-padding">{{logcat.tid}}/{{logcat.pid}} {{logcat.tag}} </div>
+            <div class="col s8 logcat-small no-padding"
+                 [ngClass]="{'red-text': logcat.priority === 6, 'orange-text': logcat.priority === 5}" [innerHTML]="logcat.message">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </mz-modal-content>
+  <mz-modal-footer>
+    <div class="row">
+      <div class="col s6">
+        <input id="logcatSearch" type="text" [(ngModel)]="logcatSearch" placeholder="Search/Tag Filter" />
+      </div>
+      <div class="col s3">
+        <select class="browser-default" [(ngModel)]="logcatPriority">
+          <option disabled>Priority</option>
+          <option value="unknown">unknown</option>
+          <option value="default">default</option>
+          <option value="verbose">verbose</option>
+          <option value="debug">debug</option>
+          <option value="info">info</option>
+          <option value="warn">warn</option>
+          <option value="error">error</option>
+          <option value="fatal">fatal</option>
+          <option value="silent">silent</option>
+        </select>
+      </div>
+      <div class="col s3"><button mz-button class="green" (click)="startLogcat(); isStarted = true;">{{isStarted?'Restart':'Start'}}</button></div>
+    </div>
+  </mz-modal-footer>
+</mz-modal>
+
+
+
+<mz-modal #safeModal [fixedFooter]="true">
+  <mz-modal-header>
+    <h4>Harmful Content Detected!!</h4>
+  </mz-modal-header>
+  <mz-modal-content>
+
+    <img class="right margin-left" src="assets/images/bigman.gif" style="width: 430px"/>
+    WARNING: We have stopped this install because it may may harm your device.
+    <br><br>
+    If you continue with the install you risk the following:<br><br>
+     - Causing physical damage to your headset.<br>
+     - Having your personal information stolen ( including tracking your movments in VR )<br>
+     - Being banned from the Oculus platform.<br>
+     - Loosing access to developer/experimental mode on your headset.<br>
+     - Loosing access to your content library including paid games and apps.<br>
+     - Being banned from creating Oculus Accounts in the future.<br>
+     - Being reported to the police for illegal activites.<br>
+     - Starving poor developers to death.<br><br>
+    You can click "Back to Safety" and the harmful content will not make it onto your device.
+    <br><br>
+    Thank you and have a great day!
+  </mz-modal-content>
+  <mz-modal-footer>
+    <button mz-button mz-modal-close [flat]="true" (click)="safeResolve('DoInstall')">Continue ( Not Recommended )</button>
+    <button mz-button class="pink-button" mz-modal-close (click)="safeResolve('DontInstall')">Back to Safety</button>
+  </mz-modal-footer>
+</mz-modal>
+
 <mz-modal #adbModal [fixedFooter]="true">
   <mz-modal-header>
     <h4>Run ADB Command</h4>
   </mz-modal-header>
   <mz-modal-content>
     Run an ADB command from here to be able to see the output. Use this to troubleshoot issues or perform advanced
-    operations. Please note wireless ADB is not supported but we provide the following example commands for you to
-    experiment with.
+    operations.
+
     <br><br>
-    To enable wifi click "Enable Wifi ADB" then "Connect to Wifi ADB" and finally disconnect your usb cable.
-    <br><br>
-    <div class="chip pointer purple white-text" mzTooltip tooltip="adb tcpip 5555" position="bottom"
-      (click)="adbCommandToRun = 'adb tcpip 5555';runAdbCommand()">Enable Wifi ADB</div>
-    <div *ngIf="adbService.deviceIp" mzTooltip tooltip="adb connect {{adbService.deviceIp}}:5555" position="bottom"
-      class="chip pointer purple white-text"
-      (click)="adbCommandToRun = 'adb connect '+adbService.deviceIp+':5555';runAdbCommand()">Connect to Wifi ADB</div>
-    <br><br>
-    <div class="chip pointer green white-text" mzTooltip tooltip="adb devices" position="bottom"
-      (click)="adbCommandToRun = 'adb devices';runAdbCommand()">List Devices</div>
-    <div class="chip pointer blue white-text" mzTooltip tooltip="adb usb" position="bottom"
-      (click)="adbCommandToRun = 'adb usb';runAdbCommand()">Enable USB ADB</div>
-    <div class="chip pointer orange white-text" mzTooltip tooltip="adb disconnect" position="bottom"
-      (click)="adbCommandToRun = 'adb disconnect';runAdbCommand()">Disconnect Everything</div>
-    <div class="chip pointer orange white-text" mzTooltip tooltip="adb kill-server" position="bottom"
-      (click)="adbCommandToRun = 'adb kill-server';runAdbCommand()">Reset ADB</div>
-    <div class="chip pointer red white-text" mzTooltip tooltip="adb reboot" position="bottom"
-      (click)="adbCommandToRun = 'adb reboot';runAdbCommand()">Reboot Headset</div>
     <div class="button-section">
       <div class="input-field">
         <input id="adbCommand" type="text" [(ngModel)]="adbCommandToRun" placeholder="Command To Run..." />
       </div>
       <code>
-        <pre *ngIf="adbService.adbResponse">
-          {{adbService.adbResponse}}
-        </pre>
+        <pre *ngIf="adbService.adbResponse">{{adbService.adbResponse}}</pre>
       </code>
     </div>
+    <br>
+    <ng-container *ngFor="let favourite of favourites.commandFavourites">
+      <span class="chip margin-right pointer" (click)="adbService.runAdbCommand(favourite.uri)"><img *ngIf="favourite.icon" src="{{favourite.icon}}"/>{{favourite.name}}</span>
+    </ng-container>
     <br><br>
   </mz-modal-content>
   <mz-modal-footer>
@@ -453,22 +500,6 @@
     <button mz-button class="pink-button" (click)="runAdbCommand()">Run Command</button>
   </mz-modal-footer>
 </mz-modal>
-
-<mz-modal #syncSongsModal [fixedFooter]="true">
-  <mz-modal-header>
-  </mz-modal-header>
-  <mz-modal-content>
-
-  </mz-modal-content>
-  <mz-modal-footer>
-    <button mz-button [flat]="true" mz-modal-close>Close</button>
-    <button mz-button class="pink-button" mz-modal-close (click)="beatOnModal.openModal()">Open BMBF</button>
-    <!--<button *ngIf="bsaberService.hasBackup" mz-button class="pink-button" mz-modal-close (click)="patchBeatSaber()">Run Patcher</button>-->
-    <!--<button *ngIf="!bsaberService.hasBackup" mz-button class="pink-button" mz-modal-close (click)="bsaberService.backupNewMaster()">Make Backup</button>-->
-
-  </mz-modal-footer>
-</mz-modal>
-
 
 <mz-modal #closeAppModal [fixedFooter]="true">
   <mz-modal-header>
@@ -616,129 +647,49 @@
   </mz-modal-footer>
 </mz-modal>
 
-<mz-modal #autoFixModal [fixedFooter]="true">
+
+<mz-modal #manageFavs [fixedFooter]="true">
   <mz-modal-header>
-    <h4>Patch Error - Let's get you fixed!</h4>
+    <h4>Manage Favourites</h4>
   </mz-modal-header>
   <mz-modal-content>
-    It looks like there was an error patching your Beat Saber APK file. This can be frustrating but there are some
-    options to get you going again.
-    We have added a troubleshooting section to the tools screen with information and guided solutions to fix the most
-    common issues.
-    These are quick solutions and only take a few minutes. Feel free to connect with us on <app-link
-      url="https://discord.gg/r38T5rR" [isDark]="true" text="Discord"></app-link> to say hello and get support.
-    <br><br>Thank you!
-  </mz-modal-content>
-  <mz-modal-footer>
-    <button mz-button class="pink-button" mz-modal-close routerLink="tools">Open Tools</button>
-    <button mz-button [flat]="true" mz-modal-close>Close</button>
-  </mz-modal-footer>
-</mz-modal>
-
-<mz-modal #beatOnModal [fixedFooter]="true">
-  <mz-modal-header>
-    <h4>
-      <a class="small-button waves-effect waves-light btn search-button-margin pink-button right"
-        (click)="appService.opn('https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CRKPPSJ4MUS3J&source=url')">
-        Support BeatOn on Paypal
-      </a>
-      BeatOn
-    </h4>
-  </mz-modal-header>
-  <mz-modal-content>
-    <!--<div class="center-align" *ngIf="isAliveChecking">-->
-    <!--<br><br>-->
-    <!--<app-loading-spinner-small></app-loading-spinner-small>-->
-    <!--<br>-->
-    <!--<h4>Connecting...</h4>-->
-
-    <!--</div>-->
-    <!--<div class="center-align" *ngIf="!isAlive&&!isAliveChecking">-->
-    <!--<h4>Cant see headset...</h4>-->
-    <!--Were sorry but your headset and PC must be on the same Wi-Fi, we tried to ping your headsets IP {{adbService.deviceIp}} and got no response.-->
-    <!--You will need to make sure that your PC and headset are on the same Wi-Fi network to setup BeatOn, for initial-->
-    <!--installation of BeatOn you must be plugged in as well as on the same Wi-Fi connection so it may read and save the-->
-    <!--IP to ping wirelessly from now on, also check if your headset is asleep, Thank you for using SideQuest and BeatOn-->
-    <!--<br><br>-->
-    <!--<a class="waves-effect waves-light btn search-button-margin pink-button small-button no-wrap"-->
-    <!--(click)="pingHeadset()">Try Again</a>-->
-    <!--</div>-->
-    <div class="center-align">
-      <!--*ngIf="isAlive&&!isAliveChecking"-->
-      WARNING: BeatOn is no longer supported and may be removed from SideQuest soon.
-      <br>
-      <br>
-      <br>
-      <img class="cursor" src="{{beatonService.beatOnEnabled?'assets/images/beaton.png':'assets/images/beatoff.png'}}"
-        (click)="beatonService.beatOnEnabled = !beatonService.beatOnEnabled;toggleBeatOn()" />
-      <br>
-      <app-loading-spinner-small *ngIf="beatOnLoading"></app-loading-spinner-small>
-      <div>
-        <div class="row">
-          <div class="col s4 left-align padding-top">
-            <div *ngIf="beatonService.beatOnEnabled">
-              BeatOn PID: {{beatonService.beatOnPID}}<br>
-              <div *ngIf="beatonService.beatOnStatus">
-                BeatOn Status:
-                {{beatonService.beatOnStatus.CurrentStatus === 'ModInstalled' ? 'Installed' : 'Not Installed'}}<br>
-                Beat Saber Installed: {{beatonService.beatOnStatus.IsBeatSaberInstalled? 'Yes' : 'No'}}
-                <div *ngIf="beatonService.UpgradeRestoreAvailable"><br>BeatOn Restore Available!! Click Restore BeatOn!!
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col s4 padding-top">
-            <div class="switch cursor">
-              <label>
-                Off
-                <input type="checkbox" [(ngModel)]="beatonService.beatOnEnabled" (change)="toggleBeatOn()" />
-                <span class="lever"></span>
-                On
-              </label>
-            </div>
-          </div>
-          <div class="col s4 right-align padding-top">
-            <div *ngIf="beatonService.beatOnEnabled">
-              <h5 *ngIf="!bsaberService.hasBackup && !beatonService.beatOnStatus.IsBeatSaberInstalled"> Please Install
-                beat saber from the Oculus Store on your headset!</h5>
-              <div *ngIf="beatonService.beatOnStatus.CurrentStatus === 'ModInstalled'">
-                <a class="waves-effect waves-light btn search-button-margin pink-button small-button no-wrap"
-                  (click)="beatOnModal.closeModal();router.navigateByUrl('webview');webService.loadUrl('http://'+adbService.deviceIp+':50000');">
-                  Open BeatOn
-                </a><br><br>
-              </div>
-              <div
-                *ngIf="beatonService.beatOnStatus.CurrentStatus !== 'ModInstalled' && beatonService.beatOnStatus.IsBeatSaberInstalled">
-                <a class="waves-effect waves-light btn search-button-margin pink-button small-button no-wrap"
-                  (click)="beatonService.setupBeatOn(adbService);beatOnModal.closeModal();">
-                  Install BeatOn
-                </a><br><br>
-              </div>
-              <div *ngIf="bsaberService.hasBackup">
-                <a class="waves-effect waves-light btn search-button-margin pink-button small-button no-wrap"
-                  (click)="beatOnModal.closeModal();installBaseAPK()">
-                  Reset BeatSaber
-                </a><br><br>
-              </div>
-              <div *ngIf="!bsaberService.hasBackup && beatonService.beatOnStatus.IsBeatSaberInstalled">
-                <a class="waves-effect waves-light btn search-button-margin pink-button small-button no-wrap"
-                  (click)="beatOnModal.closeModal()" routerLink="packages/com.beatgames.beatsaber">
-                  Backup BeatSaber
-                </a>
-              </div>
-              <div *ngIf="beatonService.UpgradeRestoreAvailable">
-                <a class="waves-effect waves-light btn search-button-margin pink-button small-button no-wrap"
-                  (click)="confirmRestore();beatOnModal.closeModal();">
-                  Restore BeatOn
-                </a><br><br>
-              </div>
-            </div>
-          </div>
+    Manage your favourites here. If you need to undo click RESET at the bottom. When you are done click SAVE.<br><br>
+    <ng-container *ngIf="!favouriteImportExport">
+      <div class="row fav-padding">
+        <div class="col s4">Name</div>
+        <div class="col s4">{{favoritePathType}}</div>
+        <div class="col s4">Icon Url</div>
+      </div>
+      <hr>
+      <div class="no-margin" *ngIf="!this.favourites[favoriteType].length">
+        Nothing added here yet, add something below.
+        <br><br>
+      </div>
+      <div dragula="SONGS" [(dragulaModel)]="this.favourites[favoriteType]" >
+        <div class="row fav-padding relative" *ngFor="let fav of this.favourites[favoriteType]; let i = index">
+          <i class="material-icons drag-indicator grey-text">drag_indicator</i>
+          <div class="col s4"><input type="text" [(ngModel)]="fav.name"/></div>
+          <div class="col s4"><input type="text" [(ngModel)]="fav.uri"/></div>
+          <div class="col s4"><input type="text" [(ngModel)]="fav.icon"/></div>
+          <i class="material-icons delete-button orange-text" (click)="removeFromFavourites(favoriteType, i)">close</i>
         </div>
       </div>
-    </div>
+        <h5>Add New</h5>
+        <hr>
+        <div class="no-margin" *ngIf="this.favourites[favoriteType].length >= favouriteMax">
+          You cannot add any more. Please remove some first.
+        </div>
+        <div class="row no-margin" *ngIf="this.favourites[favoriteType].length < favouriteMax">
+          <div class="col s3"><input type="text" [(ngModel)]="favoriteName"/></div>
+          <div class="col s4"><input type="text" [(ngModel)]="favoriteUri"/></div>
+          <div class="col s4"><input type="text" [(ngModel)]="favoriteIcon"/></div>
+          <div class="col s1"><i class="material-icons green-text fav-manage-icon pointer"
+              (click)="addToFavorites(favoriteType, favoriteName, favoriteUri, favoriteIcon)">add</i></div>
+        </div>
+    </ng-container>
   </mz-modal-content>
   <mz-modal-footer>
-    <button mz-button [flat]="true" mz-modal-close>Close</button>
+    <button mz-button [flat]="true" mz-modal-close (click)="resetFavourites(favoriteType)">Cancel</button>
+    <button mz-button [flat]="true" mz-modal-close (click)="saveFavourites(favoriteType)">Save</button>
   </mz-modal-footer>
 </mz-modal>

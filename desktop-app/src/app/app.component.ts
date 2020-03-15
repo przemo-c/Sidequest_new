@@ -17,11 +17,12 @@ export class AppComponent {
     @ViewChild('spinner', { static: false }) spinner;
     @ViewChild('status', { static: false }) status;
     @ViewChild('webview', { static: false }) webview;
+    helpStatus: string;
     constructor(
         private spinnerService: LoadingSpinnerService,
-        private statusService: StatusBarService,
+        public statusService: StatusBarService,
         private adbService: AdbClientService,
-        private appService: AppService,
+        public appService: AppService,
         public webService: WebviewService,
         public dragService: DragAndDropService,
         electronService: ElectronService,

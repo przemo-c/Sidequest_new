@@ -4,7 +4,6 @@ import { StateStorage, EnvironmentConfig } from './state-storage';
 import { AppWindow } from './window';
 const path = require('path');
 const { autoUpdater } = require('electron-updater');
-const { download } = require('electron-dl');
 
 let config: StateStorage;
 let appWindow: AppWindow;
@@ -26,6 +25,7 @@ function parseOpenUrl(argv: string[]) {
     }
 }
 
+const download = require('./download');
 function createWindow() {
     appWindow = new AppWindow(config);
     mainWindow = appWindow.window;
@@ -34,7 +34,7 @@ function createWindow() {
         mainWindow.loadURL('http://localhost:4205');
         mainWindow.webContents.openDevTools();
     } else {
-        mainWindow.loadFile('../build/app/index.html');
+        mainWindow.loadFile('build/app/index.html');
     }
     mainWindow.on('closed', function() {
         mainWindow = undefined;
@@ -229,7 +229,9 @@ function setupApp() {
     const adb = new ADB();
 
     ipcMain.on('download-url', async (event, { url, token, directory, filename }) => {
-        await download(mainWindow, url, { directory, filename });
+        await download(url, path.join(directory, filename), stats => {
+            return event.sender.send('download-progress', { stats, token });
+        });
         event.sender.send('download-url', { token });
     });
     ipcMain.on('automatic-update', (event, arg) => {
@@ -239,6 +241,17 @@ function setupApp() {
             }, 5000);
         }
     });
+//     ipcMain.on('download-url', async (event, { url, token, directory, filename }) => {
+//         await download(mainWindow, url, { directory, filename });
+//         event.sender.send('download-url', { token });
+//     });
+//     ipcMain.on('automatic-update', (event, arg) => {
+//         if (process.platform !== 'darwin' && hasUpdate) {
+//             setTimeout(() => {
+//                 autoUpdater.downloadUpdate().then(() => autoUpdater.quitAndInstall(false, false));
+//             }, 5000);
+//         }
+//     });
     ipcMain.on('adb-command', (event, arg) => {
         const success = d => {
             if (!event.sender.isDestroyed()) {
@@ -310,3 +323,66 @@ function setupApp() {
         }
     });
 }
+// =======
+//     switch (arg.command) {
+//         case 'setupAdb':
+//             adb.setupAdb(arg.settings.adbPath, success, reject);
+//             break;
+//         case 'endLogcat':
+//             adb.endLogcat();
+//             success('Done.');
+//             break;
+//         case 'logcat':
+//             adb.logcat(arg.settings.serial, arg.settings.tag, arg.settings.priority, success, status, reject);
+//             break;
+//         case 'listDevices':
+//             adb.listDevices(success, reject);
+//             break;
+//         case 'getPackages':
+//             adb.getPackages(arg.settings.serial, success, reject);
+//             break;
+//         case 'shell':
+//             adb.shell(arg.settings.serial, arg.settings.command, success, reject);
+//             break;
+//         case 'readdir':
+//             adb.readdir(arg.settings.serial, arg.settings.path, success, reject);
+//             break;
+//         case 'push':
+//             adb.push(arg.settings.serial, arg.settings.path, arg.settings.savePath, success, status, reject);
+//             break;
+//         case 'pull':
+//             adb.pull(arg.settings.serial, arg.settings.path, arg.settings.savePath, success, status, reject);
+//             break;
+//         case 'stat':
+//             adb.stat(arg.settings.serial, arg.settings.path, success, reject);
+//             break;
+//         case 'install':
+//             adb.install(arg.settings.serial, arg.settings.path, arg.settings.isLocal, success, status, reject);
+//             break;
+//         case 'uninstall':
+//             adb.uninstall(arg.settings.serial, arg.settings.packageName, success, reject);
+//             break;
+//         case 'installRemote':
+//             adb.installRemote(arg.settings.serial, arg.settings.path, success, reject);
+//             break;
+//         case 'clear':
+//             adb.clear(arg.settings.serial, arg.settings.packageName, success, reject);
+//             break;
+//         case 'connect':
+//             adb.connect(arg.settings.deviceIp, success, reject);
+//             break;
+//         case 'disconnect':
+//             adb.disconnect(success, reject);
+//             break;
+//         case 'usb':
+//             adb.usb(arg.settings.serial, success, reject);
+//             break;
+//         case 'tcpip':
+//             adb.tcpip(arg.settings.serial, success, reject);
+//             break;
+//         case 'setProperties':
+//             adb.setProperties(arg.settings.serial, arg.settings.command, success, reject);
+//             break;
+//     }
+// });
+// >>>>>>> master

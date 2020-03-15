@@ -1,7 +1,7 @@
 <div class="container"
   [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">
   <div class="side-quest-version">
-    SideQuest Version: v{{appService.versionName}}
+    SideQuest Version: {{appService.versionName}}
   </div>
   <div class="row">
     <div class="col s12">
@@ -25,24 +25,6 @@
           Open ADB Folder
         </div>
       </div>
-
-
-      <div class="section-title"
-        [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">
-        Manage 3rd Party Repos</div>
-      WARNING: these are deprecated and may be removed in a future release.
-      <div class="button-section">
-
-        <div *ngFor="let repo of repoService.repos; let i = index">
-          <div class="waves-effect waves-light btn margin-bottom margin-right pink-button"
-            [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}"
-            routerLink="/apps/{{i}}">{{repo.name}}</div>&nbsp;&nbsp;&nbsp;&nbsp;
-        </div>
-        <div class="waves-effect waves-light btn margin-bottom margin-right pink-button"
-          [ngClass]="{'button-dark-theme':appService.currentTheme === 'dark','button-light-theme':appService.currentTheme === 'light','waves-dark':true,'waves-light':false}"
-          routerLink="/repos">Manage Repos</div>&nbsp;&nbsp;&nbsp;&nbsp;
-      </div>
-
 
       <div class="section-title"
         [ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}">
