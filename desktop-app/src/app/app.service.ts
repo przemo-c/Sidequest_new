@@ -206,11 +206,7 @@ export class AppService {
     makeFolders() {
         return this.mkdir(this.appData)
             .then(() => this.mkdir(this.path.join(this.appData, 'backups')))
-            .then(() => this.mkdir(this.path.join(this.appData, 'bsaber-backups')))
             .then(() => this.mkdir(this.path.join(this.appData, 'tmp')))
-            .then(() => this.mkdir(this.path.join(this.appData, 'bsaber-data-backups')))
-            .then(() => this.mkdir(this.path.join(this.appData, 'bsaber')))
-            .then(() => this.mkdir(this.path.join(this.appData, 'saber-quest-patch')))
             .then(() => this.mkdir(this.path.join(this.appData, 'scrcpy')))
             .then(() => {});
     }
@@ -241,6 +237,7 @@ export class AppService {
                 break;
         }
         let downloadPath = getPath(downloadUrl);
+        console.log(downloadPath, downloadUrl);
         return this.downloadFileAPI(downloadUrl, this.path.dirname(downloadPath), this.path.basename(downloadPath), task).then(
             () => downloadPath
         );
@@ -252,7 +249,9 @@ export class AppService {
             let token = this.uuidv4();
             this.downloadResolves[token] = {
                 scb: stats => {
-                    task.status = 'Downloading... ' + stats + '%';
+                    if (task) {
+                        task.status = 'Downloading... ' + stats + '%';
+                    }
                 },
                 resolve,
             };
