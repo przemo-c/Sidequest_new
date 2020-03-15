@@ -64,13 +64,13 @@
       <div class="user-menu command-menu" #commandMenu>
         <div class="btn-flat waves-light waves-light full-width center-align white-text truncate"
              (click)="commandMenu.style.display = 'none';commandMenuBack.style.display = 'none';adbModal.openModal()"
-             routerLink="/webview"><i class="material-icons left">input</i>Custom Command</div><br>
+             ><i class="material-icons left">input</i>Custom Command</div><br>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
              (click)="commandMenu.style.display = 'none';commandMenuBack.style.display = 'none';favoriteType = 'commandFavourites';favouriteMax = 20;favoritePathType = 'Command';manageFavs.openModal()"
-             routerLink="/webview"><i class="material-icons left">edit</i>Manage</div><br>
+             ><i class="material-icons left">edit</i>Manage</div><br>
         <div class="btn-flat waves-light waves-light full-width center-align white-text truncate"
              (click)="commandMenu.style.display = 'none';commandMenuBack.style.display = 'none';logcatModal.openModal()"
-             routerLink="/webview"><i class="material-icons left">toc</i>Logcat</div><br>
+             ><i class="material-icons left">toc</i>Logcat</div><br>
         <ng-container *ngFor="let favourite of favourites.commandFavourites">
           <div class="btn-flat waves-light waves-light full-width center-align white-text truncate"
                (click)="commandMenu.style.display = 'none';commandMenuBack.style.display = 'none';adbService.runAdbCommand(favourite.uri); adbModal.openModal()"
@@ -87,7 +87,7 @@
              routerLink="/webview"><i class="material-icons left">public</i>Go to url</div><br>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
              (click)="browserMenu.style.display = 'none';browserMenuBack.style.display = 'none';favoriteType = 'browserFavourites';favouriteMax = 20;favoritePathType = 'Path';manageFavs.openModal()"
-             routerLink="/webview"><i class="material-icons left">edit</i>Manage</div><br>
+             ><i class="material-icons left">edit</i>Manage</div><br>
         <ng-container *ngFor="let favourite of favourites.browserFavourites">
           <div class="btn-flat waves-light waves-light full-width center-align white-text truncate"
                (click)="browserMenu.style.display = 'none';browserMenuBack.style.display = 'none';webService.loadUrl(favourite.uri)"
