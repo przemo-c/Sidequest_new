@@ -397,7 +397,13 @@ export class AdbClientService {
                             this.appService.fs.unlink(path.toString(), err => {
                                 if (err) return reject(err);
                                 this.spinnerService.hideLoader();
-                                resolve();
+                                if (this.appService.os.platform() === 'darwin' || this.appService.os.platform() === 'linux') {
+                                    return this.appService
+                                        .setExecutable(this.appService.path.join(this.adbPath, 'adb'))
+                                        .then(() => resolve());
+                                } else {
+                                    return resolve();
+                                }
                             });
                         }
                     });
