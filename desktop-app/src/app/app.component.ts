@@ -23,7 +23,8 @@ export class AppComponent {
         private adbService: AdbClientService,
         public appService: AppService,
         public webService: WebviewService,
-        public dragService: DragAndDropService
+        public dragService: DragAndDropService,
+        private electronService: ElectronService
     ) {
         this.appService.hideNSFW = !!localStorage.getItem('hideNSFW');
     }
