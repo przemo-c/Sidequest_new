@@ -54,7 +54,7 @@ export class AudicaService {
                             [
                                 {
                                     name: zipPath,
-                                    savePath: '/sdcard/Android/Audica/' + basename,
+                                    savePath: '/sdcard/Audica/' + basename,
                                 },
                             ],
                             task
