@@ -376,11 +376,10 @@ export class AdbClientService {
         }
     }
     getAdbBinary() {
-        switch (this.appService.os.platform()) {
-            case 'win32':
-                return 'adb.exe';
-            default:
-                return 'adb';
+        if (this.appService.os.platform() === 'win32') {
+            return 'adb.exe';
+        } else {
+            return 'adb';
         }
     }
     async downloadTools() {
@@ -390,20 +389,20 @@ export class AdbClientService {
         return new Promise((resolve, reject) => {
             this.appService
                 .downloadFile(url + 'windows.zip', url + 'linux.zip', url + 'darwin.zip', url => this.adbPath + '.zip')
-                .then(path =>
+                .then(path => {
                     this.appService.extract(path, { dir: this.appService.appData }, error => {
-                        this.spinnerService.hideLoader();
                         if (error) {
                             reject(error);
                         } else {
-                            this.appService.fs.unlink(path, err => {
+                            this.appService.fs.unlink(path.toString(), err => {
                                 if (err) return reject(err);
+                                this.spinnerService.hideLoader();
                                 resolve();
                             });
                         }
-                    })
-                );
-        });
+                    });
+                });
+        }).catch(e => console.log(e));
     }
     getFilenameDate() {
         return JSON.stringify(new Date())

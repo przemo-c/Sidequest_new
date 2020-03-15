@@ -5,7 +5,6 @@ import { StatusBarService } from './status-bar.service';
 import { WebviewService } from './webview.service';
 import { DragAndDropService } from './drag-and-drop.service';
 import { ElectronService } from './electron.service';
-import { BsaberService } from './bsaber.service';
 import { AdbClientService } from './adb-client.service';
 import { BeatOnService } from './beat-on.service';
 @Component({
@@ -24,19 +23,15 @@ export class AppComponent {
         private adbService: AdbClientService,
         public appService: AppService,
         public webService: WebviewService,
-        public dragService: DragAndDropService,
-        electronService: ElectronService,
-        private bsaberSerivce: BsaberService,
-        private beatonService: BeatOnService
+        public dragService: DragAndDropService
     ) {
         this.appService.hideNSFW = !!localStorage.getItem('hideNSFW');
     }
     ngOnInit() {
         this.adbService
             .setupAdb()
+            .then(() => this.appService.downloadScrCpyBinary())
             .then(() => this.adbService.connectedStatus())
-            .then(() => this.bsaberSerivce.getMySongs())
-            .then(() => (this.bsaberSerivce.jSon = this.bsaberSerivce.getAppJson()))
             .then(() => {
                 if (!localStorage.getItem('first_run')) {
                     localStorage.setItem('first_run', 'true');

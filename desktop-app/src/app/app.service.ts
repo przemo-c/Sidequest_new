@@ -40,7 +40,7 @@ export class AppService {
     electron: any;
     os: any;
     request: any;
-    extract: any;
+    unzip: any;
     progress: any;
     Readable: any;
     opn: any;
@@ -65,7 +65,7 @@ export class AppService {
         this.path = (<any>window).require('path');
         this.fs = (<any>window).require('fs');
         this.request = (<any>window).require('request');
-        this.extract = (<any>window).require('extract-zip');
+        this.unzip = (<any>window).require('adm-zip');
         this.progress = (<any>window).require('request-progress');
         this.os = (<any>window).require('os');
         this.Readable = (<any>window).require('stream').Readable;
@@ -82,9 +82,7 @@ export class AppService {
         this.execSync = (<any>window).require('child_process').execSync;
         this.uuidv4 = (<any>window).require('uuid/v4');
         this.ping = (<any>window).require('ping');
-        this.makeFolders()
-            .then(() => this.downloadScrCpyBinary())
-            .then(() => this.spinnerService.hideLoader());
+        this.makeFolders();
         let theme = localStorage.getItem('theme');
         if (theme && theme === 'light') {
             this.currentTheme = 'light';
@@ -107,6 +105,14 @@ export class AppService {
                 this.downloadResolves[data.token].scb(data.stats);
             }
         });
+    }
+    extract(path, options, callback) {
+        try {
+            new this.unzip(path).extractAllTo(options.dir, true);
+            callback();
+        } catch (e) {
+            callback(new Error('Unzip failed'));
+        }
     }
     getBase64Image(imagePath: string) {
         try {
@@ -237,7 +243,6 @@ export class AppService {
                 break;
         }
         let downloadPath = getPath(downloadUrl);
-        console.log(downloadPath, downloadUrl);
         return this.downloadFileAPI(downloadUrl, this.path.dirname(downloadPath), this.path.basename(downloadPath), task).then(
             () => downloadPath
         );
@@ -296,10 +301,13 @@ export class AppService {
 
     downloadScrCpyBinary() {
         if (this.os.platform() === 'win32') {
+            this.spinnerService.showLoader();
+            this.spinnerService.setMessage('Downloading/Extracting ADB...');
             let url = 'https://github.com/Genymobile/scrcpy/releases/download/v1.11/scrcpy-win64-v1.11.zip';
             let downloadPath = this.path.join(this.appData, 'scrcpy', 'scrcpy.exe');
             if (this.doesFileExist(downloadPath)) {
                 this.scrcpyBinaryPath = downloadPath;
+                this.spinnerService.hideLoader();
                 return Promise.resolve();
             }
             return new Promise<void>((resolve, reject) => {
@@ -310,6 +318,7 @@ export class AppService {
                         if (error) return reject(error);
                         this.fs.unlink(path, err => {
                             // if(err) return reject(err);
+                            this.spinnerService.hideLoader();
                             resolve(path.split('.')[0]);
                         });
                     };

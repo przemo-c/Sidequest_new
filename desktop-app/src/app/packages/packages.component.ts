@@ -6,7 +6,6 @@ import { StatusBarService } from '../status-bar.service';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { RepoService } from '../repo.service';
-import { BsaberService } from '../bsaber.service';
 
 @Component({
     selector: 'app-packages',
@@ -36,7 +35,6 @@ export class PackagesComponent implements OnInit {
         public spinnerService: LoadingSpinnerService,
         public statusService: StatusBarService,
         private repoService: RepoService,
-        private bsaberService: BsaberService,
         router: Router,
         route: ActivatedRoute
     ) {

@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { JSONApp, RepoItem } from '../repo-item/repo-item.component';
 import { RepoService } from '../repo.service';
 
 @Component({
@@ -10,7 +9,6 @@ import { RepoService } from '../repo.service';
 export class PackageItemComponent implements OnInit {
     @Input('package') package: any;
     @Output('settings') settings = new EventEmitter();
-    repoApp: JSONApp;
     constructor(public repoService: RepoService) {}
 
     ngOnInit() {}

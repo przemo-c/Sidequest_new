@@ -14,23 +14,15 @@ import { RouterModule } from '@angular/router';
 import { SetupComponent } from './setup/setup.component';
 import { AppRoutes } from './app.routes';
 import { LoadingSpinnerSmallComponent } from './loading-spinner-small/loading-spinner-small.component';
-import { ReposComponent } from './repos/repos.component';
-import { RepoItemComponent } from './repo-item/repo-item.component';
 import { PackagesComponent } from './packages/packages.component';
 import { PackageItemComponent } from './package-item/package-item.component';
 import { ToolsComponent } from './tools/tools.component';
 import { LinkComponent } from './link/link.component';
 import { FormsModule } from '@angular/forms';
 import { SanitizeHtmlPipe } from './sanitize-html.pipe';
-import { SideQuestAppsComponent } from './side-quest-apps/side-quest-apps.component';
-import { SideQuestCardComponent } from './side-quest-card/side-quest-card.component';
-import { SideQuestDetailComponent } from './side-quest-detail/side-quest-detail.component';
-import { SideQuestAppVersionComponent } from './side-quest-app-version/side-quest-app-version.component';
 import { WebviewComponent } from './webview/webview.component';
 import { WebviewDirective } from './webview.directive';
 import { FilesComponent } from './files/files.component';
-import { CustomLevelsComponent } from './custom-levels/custom-levels.component';
-import { SongPackManagerComponent } from './song-pack-manager/song-pack-manager.component';
 import { ColorPickerModule } from 'ngx-color-picker';
 import { HttpClientModule } from '@angular/common/http';
 import { CurrentTasksComponent } from './current-tasks/current-tasks.component';
@@ -46,22 +38,14 @@ import { CurrentTaskItemComponent } from './current-task-item/current-task-item.
         LoadingSpinnerComponent,
         SetupComponent,
         LoadingSpinnerSmallComponent,
-        ReposComponent,
-        RepoItemComponent,
         PackagesComponent,
         PackageItemComponent,
         ToolsComponent,
         LinkComponent,
         SanitizeHtmlPipe,
-        SideQuestAppsComponent,
-        SideQuestCardComponent,
-        SideQuestDetailComponent,
-        SideQuestAppVersionComponent,
         WebviewComponent,
         WebviewDirective,
         FilesComponent,
-        CustomLevelsComponent,
-        SongPackManagerComponent,
         CurrentTasksComponent,
         CurrentTaskItemComponent,
     ],

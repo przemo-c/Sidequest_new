@@ -30,6 +30,7 @@ export class LoadingSpinnerService {
         }
     }
     hideLoader() {
+        console.warn('here');
         if (this.spinner) {
             this.spinner.isLoading = this.spinner.isActive = false;
         }

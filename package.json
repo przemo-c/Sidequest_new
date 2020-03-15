@@ -77,6 +77,7 @@
     },
     "dependencies": {
         "adbkit": "^2.11.1",
+        "adm-zip": "^0.4.14",
         "concurrently": "^4.1.0",
         "cross-env": "^5.2.0",
         "electron-updater": "^4.1.2",

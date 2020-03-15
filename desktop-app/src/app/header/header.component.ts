@@ -5,7 +5,6 @@ import { WebviewService } from '../webview.service';
 import { LoadingSpinnerService } from '../loading-spinner.service';
 import { StatusBarService } from '../status-bar.service';
 import { RepoService } from '../repo.service';
-import { BsaberService, QuestSaberPatchResponseJson } from '../bsaber.service';
 import { BeatOnService } from '../beat-on.service';
 import { DragAndDropService } from '../drag-and-drop.service';
 import { Router } from '@angular/router';
@@ -55,7 +54,6 @@ export class HeaderComponent implements OnInit {
     replaceText: ReplaceText[] = [];
     addkey: string;
     addvalue: string;
-    qspResponse: QuestSaberPatchResponseJson;
     adbCommandToRun: string;
     osPlatform: string;
     favourites: {
@@ -105,7 +103,6 @@ export class HeaderComponent implements OnInit {
     constructor(
         public adbService: AdbClientService,
         public appService: AppService,
-        public bsaberService: BsaberService,
         public webService: WebviewService,
         public spinnerService: LoadingSpinnerService,
         public statusService: StatusBarService,
@@ -282,20 +279,6 @@ export class HeaderComponent implements OnInit {
             }
         );
     }
-    addRepo() {
-        this.spinnerService.showLoader();
-        this.repoService
-            .addRepo(this.addrepoUrl)
-            .then(() => (this.addrepoUrl = ''))
-            .then(() => this.spinnerService.hideLoader())
-            .then(() => this.statusService.showStatus('Repo added OK!!'))
-            .then(() => this.repoService.saveRepos())
-            .catch(e => {
-                this.spinnerService.hideLoader();
-                this.statusService.showStatus(e.toString(), true);
-            });
-    }
-
     confirmRestore() {
         this.spinnerService.showLoader();
         this.spinnerService.setMessage('Restoring BMBF<br>Please Wait...');
@@ -306,142 +289,11 @@ export class HeaderComponent implements OnInit {
             this.beatonService.checkHasRestore(this.adbService);
         });
     }
-
-    async patchBeatSaber() {
-        if (this.adbService.deviceStatus !== ConnectionStatus.CONNECTED) {
-            return this.statusService.showStatus('No device connected!', true);
-        }
-
-        // this.bsaberService.beatSaberVersion = (
-        //     (await this.adbService.getPackageInfo(this.bsaberService.beatSaberPackage)) || ('' as any)
-        // ).trim();
-        if (!this.bsaberService.beatSaberVersion) {
-            return this.statusService.showStatus('Beat Saber version not found!! ', true);
-        }
-        if (!~this.bsaberService.supportedBeatSaberVersions.indexOf(this.bsaberService.beatSaberVersion)) {
-            return this.statusService.showStatus(
-                'Beat Saber version not supported yet!! ' + this.bsaberService.beatSaberVersion,
-                true
-            );
-        }
-        this.syncSongsModal.closeModal();
-        this.spinnerService.showLoader();
-        this.spinnerService.setMessage('Patching Beat Saber...<br>This might take some time.');
-        this.replaceText.forEach(text => {
-            this.bsaberService.jSon.replaceText[text.key] = text.value;
-        });
-        if (this.colorA) {
-            let color = this.colorA
-                .replace('rgba(', '')
-                .replace('rgb(', '')
-                .replace(')', '');
-            let parts: any[] = color.trim().split(',');
-            if (!this.bsaberService.jSon.colors.colorA) {
-                this.bsaberService.jSon.colors.colorA = { r: 1, g: 0, b: 0, a: 1 };
-            }
-            this.bsaberService.jSon.colors.colorA.r = Number(parts[0].trim()) / 255;
-            this.bsaberService.jSon.colors.colorA.g = Number(parts[1].trim()) / 255;
-            this.bsaberService.jSon.colors.colorA.b = Number(parts[2].trim()) / 255;
-            this.bsaberService.jSon.colors.colorA.a = 1;
-        }
-        if (this.colorB) {
-            let color = this.colorB
-                .replace('rgba(', '')
-                .replace('rgb(', '')
-                .replace(')', '');
-            let parts: any[] = color.trim().split(',');
-            if (!this.bsaberService.jSon.colors.colorB) {
-                this.bsaberService.jSon.colors.colorB = { r: 0, g: 0, b: 1, a: 1 };
-            }
-            this.bsaberService.jSon.colors.colorB.r = Number(parts[0].trim()) / 255;
-            this.bsaberService.jSon.colors.colorB.g = Number(parts[1].trim()) / 255;
-            this.bsaberService.jSon.colors.colorB.b = Number(parts[2].trim()) / 255;
-            this.bsaberService.jSon.colors.colorB.a = 1;
-        }
-        this.bsaberService.saveJson(this.bsaberService.jSon);
-        this.bsaberService.jSon = this.bsaberService.getAppJson();
-        this.bsaberService
-            .questSaberPatch()
-
-            .then((json: QuestSaberPatchResponseJson) => {
-                if (json.error) {
-                    this.spinnerService.hideLoader();
-                    this.autoFixModal.openModal();
-                    this.statusService.showStatus(json.error, true);
-                }
-                this.qspResponse = json;
-                this.spinnerService.hideLoader();
-                this.installAPKModal.openModal();
-            })
-            .catch(e => {
-                this.autoFixModal.openModal();
-                this.spinnerService.hideLoader();
-                this.statusService.showStatus(e.toString(), true);
-            });
-    }
-    installSkippedLength() {
-        return Object.keys(this.qspResponse.installSkipped || {}).length;
-    }
-    getInstallSkipped() {
-        return Object.keys(this.qspResponse.installSkipped || {})
-            .map(k => k + ':' + this.qspResponse.installSkipped[k])
-            .join(', ');
-    }
     installAPK(name: string) {
         return this.adbService.installAPK(this.appService.path.join(this.appService.appData, name), true, true);
     }
-    installPatchedAPK() {
-        this.installAPK('bsaber-base_patched.apk');
-    }
-    installBaseAPK() {
-        this.installAPK('bsaber-base.apk');
-    }
     removeText(text) {
         this.replaceText = this.replaceText.filter(d => d !== text);
-    }
-    getReplaceAndColors() {
-        this.replaceText = Object.keys(this.bsaberService.jSon.replaceText).map(k => ({
-            key: k,
-            value: this.bsaberService.jSon.replaceText[k],
-        }));
-        if (this.bsaberService.jSon.colors.colorA) {
-            this.colorA =
-                'rgba(' +
-                this.bsaberService.jSon.colors.colorA.r * 255 +
-                ',' +
-                this.bsaberService.jSon.colors.colorA.g * 255 +
-                ',' +
-                this.bsaberService.jSon.colors.colorA.b * 255 +
-                ',1)';
-        } else {
-            this.resetColor(true);
-        }
-        if (this.bsaberService.jSon.colors.colorB) {
-            this.colorB =
-                'rgba(' +
-                this.bsaberService.jSon.colors.colorB.r * 255 +
-                ',' +
-                this.bsaberService.jSon.colors.colorB.g * 255 +
-                ',' +
-                this.bsaberService.jSon.colors.colorB.b * 255 +
-                ',1)';
-        } else {
-            this.resetColor(false);
-        }
-    }
-    resetColor(isColorA: boolean) {
-        if (isColorA) {
-            this.colorA = 'rgba(240,48,48,1)';
-        }
-
-        if (!isColorA) {
-            this.colorB = 'rgba(48,158,255,1)';
-        }
-    }
-    openSyncSongs() {
-        // this.bsaberService.hasBackup = this.bsaberService.backupExists();
-        // this.getReplaceAndColors();
-        this.syncSongsModal.openModal();
     }
     launchBeatOn() {
         return (
@@ -541,7 +393,6 @@ export class HeaderComponent implements OnInit {
         ) {
             this.beatonService.checkHasRestore(this.adbService);
         }
-        this.bsaberService.hasBackup = this.bsaberService.backupExists();
         this.beatonService.setupBeatOnSocket(this.adbService);
         this.beatOnModal.openModal();
     }
