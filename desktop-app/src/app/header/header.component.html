@@ -124,9 +124,6 @@
           (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';" routerLink="packages"><i
             class="material-icons left">apps</i>My Apps</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
-          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';" routerLink="tasks"><i
-            class="material-icons left">playlist_add_check</i>Tasks</div><br>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text"
           (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';" routerLink="tools"><i
             class="material-icons left">build</i>Tools</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
@@ -188,7 +185,7 @@
         position="bottom" tooltip="Currently installed apps">
         apps
       </i>
-      <i routerLink="tasks" mz-tooltip class="material-icons white-text no-outline top-menu-bar-icon" position="bottom"
+      <i routerLink="tasks" mz-tooltip class="material-icons white-text no-outline" position="bottom"
         tooltip="Running {{processService.left_length}} tasks.">
         playlist_add_check
       </i><span routerLink="tasks" mz-tooltip *ngIf="processService.left_length" position="bottom"
@@ -214,12 +211,6 @@
         class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="SideQuest gift shop">
         storefront
       </i>
-      <!--<i *ngIf="appService.currentTheme === 'light'" (click)="appService.currentTheme = 'dark'" id="day-mode" mz-tooltip class="material-icons white-text no-outline" position="bottom" tooltip="Dark theme.">-->
-      <!--brightness_2-->
-      <!--</i>-->
-      <!--<i *ngIf="appService.currentTheme === 'dark'" (click)="appService.currentTheme = 'light'"  id="night-mode" mz-tooltip class="material-icons white-text no-outline" position="bottom" tooltip="Light theme.">-->
-      <!--brightness_5-->
-      <!--</i>-->
       <i (click)="minimizeApp()" mz-tooltip class="material-icons white-text no-outline" position="bottom"
         tooltip="Minimize SideQuest.">
         minimize
