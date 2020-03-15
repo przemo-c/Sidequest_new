@@ -991,7 +991,7 @@ export class AdbClientService {
         return this.adbCommand('shell', { serial: this.deviceSerial, command: 'dumpsys package ' + packagename }).then(data => {
             let lines = data.split('\n').map(l => l.trim());
             let start_needs = lines.indexOf('requested permissions:') + 1;
-            let end_needs = lines.indexOf('installed permissions:');
+            let end_needs = lines.indexOf('install permissions:');
             let start = lines.indexOf('runtime permissions:') + 1;
             let end = lines.indexOf('Dexopt state:');
 
@@ -999,18 +999,24 @@ export class AdbClientService {
                 .slice(start_needs, end_needs)
                 .filter(l => l && l.startsWith('android.permission'))
                 .map(p => p.split(':')[0].trim());
+
+            let installed = lines
+                .slice(end_needs, start)
+                .filter(l => l && l.startsWith('android.permission') && l.trim().endsWith('granted=true'))
+                .map(p => p.split(':')[0].trim());
+
             let read_perm = 'android.permission.READ_EXTERNAL_STORAGE';
             let write_perm = 'android.permission.WRITE_EXTERNAL_STORAGE';
             let record_perm = 'android.permission.RECORD_AUDIO';
 
             let permsList = [];
-            if (~current.indexOf(read_perm)) {
+            if (~current.indexOf(read_perm) && !~installed.indexOf(read_perm)) {
                 permsList.push(read_perm);
             }
-            if (~current.indexOf(write_perm)) {
+            if (~current.indexOf(write_perm) && !~installed.indexOf(write_perm)) {
                 permsList.push(write_perm);
             }
-            if (~current.indexOf(record_perm)) {
+            if (~current.indexOf(record_perm) && !~installed.indexOf(record_perm)) {
                 permsList.push(record_perm);
             }
             let perms = permsList.map(p => ({ permission: p, enabled: false }));

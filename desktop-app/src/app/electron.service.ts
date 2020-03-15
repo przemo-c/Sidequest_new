@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 import { BeatOnService } from './beat-on.service';
 import { SynthriderService } from './synthrider.service';
 import { SongBeaterService } from './song-beater.service';
+import { AudicaService } from './audica.service';
 
 @Injectable({
     providedIn: 'root',
@@ -28,7 +29,8 @@ export class ElectronService {
         private beatonService: BeatOnService,
         private router: Router,
         private synthriderService: SynthriderService,
-        private songbeaterService: SongBeaterService
+        private songbeaterService: SongBeaterService,
+        private audicaService: AudicaService
     ) {
         this.setupIPC();
     }
@@ -67,7 +69,6 @@ export class ElectronService {
 
     setupIPC() {
         this.appService.electron.ipcRenderer.on('pre-open-url', (event, data) => {
-            console.log(data);
             this.spinnerService.showLoader();
             this.spinnerService.setMessage('Do you want to install this file?<br><br>' + data.name);
             this.spinnerService.setupConfirm().then(() => {
@@ -145,10 +146,13 @@ export class ElectronService {
                         this.statusService.showStatus('SongBeater download started... See the tasks screen for more info.');
                         this.songbeaterService.downloadSong(url[1], this.adbService);
                         break;
+                    case 'sidequest://audica/':
+                        this.statusService.showStatus('Audica download started... See the tasks screen for more info.');
+                        this.audicaService.downloadSong(url[1], this.adbService);
+                        break;
                     case 'sidequest://synthriders/':
                         this.statusService.showStatus('SynthRiders download started... See the tasks screen for more info.');
                         this.synthriderService.downloadSong(url[1], this.adbService);
-
                         break;
                     case 'sidequest://synthriders-multi/':
                         this.statusService.showStatus('SynthRiders download started... See the tasks screen for more info.');

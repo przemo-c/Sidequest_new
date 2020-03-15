@@ -32,7 +32,6 @@ export class AppService {
     isTasksOpen: boolean;
     hideNSFW: boolean;
     filesComponent: FilesComponent;
-
     appData: string;
     fs: any;
     path: any;

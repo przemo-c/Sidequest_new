@@ -202,6 +202,10 @@ export class PackagesComponent implements OnInit {
             .then(version => (this.currentPackage.versionCode = version))
             .then(() => this.adbService.getPackagePermissions(this.currentPackage.package.packageName))
             .then(perms => {
+                perms.forEach((p: any) => {
+                    const perm_split = p.permission.split('.');
+                    p.display_permission = perm_split[perm_split.length - 1];
+                });
                 this.perms = perms;
             })
             .then(() => this.adbService.getDataBackups(this.currentPackage.package.packageName))

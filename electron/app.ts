@@ -1,5 +1,4 @@
 import { MenuItemConstructorOptions } from 'electron';
-
 const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
 let mainWindow, open_url, is_loaded;
@@ -76,6 +75,9 @@ function createWindow() {
         } else if (~url.indexOf('https://synthriderz.com/')) {
             // synthriderz mods /songs
             mainWindow.webContents.send('open-url', 'sidequest://synthriders/#' + url);
+        } else if (etx === '.audica') {
+            // audica custom song format
+            mainWindow.webContents.send('open-url', 'sidequest://audica/#' + url);
         } else if (etx === '.apk') {
             // any file ending with apk.
             mainWindow.webContents.send('pre-open-url', url);
@@ -228,7 +230,6 @@ autoUpdater.on('update-downloaded', info => {
 };
 const { ipcMain } = require('electron');
 const adb = new ADB();
-
 ipcMain.on('download-url', async (event, { url, token, directory, filename }) => {
     await download(url, path.join(directory, filename), stats => {
         return event.sender.send('download-progress', { stats, token });
