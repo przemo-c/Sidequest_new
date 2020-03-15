@@ -46,7 +46,6 @@ export class HeaderComponent implements OnInit {
     @ViewChild('safeModal', { static: false }) safeModal;
     safeResolve: any = val => val;
     folder = FolderType;
-    isMaximized: boolean = true;
     addrepoUrl: string = '';
     colorA: string;
     colorB: string;
@@ -252,8 +251,12 @@ export class HeaderComponent implements OnInit {
         this.appService.remote.getCurrentWindow().minimize();
     }
     maximizeApp() {
-        this.isMaximized = !this.isMaximized;
-        this.appService.remote.getCurrentWindow()[this.isMaximized ? 'unmaximize' : 'maximize']();
+        const win = this.appService.remote.getCurrentWindow();
+        if (win.isMaximized()) {
+            win.unmaximize();
+        } else {
+            win.maximize();
+        }
     }
     openDebugger() {
         this.appService.remote.getCurrentWindow().toggleDevTools();

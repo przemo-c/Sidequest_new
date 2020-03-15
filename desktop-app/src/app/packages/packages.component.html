@@ -8,12 +8,8 @@
   <div *ngIf="isConnected()">
     <div class="row">
       <div class="input-field col s9">
-        <input id="SearchPackage"
-          [ngClass]="{'input-dark-theme':appService.currentTheme === 'dark','input-light-theme':appService.currentTheme === 'light'}"
-          [(ngModel)]="search" type="text" />
-        <label for="SearchPackage"
-          [ngClass]="{'label-dark-theme':appService.currentTheme === 'dark','label-light-theme':appService.currentTheme === 'light'}">Search
-          package</label>
+        <input id="SearchPackage" [(ngModel)]="search" type="text" />
+        <label for="SearchPackage">Search package</label>
       </div>
       <div class="col s3 right-align show-all">
         <div class="switch">
