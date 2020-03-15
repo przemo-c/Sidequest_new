@@ -185,50 +185,6 @@ function setupApp() {
             });
         }
     });
-    // <<<<<<< HEAD
-    // }
-    // autoUpdater.on('checking-for-update', () => {
-    //     if (mainWindow) {
-    //         mainWindow.webContents.send('update-status', { status: 'checking-for-update' });
-    //     }
-    // });
-    // autoUpdater.on('update-available', info => {
-    //     if (mainWindow) {
-    //         mainWindow.webContents.send('update-status', { status: 'update-available', info });
-    //         hasUpdate = true;
-    //     }
-    // });
-    // autoUpdater.on('update-not-available', info => {
-    //     if (mainWindow) {
-    //         mainWindow.webContents.send('update-status', { status: 'no-update', info });
-    //     }
-    // });
-    // autoUpdater.on('error', err => {
-    //     if (mainWindow) {
-    //         mainWindow.webContents.send('update-status', { status: 'error', err });
-    //     } else {
-    //         console.log(err);
-    //     }
-    // });
-    // autoUpdater.on('download-progress', progressObj => {
-    //     if (mainWindow) {
-    //         mainWindow.webContents.send('update-status', { status: 'downloading', progressObj });
-    //     }
-    // });
-    // autoUpdater.on('update-downloaded', info => {
-    //     if (mainWindow) {
-    //         mainWindow.webContents.send('update-status', { status: 'update-downloaded', info });
-    //     }
-    // });
-    // (global as any).receiveMessage = function(text) {
-    //     mainWindow.webContents.send('info', text);
-    // };
-    // const { ipcMain } = require('electron');
-    // const adb = new ADB();
-    // ipcMain.on('download-url', async (event, { url, token, directory, filename }) => {
-    //     await download(url, path.join(directory, filename), stats => {
-    //         return event.sender.send('download-progress', { stats, token });
-    // =======
 
     app.on('browser-window-blur', () => {
         if (appWindow) {
@@ -307,6 +263,13 @@ function setupApp() {
         switch (arg.command) {
             case 'setupAdb':
                 adb.setupAdb(arg.settings.adbPath, success, reject);
+                break;
+            case 'endLogcat':
+                adb.endLogcat();
+                success('Done.');
+                break;
+            case 'logcat':
+                adb.logcat(arg.settings.serial, arg.settings.tag, arg.settings.priority, success, status, reject);
                 break;
             case 'listDevices':
                 adb.listDevices(success, reject);
