@@ -11,6 +11,7 @@ export class LoadingSpinnerComponent implements OnInit {
     isConfirm: boolean;
     isLoading: boolean;
     loadingMessage: string;
+    loadingTask: any;
     confirmResolve: () => void;
     confirmReject: () => void;
     constructor(private spinnerService: LoadingSpinnerService, public changes: ChangeDetectorRef) {

@@ -40,7 +40,6 @@ export class AppService {
     electron: any;
     os: any;
     request: any;
-    unzip: any;
     progress: any;
     Readable: any;
     opn: any;
@@ -60,12 +59,12 @@ export class AppService {
     backupPath: string;
     scrcpyBinaryPath: string;
     downloadResolves: any = {};
+    extractResolves: any = {};
     headerComponent: HeaderComponent;
     constructor(private spinnerService: LoadingSpinnerService) {
         this.path = (<any>window).require('path');
         this.fs = (<any>window).require('fs');
         this.request = (<any>window).require('request');
-        this.unzip = (<any>window).require('adm-zip');
         this.progress = (<any>window).require('request-progress');
         this.os = (<any>window).require('os');
         this.Readable = (<any>window).require('stream').Readable;
@@ -94,6 +93,17 @@ export class AppService {
             localStorage.setItem('backup-path', this.backupPath);
         }
         this.versionName = 'v' + this.remote.app.getVersion();
+        this.electron.ipcRenderer.on('extract-file', (event, data) => {
+            if (!!this.extractResolves[data.token]) {
+                this.extractResolves[data.token].resolve();
+                delete this.extractResolves[data.token];
+            }
+        });
+        this.electron.ipcRenderer.on('extract-progress', (event, data) => {
+            if (!!this.extractResolves[data.token]) {
+                this.extractResolves[data.token].scb(data.stats);
+            }
+        });
         this.electron.ipcRenderer.on('download-url', (event, data) => {
             if (!!this.downloadResolves[data.token]) {
                 this.downloadResolves[data.token].resolve();
@@ -106,13 +116,22 @@ export class AppService {
             }
         });
     }
-    extract(path, options, callback) {
-        try {
-            new this.unzip(path).extractAllTo(options.dir, true);
-            callback();
-        } catch (e) {
-            callback(new Error('Unzip failed'));
-        }
+    extract(path, options, callback, task?) {
+        return this.extractFileAPI(options.dir, path, task).then(callback);
+    }
+    extractFileAPI(directory, filename, task?) {
+        return new Promise(resolve => {
+            let token = this.uuidv4();
+            this.extractResolves[token] = {
+                scb: stats => {
+                    if (task) {
+                        task.status = 'Extracting... ' + stats;
+                    }
+                },
+                resolve,
+            };
+            this.electron.ipcRenderer.send('extract-file', { token, directory, filename });
+        });
     }
     getBase64Image(imagePath: string) {
         try {
@@ -213,7 +232,6 @@ export class AppService {
         return this.mkdir(this.appData)
             .then(() => this.mkdir(this.path.join(this.appData, 'backups')))
             .then(() => this.mkdir(this.path.join(this.appData, 'tmp')))
-            .then(() => this.mkdir(this.path.join(this.appData, 'scrcpy')))
             .then(() => {});
     }
     async mkdir(path) {
@@ -247,7 +265,6 @@ export class AppService {
             () => downloadPath
         );
     }
-
     downloadFileAPI(url, directory, filename, task?) {
         // Send request to application thread to download a file. Store the callback for the response.
         return new Promise(resolve => {
@@ -302,7 +319,8 @@ export class AppService {
     downloadScrCpyBinary() {
         if (this.os.platform() === 'win32') {
             this.spinnerService.showLoader();
-            this.spinnerService.setMessage('Downloading/Extracting ADB...');
+            let task = { status: 'Downloading/Extracting ScrCpy...' };
+            this.spinnerService.setMessage('', task);
             let url = 'https://github.com/Genymobile/scrcpy/releases/download/v1.11/scrcpy-win64-v1.11.zip';
             let downloadPath = this.path.join(this.appData, 'scrcpy', 'scrcpy.exe');
             if (this.doesFileExist(downloadPath)) {
@@ -311,9 +329,15 @@ export class AppService {
                 return Promise.resolve();
             }
             return new Promise<void>((resolve, reject) => {
-                this.downloadFile(url, url, url, () => {
-                    return this.path.join(this.appData, 'scrcpy.zip');
-                }).then((path: any) => {
+                this.downloadFile(
+                    url,
+                    url,
+                    url,
+                    () => {
+                        return this.path.join(this.appData, 'scrcpy.zip');
+                    },
+                    task
+                ).then((path: any) => {
                     let callback = error => {
                         if (error) return reject(error);
                         this.fs.unlink(path, err => {

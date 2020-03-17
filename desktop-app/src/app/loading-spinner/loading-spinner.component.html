@@ -3,7 +3,7 @@
     <div *ngIf="isLoading&&!isConfirm" class="loader-initial"></div>
     <h5 *ngIf="!isLoading" >Drop file(s) here!</h5>
     <br />
-    <span class="spinner-loading-message truncate" [innerHTML]="loadingMessage"></span>
+    <span class="spinner-loading-message truncate" [innerHTML]="loadingTask ? loadingTask.status : loadingMessage"></span>
     <div *ngIf="isConfirm">
       <br><br>
       <a class="btn waves-effect waves-light red" (click)="cancel()">Cancel</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

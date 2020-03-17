@@ -10,12 +10,13 @@ export class LoadingSpinnerService {
     setSpinner(spinner: LoadingSpinnerComponent) {
         this.spinner = spinner;
     }
-    setMessage(message) {
+    setMessage(message, task?) {
         if (this.spinner) {
             // if(this.processService.tasks.length){
             //   this.processService.tasks[0].status = message;
             // }
             this.spinner.loadingMessage = message;
+            this.spinner.loadingTask = task;
         }
     }
     showDrag() {
@@ -32,6 +33,7 @@ export class LoadingSpinnerService {
     hideLoader() {
         if (this.spinner) {
             this.spinner.isLoading = this.spinner.isActive = false;
+            this.spinner.loadingTask = null;
         }
     }
     setupConfirm() {

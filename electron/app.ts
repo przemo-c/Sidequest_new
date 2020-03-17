@@ -4,6 +4,8 @@ import { StateStorage, EnvironmentConfig } from './state-storage';
 import { AppWindow } from './window';
 const path = require('path');
 const { autoUpdater } = require('electron-updater');
+const download = require('./download');
+const extract = require('extract-zip');
 
 let config: StateStorage;
 let appWindow: AppWindow;
@@ -25,7 +27,6 @@ function parseOpenUrl(argv: string[]) {
     }
 }
 
-const download = require('./download');
 function createWindow() {
     appWindow = new AppWindow(config);
     mainWindow = appWindow.window;
@@ -234,9 +235,25 @@ function setupApp() {
     ipcMain.on('download-url', async (event, { url, token, directory, filename }) => {
         await download(url, path.join(directory, filename), stats => {
             return event.sender.send('download-progress', { stats, token });
-        });
+        }).catch(e => console.log(e));
         event.sender.send('download-url', { token });
     });
+    ipcMain.on('extract-file', async (event, { token, directory, filename }) => {
+        extract(
+            filename,
+            {
+                dir: directory,
+                onEntry: entry => {
+                    let stats = entry.fileName;
+                    event.sender.send('extract-progress', { stats, token });
+                },
+            },
+            err => {
+                event.sender.send('extract-file', { token });
+            }
+        );
+    });
+
     ipcMain.on('automatic-update', (event, arg) => {
         if (process.platform !== 'darwin' && hasUpdate) {
             setTimeout(() => {

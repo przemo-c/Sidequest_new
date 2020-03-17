@@ -385,25 +385,22 @@ export class AdbClientService {
     async downloadTools() {
         let url = 'https://dl.google.com/android/repository/platform-tools-latest-';
         this.spinnerService.showLoader();
-        this.spinnerService.setMessage('Downloading/Extracting ADB...');
+        let task = { status: 'Downloading/Extracting ADB...' };
+        this.spinnerService.setMessage('', task);
         return new Promise((resolve, reject) => {
             this.appService
-                .downloadFile(url + 'windows.zip', url + 'linux.zip', url + 'darwin.zip', url => this.adbPath + '.zip')
+                .downloadFile(url + 'windows.zip', url + 'linux.zip', url + 'darwin.zip', url => this.adbPath + '.zip', task)
                 .then(path => {
+                    task.status = 'Extracting ADB...';
                     this.appService.extract(path, { dir: this.appService.appData }, error => {
                         if (error) {
+                            console.log(error);
                             reject(error);
                         } else {
                             this.appService.fs.unlink(path.toString(), err => {
                                 if (err) return reject(err);
                                 this.spinnerService.hideLoader();
-                                if (this.appService.os.platform() === 'darwin' || this.appService.os.platform() === 'linux') {
-                                    return this.appService
-                                        .setExecutable(this.appService.path.join(this.adbPath, 'adb'))
-                                        .then(() => resolve());
-                                } else {
-                                    return resolve();
-                                }
+                                return resolve();
                             });
                         }
                     });
@@ -952,31 +949,36 @@ export class AdbClientService {
             if (task) {
                 task.status = 'Extracting zip file download...';
             }
-            this.appService.extract(filepath, { dir: this.appService.path.join(this.appService.appData, 'tmp') }, extractErr => {
-                if (!extractErr) {
-                    if (task) {
-                        task.status = 'Extracted Zip!';
-                    }
-                    resolve();
-                    this.appService.fs.readdir(this.appService.path.join(this.appService.appData, 'tmp'), (readErr, files) => {
-                        let installableFiles = files.filter((val, index) => {
-                            return Object.keys(typeBasedActions).includes(this.appService.path.extname(val));
-                        });
+            this.appService.extract(
+                filepath,
+                { dir: this.appService.path.join(this.appService.appData, 'tmp') },
+                extractErr => {
+                    if (!extractErr) {
+                        if (task) {
+                            task.status = 'Extracted Zip!';
+                        }
+                        resolve();
+                        this.appService.fs.readdir(this.appService.path.join(this.appService.appData, 'tmp'), (readErr, files) => {
+                            let installableFiles = files.filter((val, index) => {
+                                return Object.keys(typeBasedActions).includes(this.appService.path.extname(val));
+                            });
 
-                        installableFiles.sort(function(a, b) {
-                            return a.endsWith('.apk') ? -1 : 1;
+                            installableFiles.sort(function(a, b) {
+                                return a.endsWith('.apk') ? -1 : 1;
+                            });
+                            installableFiles.forEach(file => {
+                                typeBasedActions[this.appService.path.extname(file)](
+                                    this.appService.path.join(this.appService.appData, 'tmp', file),
+                                    this
+                                );
+                            });
                         });
-                        installableFiles.forEach(file => {
-                            typeBasedActions[this.appService.path.extname(file)](
-                                this.appService.path.join(this.appService.appData, 'tmp', file),
-                                this
-                            );
-                        });
-                    });
-                } else {
-                    console.warn(extractErr);
-                }
-            });
+                    } else {
+                        console.warn(extractErr);
+                    }
+                },
+                task
+            );
             cb();
         });
     }
