@@ -128,7 +128,9 @@ export class AdbClientService {
                     return Promise.reject('Invalid OBB');
                 }
             case '.zip':
-                return this.installLocalZip(filepath, false, () => this.spinnerService.hideLoader());
+                return this.processService.addItem('file_install', async task => {
+                    return this.installLocalZip(filepath, false, () => this.spinnerService.hideLoader(), task, true);
+                });
         }
         return Promise.resolve();
     }
@@ -249,7 +251,7 @@ export class AdbClientService {
         document.getElementById('connection-status').className = 'connection-status-' + status;
         switch (this.deviceStatus) {
             case ConnectionStatus.LINUX_PERMS:
-                this.deviceStatusMessage = 'Warning: no permissions (user in plugdev group; are your udev rules wrong?)';
+                this.deviceStatusMessage = 'Warning: no permissions. ADB udev rules missing.';
                 break;
             case ConnectionStatus.CONNECTED:
                 try {
@@ -260,18 +262,23 @@ export class AdbClientService {
                     this.deviceName = this.devices.filter(d => d.id === this.deviceSerial)[0].deviceName;
                     this.deviceStatusMessage =
                         this.deviceName +
-                        ' -  Wifi IP: ' +
+                        ' <i mz-tooltip class="material-icons white-text top-menu-bar-icon vertical-align"' +
+                        '         position="bottom" tooltip="Battery">' +
+                        '        wifi' +
+                        '      </i> ' +
                         (this.deviceIp || 'Not found...') +
-                        ', Battery: ' +
+                        ' <i mz-tooltip class="material-icons white-text top-menu-bar-icon vertical-align"' +
+                        '         position="bottom" tooltip="Battery">' +
+                        '        ' +
+                        (this.isBatteryCharging ? 'battery_charging_full' : 'battery_full') +
+                        '      </i>' +
                         this.batteryLevel +
-                        '% ' +
-                        (this.isBatteryCharging ? ' Charging' : '');
+                        '% ';
                     this.beatonService.checkIsBeatOnRunning(this);
                 } catch (e) {
                     const isBadConnection = e && e.message === "Failure: 'closed'" && e.name === 'FailError';
                     if (isBadConnection) {
-                        this.deviceStatusMessage =
-                            'Warning: Cannot retrieve information from the headset, try another USB cable or port. Try a USB2 port.';
+                        this.deviceStatusMessage = 'Warning: Try a USB2 port.';
                         this.deviceStatus = ConnectionStatus.DISCONNECTED;
                     } else {
                         throw e;
@@ -280,13 +287,25 @@ export class AdbClientService {
                 break;
             case ConnectionStatus.DISCONNECTED:
                 this.deviceStatusMessage =
-                    'Disconnected: Connect/Reconnect your headset via USB. ' +
-                    (this.deviceIp ? 'Last Wifi IP: ' + this.deviceIp : '');
+                    'Not Detected' +
+                    (this.deviceIp
+                        ? ' <i mz-tooltip class="material-icons white-text top-menu-bar-icon vertical-align"' +
+                          '         position="bottom" tooltip="Battery">' +
+                          '        wifi' +
+                          '      </i> ' +
+                          this.deviceIp
+                        : '');
                 break;
             case ConnectionStatus.UNAUTHORIZED:
                 this.deviceStatusMessage =
-                    'Unauthorized: Put your headset on and click always allow and then OK. ' +
-                    (this.deviceIp ? 'Last Wifi IP: ' + this.deviceIp : '');
+                    'Unauthorized: Allow in headset. ' +
+                    (this.deviceIp
+                        ? ' <i mz-tooltip class="material-icons white-text top-menu-bar-icon vertical-align"' +
+                          '         position="bottom" tooltip="Battery">' +
+                          '        wifi' +
+                          '      </i> ' +
+                          this.deviceIp
+                        : '');
                 break;
         }
     }
@@ -547,9 +566,15 @@ export class AdbClientService {
                             }
                         })
                         .catch(e => {
+                            if (deleteAfter) {
+                                this.appService.fs.unlink(filePath, err => {});
+                            }
                             return Promise.reject(e.message ? e.message : e.code ? e.code : e.toString() + ' ' + filePath);
                         });
                 } else {
+                    if (deleteAfter) {
+                        this.appService.fs.unlink(filePath, err => {});
+                    }
                     updateStatus('Canceled Install.');
                     return Promise.resolve();
                 }
@@ -863,15 +888,20 @@ export class AdbClientService {
                     task
                 )
                 .then(() => (task.status = 'File Downloaded OK!'))
-                .then((_path: string) =>
-                    this.installLocalZip(
-                        this.appService.path.join(this.appService.appData, 'download.zip'),
+                .then((_path: string) => {
+                    let zipPath = this.appService.path.join(this.appService.appData, 'download.zip');
+                    return this.installLocalZip(
+                        zipPath,
                         false,
-                        () => {},
+                        () => {
+                            if (deleteAfter) {
+                                this.appService.fs.unlink(zipPath, err => {});
+                            }
+                        },
                         task,
                         deleteAfter
-                    )
-                );
+                    );
+                });
         });
     }
     installObb(url, number?: number, total?: number) {
@@ -916,10 +946,15 @@ export class AdbClientService {
                 this.statusService.showStatus('File transferred successfully!');
             }
         });
-        if (!dontCatchError && !task) {
+        if (!dontCatchError) {
             p = p.catch(e => {
-                this.spinnerService.hideLoader();
-                this.statusService.showStatus(e.toString(), true);
+                if (task) {
+                    task.failed = true;
+                    task.status = 'Failed to transfer file!! - ' + filepath;
+                } else {
+                    this.spinnerService.hideLoader();
+                    this.statusService.showStatus(e.toString(), true);
+                }
             });
         }
         return p;
@@ -976,10 +1011,10 @@ export class AdbClientService {
                     } else {
                         console.warn(extractErr);
                     }
+                    cb();
                 },
                 task
             );
-            cb();
         });
     }
     cleanUpFolder(folderPath = this.appService.path.join(this.appService.appData, 'tmp')) {

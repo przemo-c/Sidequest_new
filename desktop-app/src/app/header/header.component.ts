@@ -231,7 +231,23 @@ export class HeaderComponent implements OnInit {
             this.bookmarksModal.closeModal();
         }
     }
-
+    addCurrentFavourite() {
+        this.appService.request(
+            'https://i.olsh.me/allicons.json?url=' + this.webService.currentAddress,
+            (error, response, body) => {
+                let json: any = {};
+                try {
+                    json = JSON.parse(response.body);
+                } catch (e) {}
+                this.favourites.browserFavourites.unshift({
+                    name: this.webService.getTitle(),
+                    uri: this.webService.currentAddress,
+                    icon: json && json.icons && json.icons.length ? json.icons[0].url : '',
+                });
+                this.saveFavourites('browserFavourites');
+            }
+        );
+    }
     ngAfterViewInit() {
         //this.appService.setTitleEle(this.header.nativeElement);
         //this.dragAndDropService.setupDragAndDrop(this.mainLogo.nativeElement);
@@ -290,106 +306,5 @@ export class HeaderComponent implements OnInit {
     }
     removeText(text) {
         this.replaceText = this.replaceText.filter(d => d !== text);
-    }
-    launchBeatOn() {
-        return (
-            this.adbService
-                .adbCommand('shell', {
-                    serial: this.adbService.deviceSerial,
-                    command: 'am startservice com.weloveoculus.BMBF/com.weloveoculus.BMBFService',
-                })
-                // .then(() =>
-                //   this.adbService.adbCommand('shell', {
-                //     serial: this.adbService.deviceSerial,
-                //     command:
-                //       'am start -S -W -a android.intent.action.VIEW -c android.intent.category.LEANBACK_LAUNCHER -n com.oculus.vrshell/com.oculus.vrshell.MainActivity -d com.oculus.tv --es "uri" "com.weloveoculus.BMBF/com.weloveoculus.BMBF.MainActivity"',
-                //   })
-                // )
-                .then(r => {
-                    this.beatonService.setupBeatOnSocket(this.adbService);
-                })
-        );
-    }
-    setBeatOnPermission() {
-        return this.beatonService.setBeatOnPermission(this.adbService);
-    }
-    async toggleBeatOn() {
-        if (!this.beatonService.beatOnEnabled) {
-            this.beatOnModal.closeModal();
-            this.spinnerService.showLoader();
-            this.spinnerService.setMessage('Closing app...');
-            this.adbService
-                .adbCommand('shell', {
-                    serial: this.adbService.deviceSerial,
-                    command: 'am force-stop com.oculus.tv',
-                })
-                .then(() =>
-                    this.adbService.adbCommand('shell', {
-                        serial: this.adbService.deviceSerial,
-                        command: 'am force-stop com.weloveoculus.BMBF',
-                    })
-                )
-                .then(r => {})
-                .catch(e => {
-                    this.statusService.showStatus(e.toString(), true);
-                    this.spinnerService.hideLoader();
-                    return this.beatonService.checkIsBeatOnRunning(this.adbService);
-                });
-            setTimeout(() => {
-                this.statusService.showStatus('Beat On Disabled');
-                this.spinnerService.hideLoader();
-                return this.beatonService.checkIsBeatOnRunning(this.adbService);
-            }, 5000);
-        } else {
-            if (~this.adbService.devicePackages.indexOf('com.weloveoculus.BMBF')) {
-                await this.launchBeatOn();
-                this.beatonService.checkHasRestore(this.adbService);
-            } else {
-                this.beatOnModal.closeModal();
-                const beatOnApps = await fetch('https://api.github.com/repos/emulamer/BeatOn/releases/latest')
-                    .then(r => r.json())
-                    .then(r => {
-                        return r.assets
-                            .filter(a => {
-                                return a.name.split('.').pop() === 'apk';
-                            })
-                            .map(a => a.browser_download_url);
-                    });
-                for (let i = 0; i < beatOnApps.length; i++) {
-                    await this.adbService.installAPK(
-                        beatOnApps[i] //'https://cdn.glitch.com/6f805e7a-5d34-4158-a46c-ed6e48e31393%2Fcom.emulamer.beaton.apk'
-                    );
-                }
-                this.beatOnModal.openModal();
-                this.beatOnLoading = true;
-                setTimeout(() => {
-                    this.adbService.getPackages().then(async () => {
-                        if (~this.adbService.devicePackages.indexOf('com.weloveoculus.BMBF')) {
-                            await this.setBeatOnPermission();
-                            await this.launchBeatOn();
-                            setTimeout(() => {
-                                this.beatOnLoading = false;
-                                this.beatonService.checkHasRestore(this.adbService);
-                            }, 3000);
-                        } else {
-                            this.statusService.showStatus('Could not launch Beat On. Please try again...', true);
-                        }
-                    });
-                }, 2000);
-            }
-        }
-    }
-
-    openBeatOn() {
-        if (
-            this.adbService.deviceIp &&
-            this.beatonService.beatOnEnabled &&
-            this.beatonService.beatOnPID &&
-            this.beatonService.beatOnStatus.CurrentStatus === 'ModInstalled'
-        ) {
-            this.beatonService.checkHasRestore(this.adbService);
-        }
-        this.beatonService.setupBeatOnSocket(this.adbService);
-        this.beatOnModal.openModal();
     }
 }

@@ -70,6 +70,9 @@ export class WebviewService {
             this.webView.goForward();
         }
     }
+    getTitle() {
+        return this.webView.getTitle();
+    }
     send() {
         this.webView.loadURL(this.currentAddress);
     }

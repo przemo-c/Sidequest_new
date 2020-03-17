@@ -88,6 +88,9 @@
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
              (click)="browserMenu.style.display = 'none';browserMenuBack.style.display = 'none';favoriteType = 'browserFavourites';favouriteMax = 20;favoritePathType = 'Url';manageFavs.openModal()"
              ><i class="material-icons left">edit</i>Manage</div><br>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
+             (click)="addCurrentFavourite()"
+             ><i class="material-icons left">add</i>Add Current</div><br>
         <ng-container *ngFor="let favourite of favourites.browserFavourites">
           <div class="btn-flat waves-light waves-light full-width center-align white-text truncate"
                (click)="browserMenu.style.display = 'none';browserMenuBack.style.display = 'none';webService.loadUrl(favourite.uri)"
@@ -98,15 +101,6 @@
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
           (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';webService.loadUrl('https://sidequestvr.com')"
           routerLink="/webview"><i class="material-icons left">home</i>Home</div><br>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text"
-          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';webService.back()"
-          routerLink="/webview"><i class="material-icons left">arrow_back</i>Back</div>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text"
-          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';webService.forward()"
-          routerLink="/webview"><i class="material-icons left">arrow_forward</i>Forward</div>
-        <div class="btn-flat waves-light waves-light full-width center-align white-text"
-          (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';bookmarksModal.openModal()">
-          <i class="material-icons left">public</i>Bookmarks</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
           *ngIf="isConnected()&&osPlatform === 'win32'"
           (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';scrcpyModal.openModal();">
@@ -130,6 +124,9 @@
           (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';adbModal.openModal()"><i
             class="material-icons left">input</i>ADB Commands</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text"
+             (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';logcatModal.openModal()"><i
+          class="material-icons left">input</i>ADB Logcat</div>
+        <div class="btn-flat waves-light waves-light full-width center-align white-text"
           (click)="userMenu.style.display = 'none';userMenuBack.style.display = 'none';openDebugger()"><i
             class="material-icons left">bug_report</i>Debugger</div>
         <div class="btn-flat waves-light waves-light full-width center-align white-text" routerLink="webview"
@@ -137,18 +134,14 @@
           <i class="material-icons left">storefront</i>GiftShop</div>
       </div>
       <app-link *ngIf="appService.updateAvailable"
-        class="waves-effect waves-light btn-flat update-available link small-button " (click)="updateAvailable()"
-        text="Update Available"></app-link>
+        class="waves-effect waves-light btn-flat update-available link small-button warning" (click)="updateAvailable()"
+        text="Update"></app-link>
       <i mz-tooltip class="material-icons white-text no-outline top-menu-bar-icon-down" position="bottom" tooltip="Menu"
         (click)="userMenu.style.display = 'block';userMenuBack.style.display = 'block'">
         arrow_drop_down
       </i>
-      <i mz-tooltip routerLink="/webview" (click)="webService.loadUrl('https://sidequestvr.com')"
-        class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Home">
-        home
-      </i>
       <i mz-tooltip routerLink="/webview" (click)="webService.back()"
-        class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Back">
+        class="material-icons white-text no-outline" position="bottom" tooltip="Back">
         arrow_back
       </i>
       <i mz-tooltip *ngIf="!webService.isWebviewLoading" (click)="browserMenu.style.display = 'block';browserMenuBack.style.display = 'block'"
@@ -158,7 +151,7 @@
       <div mz-tooltip *ngIf="webService.isWebviewLoading" class="loader-tiny" position="bottom"
         tooltip="Web Browser Loading..."></div>
       <i mz-tooltip routerLink="/webview" (click)="webService.forward()"
-        class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="Forward">
+        class="material-icons white-text no-outline" position="bottom" tooltip="Forward">
         arrow_forward
       </i>
       <i mz-tooltip *ngIf="isConnected()&&osPlatform === 'win32'" (click)="scrcpyModal.openModal();"
@@ -207,10 +200,6 @@
         position="bottom" tooltip="Open debugger">
         bug_report
       </i>
-      <i (click)="webService.loadUrl('http://tee.pub/lic/L295azlpJYk')" routerLink="webview" mz-tooltip
-        class="material-icons white-text no-outline top-menu-bar-icon" position="bottom" tooltip="SideQuest gift shop">
-        storefront
-      </i>
       <i (click)="minimizeApp()" mz-tooltip class="material-icons white-text no-outline" position="bottom"
         tooltip="Minimize SideQuest.">
         minimize
@@ -233,13 +222,8 @@
       </i>
       <div id="connection-status" class="connection-status-unauthorized"  mz-tooltip
            position="bottom" [ngClass]="adbService.connectionCss" [tooltip]="'Device connection status.'">
-        <div id="connection-status-message">{{appService.versionName}}&nbsp;&nbsp;{{adbService.deviceStatusMessage}}</div>
+        <div id="connection-status-message" [innerHTML]="appService.versionName+'&nbsp;&nbsp;'+adbService.deviceStatusMessage"></div>
       </div>
-    </div>
-    <div *ngIf="appService.showRepo" (click)="addRepoModal.openModal()"
-      class="waves-effect waves-light btn-flat add-repo small-button white-text" mz-tooltip
-      tooltip="Add app repository.">
-      Add Repo
     </div>
     <div *ngIf="appService.showBrowserBar" class="beast-saber-buttons">
       <a class="waves-effect waves-light synthrideerz"
