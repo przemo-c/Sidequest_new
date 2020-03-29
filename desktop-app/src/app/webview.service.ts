@@ -57,7 +57,7 @@ export class WebviewService {
             this.isWebviewLoading = false;
             this.webView.insertCSS(customCss);
             this.isLoaded();
-            //this.webView.openDevTools();
+            this.webView.openDevTools();
         });
     }
     back() {

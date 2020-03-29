@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core';
+import { Component, isDevMode, ViewChild } from '@angular/core';
 import { AppService } from './app.service';
 import { LoadingSpinnerService } from './loading-spinner.service';
 import { StatusBarService } from './status-bar.service';
@@ -6,7 +6,6 @@ import { WebviewService } from './webview.service';
 import { DragAndDropService } from './drag-and-drop.service';
 import { ElectronService } from './electron.service';
 import { AdbClientService } from './adb-client.service';
-import { BeatOnService } from './beat-on.service';
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
@@ -17,6 +16,7 @@ export class AppComponent {
     @ViewChild('status', { static: false }) status;
     @ViewChild('webview', { static: false }) webview;
     helpStatus: string;
+    devMode: boolean;
     constructor(
         private spinnerService: LoadingSpinnerService,
         public statusService: StatusBarService,
@@ -26,7 +26,7 @@ export class AppComponent {
         public dragService: DragAndDropService,
         private electronService: ElectronService
     ) {
-        this.appService.hideNSFW = !!localStorage.getItem('hideNSFW');
+        this.devMode = isDevMode();
     }
     ngOnInit() {
         this.adbService

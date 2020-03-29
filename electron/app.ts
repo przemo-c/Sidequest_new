@@ -10,6 +10,7 @@ const extract = require('extract-zip');
 let config: StateStorage;
 let appWindow: AppWindow;
 let mainWindow: BrowserWindow;
+let popupWindow: BrowserWindow;
 let hasUpdate = false;
 
 if (app.requestSingleInstanceLock()) {
@@ -74,7 +75,6 @@ function createWindow() {
     mainWindow.webContents.session.on('will-download', (_evt, item, _webContents) => {
         let url = item.getURL();
         let etx = path.extname(url.split('?')[0]).toLowerCase();
-
         if (~url.indexOf('https://beatsaver.com/cdn')) {
             // beat saber mods /songs
             mainWindow.webContents.send('open-url', 'sidequest://bsaber/#' + url);
@@ -90,68 +90,72 @@ function createWindow() {
         } else if (etx === '.apk') {
             // any file ending with apk.
             mainWindow.webContents.send('pre-open-url', url);
-        } else if (~url.indexOf('ssl.hwcdn.net/')) {
-            //itch.io
+        } else if (~url.indexOf('ssl.hwcdn.net/') || ~url.indexOf('patreonusercontent.com/')) {
+            //itch.io & patreon
             let name = item.getFilename();
             mainWindow.webContents.send('pre-open-url', { url, name });
+            BrowserWindow.getAllWindows()
+                .filter(b => b !== mainWindow)
+                .forEach(b => b.close());
         }
         item.cancel();
     });
 }
 
 function setupMenu() {
-    const template: MenuItemConstructorOptions[] = [
-        {
-            label: 'SideQuest',
-            submenu: [
-                {
-                    label: 'Quit',
-                    accelerator: 'Command+Q',
-                    click: function() {
-                        app.quit();
-                    },
-                },
-            ],
-        },
-        {
-            label: 'Edit',
-            submenu: [
-                {
-                    label: 'Undo',
-                    accelerator: 'CmdOrCtrl+Z',
-                    // selector: 'undo:',
-                },
-                {
-                    label: 'Redo',
-                    accelerator: 'Shift+CmdOrCtrl+Z',
-                    // selector: 'redo:',
-                },
-                { type: 'separator' },
-                {
-                    label: 'Cut',
-                    accelerator: 'CmdOrCtrl+X',
-                    // selector: 'cut:'
-                },
-                {
-                    label: 'Copy',
-                    accelerator: 'CmdOrCtrl+C',
-                    // selector: 'copy:',
-                },
-                {
-                    label: 'Paste',
-                    accelerator: 'CmdOrCtrl+V',
-                    // selector: 'paste:',
-                },
-                {
-                    label: 'Select All',
-                    accelerator: 'CmdOrCtrl+A',
-                    // selector: 'selectAll:',
-                },
-            ],
-        },
-    ];
-
-    Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+    // const template: MenuItemConstructorOptions[] = [
+    //     {
+    //         label: 'SideQuest',
+    //         submenu: [
+    //             {
+    //                 label: 'Quit',
+    //                 accelerator: 'Command+Q',
+    //                 click: function() {
+    //                     app.quit();
+    //                 },
+    //             },
+    //         ],
+    //     },
+    //     {
+    //         label: 'Edit',
+    //         submenu: [
+    //             {
+    //                 label: 'Undo',
+    //                 accelerator: 'CmdOrCtrl+Z',
+    //                 // selector: 'undo:',
+    //             },
+    //             {
+    //                 label: 'Redo',
+    //                 accelerator: 'Shift+CmdOrCtrl+Z',
+    //                 // selector: 'redo:',
+    //             },
+    //             { type: 'separator' },
+    //             {
+    //                 label: 'Cut',
+    //                 accelerator: 'CmdOrCtrl+X',
+    //                 // selector: 'cut:'
+    //             },
+    //             {
+    //                 label: 'Copy',
+    //                 accelerator: 'CmdOrCtrl+C',
+    //                 // selector: 'copy:',
+    //             },
+    //             {
+    //                 label: 'Paste',
+    //                 accelerator: 'CmdOrCtrl+V',
+    //                 // selector: 'paste:',
+    //             },
+    //             {
+    //                 label: 'Select All',
+    //                 accelerator: 'CmdOrCtrl+A',
+    //                 // selector: 'selectAll:',
+    //             },
+    //         ],
+    //     },
+    // ];
+    //
+    // Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+    Menu.setApplicationMenu(null);
 }
 
 function setupApp() {
@@ -162,7 +166,15 @@ function setupApp() {
             mainWindow.focus();
         }
     });
-
+    app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
+        if (process.env.NODE_ENV === 'dev') {
+            // Verification logic.
+            event.preventDefault();
+            callback(true);
+        } else {
+            callback(false);
+        }
+    });
     app.on('ready', createWindow);
     // Quit when all windows are closed.
     app.on('window-all-closed', function() {
@@ -180,10 +192,13 @@ function setupApp() {
 
     app.on('web-contents-created', (e, contents) => {
         if (contents.getType() === 'webview') {
-            contents.on('new-window', (e, url) => {
-                e.preventDefault();
-                contents.loadURL(url);
-            });
+            // contents.on('new-window', (e : any, url) => {
+            //        popupWindow = new BrowserWindow({show: false})
+            //        popupWindow.once('ready-to-show', () => popupWindow.show())
+            //        popupWindow.loadURL(url);
+            //        e.newGuest = popupWindow;
+            //        e.preventDefault();
+            // });
         }
     });
 
